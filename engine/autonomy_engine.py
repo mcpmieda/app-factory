@@ -37,6 +37,23 @@ EVENTS = {
 
 HUMAN_CATEGORIES = {"product", "cost", "risk", "credential", "data", "legal", "organizational"}
 
+EVENT_ALLOWED_PHASES = {
+    "plan-ready": {"planning"},
+    "implementation-started": {"implementation"},
+    "implementation-ready": {"implementation"},
+    "verification-pass": {"verification"},
+    "verification-fail": {"verification"},
+    "repair-ready": {"repair"},
+    "review-pass": {"review"},
+    "review-fail": {"review"},
+    "delivered": {"delivery"},
+    "blocked": PHASES - {"blocked", "done"},
+    "human-needed": PHASES - {"blocked", "done"},
+    "resolved": {"blocked"},
+    "context-reconciled": {"context"},
+    "note": PHASES,
+}
+
 
 def utc_now() -> str:
     return datetime.now(timezone.utc).replace(microsecond=0).isoformat()
@@ -207,6 +224,22 @@ def next_action(root: Path | str, auto_refresh: bool = True) -> tuple[dict[str, 
     return action_for(state), state
 
 
+def validate_event_transition(state: dict[str, Any], event: str) -> None:
+    phase = state.get("phase")
+    if phase not in PHASES:
+        raise ValueError(f"Invalid phase: {phase!r}")
+    allowed = EVENT_ALLOWED_PHASES[event]
+    if phase not in allowed:
+        raise ValueError(
+            f"Event {event!r} is not allowed in phase {phase!r}; "
+            f"allowed phases: {', '.join(sorted(allowed))}"
+        )
+    if event == "resolved" and state.get("status") != "blocked":
+        raise ValueError("Event 'resolved' requires blocked status")
+    if state.get("status") == "done" and event != "note":
+        raise ValueError("Completed state only accepts note events")
+
+
 def record_event(
     root: Path | str,
     event: str,
@@ -219,6 +252,7 @@ def record_event(
     state = read_state(root)
     if state is None:
         state = init_project(root)
+    validate_event_transition(state, event)
 
     if event == "plan-ready":
         state["plan_summary"] = summary
