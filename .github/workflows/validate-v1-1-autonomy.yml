@@ -1,0 +1,53 @@
+name: Validate V1.1 Autonomous Context
+
+on:
+  pull_request:
+    paths:
+      - "engine/**"
+      - "scripts/factory.py"
+      - "scripts/validate_v1_1.py"
+      - "tests/v1_1/**"
+      - "core/CONTEXT_ENGINE.md"
+      - "core/AUTONOMY_ENGINE.md"
+      - "core/ENTRYPOINT.md"
+      - "core/TASK_ROUTER.md"
+      - "core/WORKFLOW.md"
+      - "core/HUMAN_INTERACTION.md"
+      - "skills/context-engine/**"
+      - "skills/autonomy-engine/**"
+      - "skills/factory-router/**"
+      - "skills/tool-router/**"
+      - ".github/workflows/validate-v1-1-autonomy.yml"
+  push:
+    branches: [main]
+    paths:
+      - "engine/**"
+      - "scripts/factory.py"
+      - "scripts/validate_v1_1.py"
+      - "tests/v1_1/**"
+      - "core/CONTEXT_ENGINE.md"
+      - "core/AUTONOMY_ENGINE.md"
+      - "skills/context-engine/**"
+      - "skills/autonomy-engine/**"
+      - ".github/workflows/validate-v1-1-autonomy.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  autonomy:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Structural Factory validation
+        run: python scripts/validate_factory.py
+      - name: V1.1 autonomous runtime validation
+        run: python scripts/validate_v1_1.py
+      - name: CLI smoke
+        run: |
+          python scripts/factory.py --root . context
+          python scripts/factory.py --root . resume
+          python scripts/factory.py --root . status
