@@ -1,4 +1,4 @@
-# Codex Plugin — modo experimental
+# Codex Plugin — adaptador validado
 
 A App Factory pode ser empacotada diretamente como plugin do ecossistema OpenAI sem duplicar as Skills.
 
@@ -8,6 +8,8 @@ A App Factory pode ser empacotada diretamente como plugin do ecossistema OpenAI 
 app-factory/
 ├── .codex-plugin/
 │   └── plugin.json
+├── .agents/plugins/
+│   └── marketplace.json
 ├── skills/
 ├── core/
 ├── policies/
@@ -26,16 +28,15 @@ O manifest aponta `skills` para `./skills/`, que já é a fonte portátil usada 
 
 ## Estado
 
-`0.2.0-alpha` — manifest compatível com o esquema atual e marketplace local
-adicionado para o piloto da Issue #3. A promoção para estável depende da revisão
-das evidências do piloto.
+`0.2.0-alpha` — **validado em piloto real na Issue #3 em 2026-08-21**.
+
+O Codex CLI oficial `0.149.0` reconheceu o marketplace local, instalou e habilitou a App Factory, descobriu as 10 Skills e ativou explicitamente `app-planner`, `tool-router`, `ui-builder` e `verification` em smoke test. Os hashes das quatro Skills na origem e no cache instalado foram idênticos.
+
+A versão continua `alpha` porque a V0.2 ainda precisa ser integrada ao `main` e o starter `web-admin` ainda será usado como segundo piloto antes da V1.
 
 ## Marketplace local sem cópia
 
-O arquivo `.agents/plugins/marketplace.json` aponta a entrada `app-factory`
-para `./`, isto é, a própria raiz do repositório. Assim, o host lê
-`.codex-plugin/plugin.json` e `skills/` diretamente da fonte portátil, sem criar
-`plugins/app-factory`, copiar Skills ou duplicar `core/`.
+O arquivo `.agents/plugins/marketplace.json` aponta a entrada `app-factory` para `./`, isto é, a própria raiz do repositório. Assim, o host lê `.codex-plugin/plugin.json` e `skills/` diretamente da fonte portátil, sem criar uma segunda árvore de `skills/` ou `core/`.
 
 Para registrar a origem em um Codex CLI que exponha os comandos de plugins:
 
@@ -44,22 +45,11 @@ codex plugin marketplace add <raiz-do-repositorio>
 codex plugin add app-factory@app-factory-local
 ```
 
-O Codex/ChatGPT Desktop precisa ser reiniciado e o smoke test deve ser feito em
-uma nova conversa para carregar a instalação atualizada.
+O Codex/ChatGPT Desktop pode exigir reinstalação/reinício e nova conversa para carregar alterações do plugin.
 
-## Teste necessário
+## Validação reproduzível
 
-Em uma fase executada no Codex/local:
-
-1. clonar/abrir `mcpmieda/app-factory`;
-2. validar que o plugin é reconhecido por marketplace/local install;
-3. confirmar descoberta das Skills;
-4. invocar pelo menos `app-planner`, `tool-router`, `ui-builder` e `verification`;
-5. confirmar que nenhuma Skill precisa duplicar o Core;
-6. registrar incompatibilidades;
-7. somente depois promover a versão do plugin.
-
-Execute também os validadores versionados:
+Execute:
 
 ```text
 python scripts/validate_factory.py
@@ -67,8 +57,31 @@ python scripts/validate_skills.py
 python scripts/validate_plugin.py
 ```
 
-As evidências executáveis do piloto estão em
-`research/V0.2_CODEX_PLUGIN_PILOT.md`.
+No piloto também foi usado o validador oficial do `plugin-creator`.
+
+As evidências completas estão em:
+
+`research/V0.2_CODEX_PLUGIN_PILOT.md`
+
+## Resultado arquitetural
+
+O piloto confirmou o desenho:
+
+```text
+APP FACTORY CORE
+(portátil)
+      │
+      ├── Skills abertas
+      ├── core/policies/templates
+      └── scripts/testes
+      │
+      ▼
+ADAPTADOR CODEX
+      ├── plugin.json
+      └── marketplace local
+```
+
+Nenhum arquivo do Core precisou ser duplicado ou alterado para satisfazer o Codex.
 
 ## MCP e hooks
 
