@@ -103,9 +103,13 @@ def validate_version_coherence() -> tuple[str, tuple[int, int, int]]:
             if marker not in state:
                 stop(f"V1.1+ state marker {marker!r} missing from PROJECT_STATE.md")
     if parts >= (1, 2, 0):
-        for marker in ("V1.2 — estável", "Execution Fabric", "CI Executor"):
+        for marker in ("Execution Fabric", "CI Executor"):
             if marker not in state:
                 stop(f"V1.2+ state marker {marker!r} missing from PROJECT_STATE.md")
+    if parts >= (1, 3, 0):
+        for marker in ("V1.3 — estável", "Learning Engine", "local-only"):
+            if marker not in state:
+                stop(f"V1.3+ state marker {marker!r} missing from PROJECT_STATE.md")
     return version, parts
 
 
@@ -122,6 +126,8 @@ def validate_composed_gates(parts: tuple[int, int, int]) -> None:
         required_workflows[".github/workflows/validate-v1-1-autonomy.yml"] = "Real-repository incremental cache proof"
     if parts >= (1, 2, 0):
         required_workflows[".github/workflows/validate-v1-2-execution.yml"] = "V1.2 execution fabric validation"
+    if parts >= (1, 3, 0):
+        required_workflows[".github/workflows/validate-v1-3-learning.yml"] = "V1.3 Learning Engine validation"
 
     for raw_path, marker in required_workflows.items():
         path = ROOT / raw_path

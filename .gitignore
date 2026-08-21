@@ -1,4 +1,5 @@
 .factory/context/
 .factory/execution.json
+.factory/learning.json
 __pycache__/
 *.py[cod]

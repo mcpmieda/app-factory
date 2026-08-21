@@ -16,26 +16,30 @@ app-factory/
 └── ...
 ```
 
-O manifest aponta `skills` para `./skills/`, que já é a fonte portátil usada pelos outros agentes. O runtime V1.2 em `engine/` é neutro e não depende do Codex.
+O manifest aponta `skills` para `./skills/`, que já é a fonte portátil usada pelos outros agentes. O runtime V1.3 em `engine/` é neutro e não depende do Codex.
 
 ## Estado
 
-`1.2.0` — **V1.2 estável**.
+`1.3.0` — **V1.3 estável**.
 
-O Codex CLI oficial `0.149.0` reconhece o marketplace local, instala a App Factory e descobre as **14 Skills**, incluindo `factory-router`, `context-engine`, `autonomy-engine` e `execution-router`. O bootstrap isolado compara SHA-256 de todas as Skills entre checkout limpo e cache instalado e rejeita omissão, duplicação, divergência ou pacote pesado.
+O Codex CLI oficial `0.149.0` reconhece o marketplace local, instala a App Factory e descobre as **15 Skills**, incluindo `factory-router`, `context-engine`, `autonomy-engine`, `execution-router` e `learning-engine`. O bootstrap isolado compara SHA-256 de todas as Skills entre checkout limpo e cache instalado e rejeita omissão, duplicação, divergência ou pacote pesado.
 
-## Papel do Codex na V1.2
+## Papel do Codex
 
-Codex deixa de ser destino automático para qualquer tarefa com código, múltiplos arquivos ou testes. A Execution Fabric seleciona por capacidade:
+Codex não é destino automático para tarefa com código, múltiplos arquivos ou testes. A Execution Fabric seleciona por capacidade:
 
 1. agente atual + ferramentas;
 2. GitHub Actions / CI;
 3. sandbox leve disponível;
 4. executor local completo.
 
-Codex é um possível backend `local_full` e continua indicado quando browser/runtime/debug/migrations interativos ou outra capacidade local forem realmente necessários.
+Na V1.3, aprendizado local pode otimizar somente os backends leves que já são capazes/elegíveis. `local_full` não é promovido sobre um backend leve capaz apenas porque teve score histórico melhor.
 
-Essa separação evita que o Core fique dependente de um único fornecedor ou ambiente.
+Codex é uma implementação possível de `local_full` e continua indicado quando browser/runtime/debug/migrations interativos ou outra capacidade local forem realmente necessários.
+
+## Learning Engine não depende do Codex
+
+`.factory/learning.json` contém apenas metadados técnicos allowlisted de execução e fica fora do Git por padrão. Não há envio de telemetria externa. O mesmo runtime pode ser usado por outro agente compatível; se o arquivo local não existir em outra máquina, o roteamento baseline continua funcionando normalmente.
 
 ## Marketplace local com fonte única
 
@@ -60,6 +64,8 @@ python scripts/factory.py --root <projeto> resume
 python scripts/factory.py --root <projeto> next
 python scripts/factory.py --root <projeto> route verify
 python scripts/factory.py --root <projeto> execution-status
+python scripts/factory.py --root <projeto> learning-status
+python scripts/factory.py --root <projeto> learning-recommend verify
 python scripts/factory.py --root <projeto> gates
 ```
 
@@ -73,6 +79,7 @@ python scripts/validate_skills.py
 python scripts/validate_plugin.py
 python scripts/validate_v1_1.py
 python scripts/validate_v1_2.py
+python scripts/validate_v1_3.py
 python scripts/validate_v1_bootstrap.py
 python scripts/validate_v1_release.py
 ```
@@ -86,6 +93,7 @@ APP FACTORY CORE + ENGINE
       ├── Context Engine
       ├── Autonomy Engine
       ├── Execution Fabric
+      ├── Learning Engine (local-only)
       ├── Skills/policies/templates
       └── testes/validadores
       │

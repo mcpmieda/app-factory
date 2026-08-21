@@ -28,6 +28,7 @@ CAPABILITIES = {
 }
 
 BACKEND_ORDER = ("current_agent", "github_ci", "sandbox", "local_full")
+PROTECTED_HEAVY_BACKENDS = {"local_full"}
 
 
 @dataclass(frozen=True)
@@ -54,6 +55,8 @@ class RouteDecision:
     available_backends: tuple[str, ...]
     rejected: dict[str, list[str]]
     reason: str
+    selection_mode: str = "baseline"
+    learning: dict[str, Any] | None = None
 
     def to_dict(self) -> dict[str, Any]:
         return {
@@ -63,6 +66,8 @@ class RouteDecision:
             "available_backends": list(self.available_backends),
             "rejected": self.rejected,
             "reason": self.reason,
+            "selection_mode": self.selection_mode,
+            "learning": self.learning,
         }
 
 
@@ -147,18 +152,17 @@ def request_for_action(
     return ExecutionRequest(action=action, required_capabilities=validate_capabilities(required))
 
 
-def route_execution(
+def eligible_backend_specs(
     request: ExecutionRequest,
     *,
-    available_backends: Iterable[str] = ("current_agent", "github_ci"),
+    available_backends: Iterable[str],
     failed_backends: Iterable[str] = (),
     backends: dict[str, BackendSpec] | None = None,
-) -> RouteDecision:
+) -> tuple[list[BackendSpec], dict[str, list[str]], tuple[str, ...]]:
     registry = backends or default_backends()
     available = tuple(dict.fromkeys(str(value) for value in available_backends))
     failed = set(failed_backends)
     rejected: dict[str, list[str]] = {}
-
     candidates: list[BackendSpec] = []
     for backend_id in available:
         spec = registry.get(backend_id)
@@ -173,7 +177,24 @@ def route_execution(
             rejected[backend_id] = [f"missing:{capability}" for capability in missing]
             continue
         candidates.append(spec)
+    return candidates, rejected, available
 
+
+def route_execution(
+    request: ExecutionRequest,
+    *,
+    available_backends: Iterable[str] = ("current_agent", "github_ci"),
+    failed_backends: Iterable[str] = (),
+    backends: dict[str, BackendSpec] | None = None,
+    preferred_backend_ids: Iterable[str] = (),
+    learning: dict[str, Any] | None = None,
+) -> RouteDecision:
+    candidates, rejected, available = eligible_backend_specs(
+        request,
+        available_backends=available_backends,
+        failed_backends=failed_backends,
+        backends=backends,
+    )
     if not candidates:
         needed = ", ".join(sorted(request.required_capabilities)) or "none"
         return RouteDecision(
@@ -183,18 +204,39 @@ def route_execution(
             available_backends=available,
             rejected=rejected,
             reason=f"No available backend satisfies required capabilities: {needed}.",
+            learning=learning,
         )
 
     order_index = {name: index for index, name in enumerate(BACKEND_ORDER)}
     candidates.sort(key=lambda spec: (spec.tier, order_index.get(spec.backend_id, 999), spec.backend_id))
-    chosen = candidates[0]
+    baseline = candidates[0]
+    chosen = baseline
+    candidate_by_id = {spec.backend_id: spec for spec in candidates}
+    for preferred in preferred_backend_ids:
+        preferred_spec = candidate_by_id.get(str(preferred))
+        if preferred_spec is None:
+            continue
+        # Learning may optimize lightweight capable backends, but never promote
+        # a full local executor over an already-capable lighter baseline.
+        if preferred_spec.backend_id in PROTECTED_HEAVY_BACKENDS and baseline.backend_id not in PROTECTED_HEAVY_BACKENDS:
+            continue
+        chosen = preferred_spec
+        break
+
+    learned = chosen.backend_id != baseline.backend_id
     return RouteDecision(
         backend_id=chosen.backend_id,
         action=request.action,
         required_capabilities=tuple(sorted(request.required_capabilities)),
         available_backends=available,
         rejected=rejected,
-        reason=f"Selected {chosen.backend_id}: lightest available backend with all required capabilities.",
+        reason=(
+            f"Selected {chosen.backend_id}: learned preference among already-capable backends."
+            if learned
+            else f"Selected {chosen.backend_id}: lightest available backend with all required capabilities."
+        ),
+        selection_mode="learned" if learned else "baseline",
+        learning=learning,
     )
 
 
@@ -316,6 +358,7 @@ def route_action(
     interactive_browser: bool = False,
     live_migration: bool = False,
     extra_capabilities: Iterable[str] = (),
+    use_learning: bool = True,
 ) -> RouteDecision:
     request = request_for_action(
         action,
@@ -325,9 +368,43 @@ def route_action(
         live_migration=live_migration,
         extra_capabilities=extra_capabilities,
     )
+    available = tuple(available_backends)
     failed = failed_backends_for_action(root, action, threshold=failure_threshold, task_key=task_key)
-    return route_execution(
+    baseline = route_execution(request, available_backends=available, failed_backends=failed)
+    if not use_learning or baseline.backend_id is None:
+        return baseline
+
+    candidates, _, _ = eligible_backend_specs(
         request,
-        available_backends=available_backends,
+        available_backends=available,
         failed_backends=failed,
+    )
+    eligible_ids = [spec.backend_id for spec in candidates]
+    from .learning_engine import recommend_backend
+
+    learning = recommend_backend(
+        root,
+        action=action,
+        capabilities=request.required_capabilities,
+        eligible_backends=eligible_ids,
+        baseline_backend=baseline.backend_id,
+    )
+    preferred = learning.get("backend") if learning.get("mode") == "learned" else None
+    if preferred and preferred != baseline.backend_id:
+        return route_execution(
+            request,
+            available_backends=available,
+            failed_backends=failed,
+            preferred_backend_ids=[str(preferred)],
+            learning=learning,
+        )
+    return RouteDecision(
+        backend_id=baseline.backend_id,
+        action=baseline.action,
+        required_capabilities=baseline.required_capabilities,
+        available_backends=baseline.available_backends,
+        rejected=baseline.rejected,
+        reason=baseline.reason,
+        selection_mode="baseline",
+        learning=learning,
     )

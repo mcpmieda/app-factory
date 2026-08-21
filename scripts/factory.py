@@ -26,8 +26,10 @@ from engine.execution_engine import (  # noqa: E402
     default_backends,
     read_execution_state,
     record_execution_attempt,
+    request_for_action,
     route_action,
 )
+from engine.learning_engine import learning_status, record_learning_event  # noqa: E402
 
 
 def emit(value: object) -> None:
@@ -67,8 +69,27 @@ def execution_for_action(project_root: Path, action: dict[str, object], backends
     ).to_dict()
 
 
+def add_capability_flags(command: argparse.ArgumentParser) -> None:
+    command.add_argument("--need", action="append", default=[], help="Additional required capability; repeatable")
+    command.add_argument("--headless-browser", action="store_true")
+    command.add_argument("--interactive-shell", action="store_true")
+    command.add_argument("--interactive-browser", action="store_true")
+    command.add_argument("--live-migration", action="store_true")
+
+
+def capability_request(args: argparse.Namespace):
+    return request_for_action(
+        args.action,
+        headless_browser=getattr(args, "headless_browser", False),
+        interactive_shell=getattr(args, "interactive_shell", False),
+        interactive_browser=getattr(args, "interactive_browser", False),
+        live_migration=getattr(args, "live_migration", False),
+        extra_capabilities=getattr(args, "need", []),
+    )
+
+
 def parser() -> argparse.ArgumentParser:
-    root = argparse.ArgumentParser(description="App Factory V1.2 autonomous context/execution CLI")
+    root = argparse.ArgumentParser(description="App Factory V1.3 autonomous context/execution/learning CLI")
     root.add_argument("--root", default=".", help="Project root (default: current directory)")
     root.add_argument(
         "--backends",
@@ -95,25 +116,28 @@ def parser() -> argparse.ArgumentParser:
     record.add_argument("--summary")
     record.add_argument("--category", choices=sorted(HUMAN_CATEGORIES))
 
-    route = sub.add_parser("route", help="Choose the lightest capable execution backend")
+    route = sub.add_parser("route", help="Choose a capable backend, using local learning only when evidence is sufficient")
     route.add_argument("action")
-    route.add_argument("--need", action="append", default=[], help="Additional required capability; repeatable")
-    route.add_argument("--headless-browser", action="store_true")
-    route.add_argument("--interactive-shell", action="store_true")
-    route.add_argument("--interactive-browser", action="store_true")
-    route.add_argument("--live-migration", action="store_true")
+    add_capability_flags(route)
     route.add_argument("--task-key", help="Optional task scope; defaults to current Autonomy state creation id")
+    route.add_argument("--no-learning", action="store_true", help="Show the pure V1.2 baseline route")
 
     sub.add_parser("execution-status", help="Show bounded execution attempt history")
 
-    attempt = sub.add_parser("record-execution", help="Record one execution backend outcome")
+    attempt = sub.add_parser("record-execution", help="Record execution outcome and update privacy-safe local learning")
     attempt.add_argument("action")
     attempt.add_argument("backend", choices=sorted(default_backends()))
     attempt.add_argument("outcome", choices=["success", "failure", "blocked", "cancelled"])
-    attempt.add_argument("--need", action="append", default=[])
+    add_capability_flags(attempt)
     attempt.add_argument("--summary")
     attempt.add_argument("--duration-ms", type=int)
     attempt.add_argument("--task-key", help="Optional task scope; defaults to current Autonomy state creation id")
+
+    sub.add_parser("learning-status", help="Show aggregate local learning metadata; never raw prompts/code/logs")
+    learn = sub.add_parser("learning-recommend", help="Explain the learned/baseline backend recommendation")
+    learn.add_argument("action")
+    add_capability_flags(learn)
+    learn.add_argument("--task-key", help="Optional task scope for current execution fallback")
 
     sub.add_parser("gates", help="Discover repository-owned allowlisted deterministic CI gates")
     run_gates = sub.add_parser("run-gates", help="Run discovered allowlisted gates without shell evaluation")
@@ -166,7 +190,7 @@ def main() -> int:
         action = next_action(project_root, auto_refresh=False)[0]
         emit({"state": state, "next": action, "execution": execution_for_action(project_root, action, backends)})
         return 0
-    if args.command == "route":
+    if args.command in {"route", "learning-recommend"}:
         decision = route_action(
             project_root,
             args.action,
@@ -177,24 +201,41 @@ def main() -> int:
             interactive_browser=args.interactive_browser,
             live_migration=args.live_migration,
             extra_capabilities=args.need,
+            use_learning=not getattr(args, "no_learning", False),
         )
-        emit(decision.to_dict())
+        if args.command == "learning-recommend":
+            emit({"route": decision.to_dict(), "learning": decision.learning})
+        else:
+            emit(decision.to_dict())
         return 0 if decision.backend_id else 2
     if args.command == "execution-status":
         emit(read_execution_state(project_root))
         return 0
     if args.command == "record-execution":
+        request = capability_request(args)
+        capabilities = sorted(request.required_capabilities)
         state = record_execution_attempt(
             project_root,
             action=args.action,
             backend_id=args.backend,
-            required_capabilities=args.need,
+            required_capabilities=capabilities,
             outcome=args.outcome,
             summary=args.summary,
             duration_ms=args.duration_ms,
             task_key=args.task_key or current_task_key(project_root),
         )
-        emit(state)
+        record_learning_event(
+            project_root,
+            action=args.action,
+            capabilities=capabilities,
+            backend=args.backend,
+            outcome=args.outcome,
+            duration_ms=args.duration_ms,
+        )
+        emit({"execution": state, "learning": learning_status(project_root)})
+        return 0
+    if args.command == "learning-status":
+        emit(learning_status(project_root))
         return 0
     if args.command == "gates":
         emit(build_ci_plan(project_root))

@@ -1,5 +1,51 @@
 # Changelog
 
+## 1.3.0 — 2026-08-21
+
+Evolução da linha V1 que adiciona aprendizado adaptativo local sobre a Execution Fabric, sem permitir que histórico ultrapasse capacidade, segurança, fallback da tarefa ou Definition of Done.
+
+### Adicionado
+
+- `engine/learning_engine.py` com dataset local bounded, agregação por `action + capability signature`, prior Beta(2,2), amostra mínima e recomendações explicáveis `baseline/learned/insufficient-data`;
+- Skill `learning-engine`, totalizando 15 Skills portáteis;
+- comandos `learning-status`, `learning-recommend` e `route --no-learning`;
+- atualização automática do aprendizado a partir de `record-execution`;
+- workflow dedicado `Validate V1.3 Learning Engine` e testes unitários/integração próprios;
+- contrato `core/LEARNING_ENGINE.md` para privacidade, confiança, portabilidade e relação com Execution Fabric.
+
+### Privacidade e segurança
+
+- `.factory/learning.json` fica fora do Git por padrão e não envia telemetria externa;
+- o schema persiste somente timestamp, classe técnica de ação, capacidades conhecidas, backend, outcome e duração opcional;
+- prompt, objetivo do usuário, nomes pessoais, código, conteúdo de arquivos, summaries/logs, task keys, secrets e URLs privadas não entram no dataset;
+- ações desconhecidas são reduzidas para `other`; backends/capacidades desconhecidos são rejeitados;
+- arquivo local de learning é tratado como entrada não confiável na leitura: campos extras são descartados, contexto é recalculado e eventos inválidos são ignorados.
+
+### Roteamento adaptativo
+
+- capacidade, disponibilidade/permissão, failure threshold da tarefa, segurança/risco e Definition of Done sempre precedem aprendizado;
+- dados insuficientes preservam a ordem baseline V1.2;
+- evidência suficiente pode reordenar somente backends leves já elegíveis;
+- `local_full` não pode ser promovido sobre backend leve capaz apenas por score histórico;
+- ausência do arquivo local de learning em outra máquina não bloqueia continuidade: a Factory usa o baseline V1.2 e reaprende.
+
+### Hardening durante revisão
+
+- duração usada para otimização mede somente execuções bem-sucedidas, evitando que um backend que falha rapidamente pareça mais eficiente;
+- leitura de `learning.json` adulterado foi sanitizada antes de qualquer agregação/status/recomendação;
+- fallback da tarefa atual continua separado do aprendizado histórico entre tarefas.
+
+### Evidência
+
+- `core/LEARNING_ENGINE.md`;
+- `engine/learning_engine.py`;
+- integração em `engine/execution_engine.py` e `scripts/factory.py`;
+- `skills/learning-engine/SKILL.md`;
+- `scripts/validate_v1_3.py`;
+- `tests/v1_3/`;
+- `.github/workflows/validate-v1-3-learning.yml`;
+- `research/V1.3_LEARNING_ENGINE_VALIDATION.md`.
+
 ## 1.2.0 — 2026-08-21
 
 Evolução da linha V1 que transforma a escolha de executor em uma camada executável por capacidades e consolida GitHub Actions/CI como backend real antes de qualquer dependência automática de executor local.
@@ -257,7 +303,7 @@ Promoção controlada dos aprendizados comprovados pelo piloto V0.3.
 - shadcn promovido como base visual do perfil `web-admin`;
 - ReUI reclassificado como opcional/seletivo por componente;
 - Better Auth promovido como primeira opção quando autenticação própria for necessária;
-- Drizzle promovido como primeira opção quando persistência própria for necessária;
+- Drizzle promovido como primeira opção quando houver persistência própria;
 - Zod, Vitest, Playwright e lint específico do Next promovidos no perfil;
 - SQLite/better-sqlite3 mantido como alternativa local/teste;
 - Biome mantido como complemento opcional.
