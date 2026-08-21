@@ -82,15 +82,25 @@ export function StudentRegistration() {
   const [hydrated, setHydrated] = useState(false);
 
   useEffect(() => {
-    const result = readStudents();
+    let cancelled = false;
 
-    if (result.ok) {
-      setStudents(result.students);
-    } else {
-      setStorageError(result.message);
-    }
+    queueMicrotask(() => {
+      if (cancelled) return;
 
-    setHydrated(true);
+      const result = readStudents();
+
+      if (result.ok) {
+        setStudents(result.students);
+      } else {
+        setStorageError(result.message);
+      }
+
+      setHydrated(true);
+    });
+
+    return () => {
+      cancelled = true;
+    };
   }, []);
 
   const countLabel = useMemo(
