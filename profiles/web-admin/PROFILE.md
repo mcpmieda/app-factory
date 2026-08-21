@@ -1,6 +1,6 @@
 # Web Admin Profile
 
-Status: `validated-v0.4`
+Status: `v1-rc`
 
 Este perfil consolida somente decisões comprovadas pelo piloto V0.3. Ele não é uma stack universal para todo software.
 
@@ -31,9 +31,12 @@ Quando o produto exigir login/identidade própria, preferir **Better Auth** como
 Não instalar auth em projeto que não precisa de identidade.
 
 Regras:
+
 - validar sessão no servidor para operações protegidas;
 - não confiar apenas em proteção visual/cliente;
 - provider e estratégia de sessão devem considerar o ambiente real.
+- o baseline testado do recipe fixa `better-auth` e a CLI correspondente `auth` em 1.7.1;
+- executar o check de contrato do schema antes de revisar upgrade e criar migration nova em vez de reescrever histórico aplicado.
 
 ### Persistência
 
@@ -42,13 +45,15 @@ Quando o produto possuir dados próprios, preferir **Drizzle** como primeira op�
 O banco não é fixado universalmente. Escolher provider conforme deploy, volume, concorrência, custo e operação.
 
 - SQLite/better-sqlite3: alternativa local/teste e aplicações realmente adequadas a arquivo local;
-- produção/serverless: escolher provider apropriado ao ambiente antes de gerar a arquitetura definitiva.
+- PostgreSQL: recipe de produção validado com `DATABASE_URL`, migrations versionadas e sem persistência no filesystem local;
+- outros destinos de produção/serverless: escolher provider apropriado ao ambiente antes de gerar a arquitetura definitiva.
 
 ### ReUI
 
 **Opcional e seletivo.** Usar quando um componente avançado, como Data Grid, filtros complexos, Kanban, calendário ou outro padrão administrativo, reduzir trabalho de forma clara.
 
 Após instalar via registry:
+
 - revisar todos os arquivos adicionados;
 - remover módulos/dependências não usados;
 - executar lint/typecheck/testes;
@@ -124,6 +129,8 @@ Quando os scripts existirem:
 10. desktop e viewport móvel;
 11. console sem erro relevante.
 
+Mudanças de recipe também exigem geração limpa direta de cada caminho de provider/dependência. PostgreSQL/Auth deve exercitar serviço PostgreSQL efêmero real, login/sessão, migration/query e smoke de produção com `next start`.
+
 ## Reprodutibilidade
 
 - package manager/linha relevante deve ser consistente entre lockfile, desenvolvimento e CI;
@@ -141,4 +148,4 @@ Quando os scripts existirem:
 
 ## Evidência de origem
 
-Perfil derivado de `research/V0.3_WEB_ADMIN_PILOT.md` e do PR #6, que passaram por execução local, revisão ChatGPT e GitHub Actions reproduzível antes da promoção.
+Perfil derivado de `research/V0.3_WEB_ADMIN_PILOT.md`, da validação reutilizável em `research/V0.5_WEB_ADMIN_STARTER_VALIDATION.md` e do hardening PostgreSQL/recipes em `research/V0.6_WEB_ADMIN_HARDENING.md`.

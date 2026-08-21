@@ -27,13 +27,13 @@ const recipesDirectory = join(
   "web-admin",
   "recipes",
 );
-const factoryBaseline = "v0.5";
+const factoryBaseline = "v0.6";
 
 function usage() {
   return [
     "Usage: node scripts/create-web-admin.mjs <destination> <name> [--recipe <id>]",
     "",
-    "Recipes: auth-better-auth, database-drizzle, advanced-ui-reui",
+    "Recipes: auth-better-auth, database-drizzle, database-drizzle-postgres, advanced-ui-reui",
   ].join("\n");
 }
 
@@ -141,18 +141,46 @@ async function readRecipe(id) {
 }
 
 async function resolveRecipes(requestedIds) {
+  const requested = await Promise.all(requestedIds.map(readRecipe));
   const resolved = [];
   const seen = new Set();
 
-  async function visit(id) {
-    if (seen.has(id)) return;
-    const recipe = await readRecipe(id);
+  function requestedProvider(requirement) {
+    const providers = requested.filter(
+      (recipe) =>
+        recipe.id === requirement || recipe.provides?.includes(requirement),
+    );
+    if (providers.length > 1) {
+      throw new Error(
+        `Multiple requested recipes provide ${requirement}: ${providers
+          .map((recipe) => recipe.id)
+          .join(", ")}`,
+      );
+    }
+    return providers[0];
+  }
+
+  async function visit(recipeOrId) {
+    const recipe =
+      typeof recipeOrId === "string"
+        ? (requestedProvider(recipeOrId) ?? (await readRecipe(recipeOrId)))
+        : recipeOrId;
+    if (seen.has(recipe.id)) return;
     for (const requirement of recipe.requires ?? []) await visit(requirement);
-    seen.add(id);
+    seen.add(recipe.id);
     resolved.push(recipe);
   }
 
-  for (const id of requestedIds) await visit(id);
+  for (const recipe of requested) await visit(recipe);
+
+  const resolvedIds = new Set(resolved.map((recipe) => recipe.id));
+  for (const recipe of resolved) {
+    const conflict = recipe.conflicts?.find((id) => resolvedIds.has(id));
+    if (conflict) {
+      throw new Error(`Recipe ${recipe.id} conflicts with ${conflict}`);
+    }
+  }
+
   return resolved;
 }
 
@@ -168,8 +196,7 @@ async function replaceInFile(path, replacements) {
   await writeFile(path, contents, "utf8");
 }
 
-async function applyRecipe(recipe, destination) {
-  const overlay = join(recipe.directory, "template");
+async function applyRecipeLayer(configuration, overlay, destination) {
   try {
     await cp(overlay, destination, { recursive: true, force: true });
   } catch (error) {
@@ -178,16 +205,38 @@ async function applyRecipe(recipe, destination) {
 
   await updateJson(join(destination, "package.json"), (packageJson) => ({
     ...packageJson,
-    scripts: { ...packageJson.scripts, ...(recipe.scripts ?? {}) },
+    scripts: { ...packageJson.scripts, ...(configuration.scripts ?? {}) },
     dependencies: {
       ...packageJson.dependencies,
-      ...(recipe.dependencies ?? {}),
+      ...(configuration.dependencies ?? {}),
     },
     devDependencies: {
       ...packageJson.devDependencies,
-      ...(recipe.devDependencies ?? {}),
+      ...(configuration.devDependencies ?? {}),
     },
   }));
+}
+
+async function applyRecipe(recipe, destination) {
+  await applyRecipeLayer(
+    recipe,
+    join(recipe.directory, "template"),
+    destination,
+  );
+}
+
+async function applyRecipeVariants(recipes, destination) {
+  const selectedIds = new Set(recipes.map((recipe) => recipe.id));
+  for (const recipe of recipes) {
+    for (const variant of recipe.variants ?? []) {
+      if (!selectedIds.has(variant.when)) continue;
+      await applyRecipeLayer(
+        variant,
+        join(recipe.directory, variant.template),
+        destination,
+      );
+    }
+  }
 }
 
 function refreshLockfile(destination) {
@@ -239,6 +288,7 @@ async function main() {
     await rm(join(destination, ".factory-template.json"), { force: true });
 
     for (const recipe of recipes) await applyRecipe(recipe, destination);
+    await applyRecipeVariants(recipes, destination);
 
     await updateJson(join(destination, "package.json"), (packageJson) => ({
       ...packageJson,
@@ -259,6 +309,8 @@ async function main() {
       ["Web Admin Starter", input.name],
       ["web-admin-starter", packageName],
     ];
+    const recipeIds = recipes.map((recipe) => recipe.id);
+    const formattedRecipeIds = `[${recipeIds.map((id) => JSON.stringify(id)).join(", ")}]`;
     for (const file of [
       "README.md",
       "AGENTS.md",
@@ -269,21 +321,34 @@ async function main() {
       await replaceInFile(join(destination, file), replacements);
     }
 
-    await writeFile(
-      join(destination, ".app-factory.json"),
-      `${JSON.stringify(
-        {
-          profile: "web-admin",
-          factoryBaseline,
-          generatedAt: new Date().toISOString(),
-          source: "starters/web-admin/template",
-          recipes: recipes.map((recipe) => recipe.id),
-        },
-        null,
-        2,
-      )}\n`,
-      "utf8",
-    );
+    await replaceInFile(join(destination, "PROJECT_STATE.md"), [
+      [
+        "- authentication: not activated;",
+        recipeIds.includes("auth-better-auth")
+          ? "- authentication: Better Auth activated;"
+          : "- authentication: not activated;",
+      ],
+      [
+        "- persistence: not activated;",
+        recipeIds.includes("database-drizzle-postgres")
+          ? "- persistence: Drizzle + PostgreSQL activated;"
+          : recipeIds.includes("database-drizzle")
+            ? "- persistence: Drizzle + local SQLite activated;"
+            : "- persistence: not activated;",
+      ],
+    ]);
+
+    const manifest = [
+      "{",
+      '  "profile": "web-admin",',
+      `  "factoryBaseline": ${JSON.stringify(factoryBaseline)},`,
+      `  "generatedAt": ${JSON.stringify(new Date().toISOString())},`,
+      '  "source": "starters/web-admin/template",',
+      `  "recipes": ${formattedRecipeIds}`,
+      "}",
+      "",
+    ].join("\n");
+    await writeFile(join(destination, ".app-factory.json"), manifest, "utf8");
 
     if (recipes.length > 0) refreshLockfile(destination);
     completed = true;

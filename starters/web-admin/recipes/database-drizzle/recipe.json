@@ -13,6 +13,7 @@
     "tsx": "4.21.0"
   },
   "scripts": {
+    "db:check": "drizzle-kit check",
     "db:generate": "drizzle-kit generate",
     "db:migrate": "tsx scripts/migrate.ts",
     "setup": "tsx scripts/setup-local-env.ts && npm run db:migrate"

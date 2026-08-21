@@ -56,7 +56,7 @@ A IA deve trabalhar para atingir o objetivo do usuário, não apenas obedecer li
 
 ## Perfis
 
-### web-admin — validado V0.4
+### web-admin — candidato V1 (`v1-rc`)
 
 Para sistemas administrativos, CRUDs, dashboards e ferramentas internas.
 
@@ -78,6 +78,7 @@ Módulos condicionais comprovados:
 - Drizzle quando houver persistência própria;
 - ReUI seletivo para componentes avançados;
 - SQLite/better-sqlite3 apenas como alternativa local/teste;
+- PostgreSQL como caminho de produção validado por recipe, migrations e CI efêmero;
 - Biome opcional/complementar.
 
 O perfil completo está em `profiles/web-admin/PROFILE.md`.
@@ -131,6 +132,6 @@ app-factory/
 
 ## Estado
 
-Versão de trabalho: `0.5-web-admin-starter`
+Versão de trabalho: `0.6-web-admin-hardening`
 
-O perfil V0.4 agora possui starter real, gerador e recipes condicionais. A V0.5 também inclui um segundo app de patrimônio escolar fictício criado pelo gerador; a revisão do draft PR e dos gates reproduzíveis ainda precede qualquer declaração de V1 estável.
+O perfil `web-admin` possui starter real, gerador e recipes condicionais testados diretamente. A V0.6 adiciona PostgreSQL/Auth em banco real efêmero, contrato executável de schema e smoke de produção; o perfil é candidato `v1-rc`, ainda não V1 estável nem deploy público realizado.

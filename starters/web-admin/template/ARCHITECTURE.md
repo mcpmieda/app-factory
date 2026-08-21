@@ -11,7 +11,8 @@
 ## Optional modules
 
 - `auth-better-auth`: identity and protected operations;
-- `database-drizzle`: project-owned persistence, with provider selected for the target environment;
+- `database-drizzle`: local/test SQLite persistence;
+- `database-drizzle-postgres`: PostgreSQL persistence for production-style environments;
 - `advanced-ui-reui`: selective advanced administrative components.
 
 Do not add client state, form, observability or monorepo layers until a concrete flow needs them.

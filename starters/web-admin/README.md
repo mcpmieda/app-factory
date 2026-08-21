@@ -1,4 +1,4 @@
-# web-admin starter — V0.5
+# web-admin starter — V0.6
 
 Real, clean and composable starter derived from `profiles/web-admin/PROFILE.md`. The V0.3 pilot remains evidence; it was not copied wholesale into this template.
 
@@ -14,11 +14,11 @@ Optional recipes are selected explicitly:
 
 ```bash
 node scripts/create-web-admin.mjs <destination> <name> \
-  --recipe database-drizzle \
+  --recipe database-drizzle-postgres \
   --recipe auth-better-auth
 ```
 
-`auth-better-auth` automatically includes its `database-drizzle` requirement. The generator:
+`auth-better-auth` automatically includes its default `database-drizzle` requirement. An explicit provider such as `database-drizzle-postgres` satisfies that capability instead. The generator:
 
 - refuses a non-empty destination without changing it;
 - excludes dependencies, caches, `.env`, databases, coverage and browser artifacts;
@@ -26,6 +26,7 @@ node scripts/create-web-admin.mjs <destination> <name> \
 - creates `AGENTS.md`, `PROJECT_STATE.md`, `PRODUCT.md`, `ARCHITECTURE.md` and `.app-factory.json`;
 - records profile, baseline and applied recipes;
 - normalizes recipe lockfiles with npm 10.9.9.
+- rejects unknown recipes, non-empty destinations and conflicting database providers before writing.
 
 ## Clean template
 
@@ -45,8 +46,11 @@ It does **not** contain Better Auth, Drizzle/database provider, ReUI, Biome, for
 See `recipes/README.md`:
 
 - `database-drizzle`: installable Drizzle + local SQLite validation overlay;
+- `database-drizzle-postgres`: production-style Drizzle + PostgreSQL overlay with migrations, database/auth smoke tests and `next start` verification;
 - `auth-better-auth`: installable Better Auth overlay with server session helpers and safe local seed;
 - `advanced-ui-reui`: selective integration/audit guide; no bulk dependency installation.
+
+The Auth recipe pins the matching Better Auth runtime/CLI at 1.7.1 and includes `npm run auth:schema:check`. Its short maintenance contract explains how to review schema changes and forbids automatic destructive migrations.
 
 ## Validation example
 
