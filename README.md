@@ -9,15 +9,17 @@ Transformar uma ideia em software funcional usando um método reutilizável que 
 A App Factory não é um prompt gigante. Ela combina:
 
 - entrada universal por intenção de software;
+- **Context Engine incremental** para recuperar repositórios sem releitura integral desnecessária;
+- **Autonomy Engine** para calcular e registrar o próximo passo técnico;
 - seleção automática de perfil validado quando aplicável;
 - `AGENTS.md` como mapa operacional;
 - Core curto e modular;
-- Skills especializadas carregadas conforme a tarefa;
+- 13 Skills especializadas carregadas conforme a tarefa;
 - profundidade proporcional por escala XS/S/M/L;
 - templates e starters componíveis;
 - políticas de UI, **Living UI / Semantic Motion**, dependências e Git;
-- roteamento entre ChatGPT, Codex e outros agentes;
-- verificações automáticas e definição objetiva de pronto;
+- roteamento por capacidade, priorizando agente atual + GitHub/CI antes de handoff local;
+- verificações automáticas, repair loop limitado e definição objetiva de pronto;
 - adaptadores finos por agente;
 - GitHub como fonte de verdade para continuidade.
 
@@ -27,66 +29,117 @@ O usuário pode começar somente com o resultado, por exemplo:
 
 > Quero criar um sistema de patrimônio para a escola.
 
-Ele não precisa dizer "use a App Factory", escolher framework, descobrir Skills, selecionar perfil ou decidir sozinho entre ChatGPT e Codex.
+Ele não precisa dizer "use a App Factory", escolher framework, descobrir Skills, selecionar perfil, escolher ChatGPT/Codex ou pedir manualmente cada próxima fase.
 
-A Factory deve reconhecer a intenção, entender o produto, classificar escala/risco, selecionar um perfil já validado quando existir e fazer as escolhas técnicas rotineiras por evidência.
+A Factory deve reconhecer a intenção, recuperar contexto quando houver projeto existente, entender o produto, classificar escala/risco, selecionar perfil validado, decidir a próxima ação e executar as escolhas técnicas rotineiras por evidência.
 
-Para o exemplo de patrimônio, o roteador pode reconhecer o perfil `web-admin` e usar seus defaults comprovados, ativando autenticação, banco ou ReUI somente se o produto realmente precisar.
+Em um projeto existente, a experiência desejada é:
 
-Interfaces recebem também um **Motion Profile** independente do design system. O default contextual é `ambient`: movimento vivo e semântico quando ajuda, atenuado automaticamente em leitura longa, telas densas, acessibilidade ou desempenho limitado.
+```text
+pedido do usuário
+→ resume/context
+→ next
+→ implementar
+→ verificar
+→ reparar se necessário
+→ revisar
+→ entregar
+```
+
+O usuário só volta ao loop quando existir uma decisão genuinamente humana, dado/credencial indisponível, custo ou risco relevante.
+
+## V1.1 — autonomia executável
+
+### Context Engine
+
+`engine/context_engine.py` cria `.factory/context/repo-map.json` e `SUMMARY.md` com:
+
+- SHA-256 por arquivo e fingerprint global;
+- cache incremental de metadados;
+- delta `added / changed / removed`;
+- stack, manifests, linguagens, símbolos e imports úteis à navegação;
+- exclusão padrão de `.env*`, chaves/credenciais, dependências, builds, caches, binários e arquivos grandes.
+
+O mapa é cache de navegação. Arquivos reais e GitHub continuam sendo a autoridade.
+
+### Autonomy Engine
+
+`engine/autonomy_engine.py` mantém `.factory/state.json` e transições entre:
+
+`context → planning → implementation → verification → repair → review → delivery → done`
+
+O repair loop tem limite padrão de 3 tentativas. Ao estagnar, a Factory deve mudar estratégia/executor antes de envolver o usuário.
+
+### Roteamento atual
+
+A V1.1 deixou de usar a regra simplista "precisa de testes/build = Codex". A ordem agora é:
+
+1. agente atual + ferramentas disponíveis;
+2. GitHub + CI para prova reproduzível;
+3. executor leve/sandbox quando disponível;
+4. Codex/local quando browser/runtime/debug/migration interativos ou outra capacidade local realmente exigirem.
+
+Definition of Done não é reduzida para economizar executor.
+
+## Comandos internos
+
+O usuário normalmente não precisa executá-los; são a interface portátil entre agentes:
+
+```text
+python scripts/factory.py --root <projeto> context
+python scripts/factory.py --root <projeto> init --goal "..."
+python scripts/factory.py --root <projeto> status
+python scripts/factory.py --root <projeto> next
+python scripts/factory.py --root <projeto> resume
+python scripts/factory.py --root <projeto> record <evento>
+```
 
 ## Princípio central
 
-A IA deve trabalhar para atingir o objetivo do usuário, não apenas obedecer literalmente ao pedido. Deve fazer sozinha tudo que puder com segurança, reduzir cliques e conhecimento técnico exigido do usuário, recomendar caminhos melhores quando existirem e pedir intervenção humana somente quando houver decisão de negócio, preferência subjetiva, autorização de risco ou dado realmente indisponível.
+A IA deve trabalhar para atingir o objetivo do usuário, não apenas obedecer literalmente ao pedido. Deve fazer sozinha tudo que puder com segurança, reduzir cliques e conhecimento técnico exigido do usuário, recomendar caminhos melhores quando existirem e pedir intervenção humana somente quando houver decisão de negócio, preferência subjetiva, custo, autorização de risco, credencial/dado realmente indisponível ou decisão legal/organizacional.
 
 ## Comece por aqui
 
-Para usar no Codex 0.149 a partir de um checkout limpo:
+Para usar como plugin no Codex 0.149 a partir de um checkout limpo:
 
 ```text
 codex --enable plugins plugin marketplace add <raiz-do-app-factory>
 codex --enable plugins plugin add app-factory@app-factory-local
 ```
 
-Depois, basta descrever o software em linguagem comum — por exemplo, `Quero criar um sistema simples para controlar empréstimos`. A palavra “App Factory” não é necessária. Para gerar diretamente o baseline administrativo validado, use `node scripts/create-web-admin.mjs <destino> <nome> [--recipe <id>]`.
+Depois basta descrever o software em linguagem comum. A palavra “App Factory” não é necessária.
+
+Para navegar no núcleo:
 
 1. `AGENTS.md` — mapa para agentes.
-2. `core/ENTRYPOINT.md` — ativação automática por intenção e seleção de perfil.
-3. `skills/factory-router/SKILL.md` — roteador universal.
-4. `profiles/README.md` — perfis validados por classe de software.
-5. `profiles/*/PROFILE.md` — defaults condicionais comprovados por família.
-6. `ui/UI_POLICY.md` — seleção e consistência de interface.
-7. `ui/MOTION_POLICY.md` — Living UI / Semantic Motion independente de framework.
-8. `APP_FACTORY_PLAN.md` — visão, fases e decisões.
-9. `core/PRINCIPLES.md` — princípios universais.
-10. `core/HUMAN_INTERACTION.md` — o que a IA faz sozinha e o que depende do usuário.
-11. `core/PROJECT_SCALE.md` — profundidade XS/S/M/L.
-12. `core/TASK_ROUTER.md` — quando usar ChatGPT, Codex ou outro agente.
-13. `core/WORKFLOW.md` — ciclo de projeto novo e manutenção.
-14. `core/DEFINITION_OF_DONE.md` — como provar que terminou.
-15. `PORTABILITY.md` — continuidade entre agentes.
-16. `docs/CODEX_PLUGIN.md` — adaptador Codex validado em piloto e auditoria final.
+2. `core/ENTRYPOINT.md` — ativação automática por intenção.
+3. `core/CONTEXT_ENGINE.md` — recuperação incremental de repositório.
+4. `core/AUTONOMY_ENGINE.md` — estado e próxima ação.
+5. `skills/factory-router/SKILL.md` — roteador universal.
+6. `core/TASK_ROUTER.md` — roteamento por capacidade/executor.
+7. `profiles/README.md` e `profiles/*/PROFILE.md` — defaults condicionais comprovados.
+8. `ui/UI_POLICY.md` e `ui/MOTION_POLICY.md` — interface e Living UI.
+9. `core/HUMAN_INTERACTION.md` — limites da intervenção humana.
+10. `core/DEFINITION_OF_DONE.md` — prova de conclusão.
+11. `PORTABILITY.md` — continuidade entre agentes.
+12. `docs/CODEX_PLUGIN.md` — adaptador Codex.
 
 ## Living UI / Semantic Motion
 
-O design system e o movimento são decisões separadas.
-
-Um projeto pode usar HeroUI, shadcn, ReUI, componentes próprios ou outro kit e ainda seguir a mesma linguagem de movimento da Factory.
+O design system e o movimento são decisões separadas. Um projeto pode usar HeroUI, shadcn, ReUI, componentes próprios ou outro kit e ainda seguir a mesma linguagem de movimento.
 
 Motion Profiles:
 
 - `none` — sem movimento não essencial;
 - `subtle` — microinterações/transições discretas;
-- `ambient` — **default contextual**: microinterações, feedback semântico e atmosfera viva onde apropriado;
+- `ambient` — **default contextual**: feedback semântico e atmosfera viva onde apropriado;
 - `expressive` — motion mais presente quando faz parte da identidade/experiência.
 
-A política cobre seis funções: ambiente, interação, dados, estado, atenção e navegação. `prefers-reduced-motion` é obrigatório para movimento não essencial. Ações importantes podem receber atenção temporária; gráficos podem animar mudanças reais; animação que não ajuda a compreender ou usar a interface deve ser removida.
+`prefers-reduced-motion` é obrigatório para movimento não essencial.
 
 ## Perfis
 
 ### web-admin — V1 estável (`v1`)
-
-Para sistemas administrativos, CRUDs, dashboards e ferramentas internas.
 
 Base comprovada:
 
@@ -109,80 +162,63 @@ Módulos condicionais comprovados:
 - PostgreSQL como caminho de produção validado por recipe, migrations e CI efêmero;
 - Biome opcional/complementar.
 
-O perfil herda `Motion Profile: ambient`, reduzindo para comportamento `subtle` em tabelas e telas muito densas quando necessário.
-
-O perfil completo está em `profiles/web-admin/PROFILE.md`.
+HeroUI continua uma escolha visual alternativa válida e explícita; não há mistura automática de design systems.
 
 ### Perfis universais (`validated`)
 
-`website`, `web-app`, `chrome-extension` e `automation` possuem um piloto completo e gates próprios. Os perfis registram contratos condicionais; Astro, Vite/React, Vite vanilla e Python foram adequados aos pilotos, mas não são stacks universais congeladas. Veja `research/V0.9_UNIVERSAL_VALIDATION.md`.
+`website`, `web-app`, `chrome-extension` e `automation` possuem piloto completo e gates próprios. Seus frameworks de piloto são evidência, não stacks universais congeladas.
 
 ## Estrutura atual
 
 ```text
 app-factory/
 ├── AGENTS.md
-├── APP_FACTORY_PLAN.md
-├── PORTABILITY.md
-├── .codex-plugin/
-├── .agents/plugins/
+├── PROJECT_STATE.md
 ├── core/
+│   ├── CONTEXT_ENGINE.md
+│   └── AUTONOMY_ENGINE.md
+├── engine/
+│   ├── context_engine.py
+│   └── autonomy_engine.py
 ├── skills/
 ├── profiles/
-│   ├── web-admin/
-│   ├── website/
-│   ├── web-app/
-│   ├── chrome-extension/
-│   └── automation/
-├── policies/
 ├── templates/
 ├── starters/
-│   └── web-admin/
 ├── ui/
-│   ├── UI_POLICY.md
-│   └── MOTION_POLICY.md
-├── registry/
-├── pilots/
-│   └── web-admin/
+├── policies/
 ├── examples/
-│   ├── website-pilot/
-│   ├── web-app-pilot/
-│   ├── chrome-extension-pilot/
-│   └── automation-pilot/
+├── projects/
 ├── audits/
-│   └── v1-final/
 ├── research/
 └── scripts/
+    ├── factory.py
+    └── validate_v1_1.py
 ```
 
 ## Decisões consolidadas
 
-- A intenção de criar/evoluir software aciona a Factory sem palavra-chave manual.
-- A Factory pode selecionar um perfil validado automaticamente depois de entender o produto.
-- Perfil não é dogma: requisitos locais têm precedência e módulos opcionais só entram quando necessários.
-- GitHub é a fonte técnica de verdade.
-- Novos projetos recebem um `AGENTS.md` que aponta para a Factory sem duplicar todo o Core.
-- A Factory orienta quando usar ChatGPT e quando usar Codex.
-- ChatGPT é preferido para produto, pesquisa, arquitetura conceitual, documentação e revisão.
-- Codex é preferido para execução local, múltiplos arquivos, terminal, dependências, testes, build, navegador, debugging e migrations.
-- A Factory minimiza trabalho manual do usuário e toma decisões técnicas rotineiras autonomamente.
-- A profundidade do processo cresce com escala e risco.
-- No perfil `web-admin`, shadcn é a base e ReUI é seletivo por componente.
-- HeroUI continua perfil visual alternativo, não mistura automática.
-- Living UI / Semantic Motion é transversal e não depende do design system.
-- `ambient` é o Motion Profile default contextual, com atenuação automática quando o contexto pede sobriedade, foco, desempenho ou acessibilidade.
-- Pesquisar e reutilizar antes de construir do zero.
-- Escopo fechado significa fatia funcional verificável, não microtarefas.
-- Baseline/diff/rollback continuam centrais para manutenção de sistemas existentes.
-- Regras fortes devem virar testes, scripts ou CI quando isso reduzir risco.
-- O núcleo permanece portátil entre agentes.
-- A integração Codex foi validada como plugin fino, reutilizando as mesmas Skills sem duplicação.
-- Teste local não substitui instalação limpa e CI reproduzível.
+- intenção de software aciona a Factory sem palavra-chave manual;
+- GitHub é a fonte técnica de verdade;
+- Context Engine reduz releitura, mas não substitui arquivos reais;
+- Autonomy Engine decide continuidade técnica sem o usuário conduzir fases;
+- current-agent + GitHub/CI vem antes de handoff quando fornece prova suficiente;
+- Codex/local é executor de capacidade, não centro obrigatório da arquitetura;
+- falhas entram em repair loop limitado;
+- perfil não é dogma: requisitos locais têm precedência;
+- Living UI / Semantic Motion é transversal e independente do design system;
+- pesquisar e reutilizar antes de construir do zero;
+- escopo fechado significa fatia funcional verificável, não microtarefas;
+- baseline/diff/rollback continuam centrais para manutenção;
+- regras fortes devem virar testes, scripts ou CI quando isso reduzir risco;
+- núcleo e estado operacional permanecem portáveis entre agentes;
+- teste local não substitui instalação limpa e CI reproduzível.
 
 ## Estado
 
-Versão estável: **`1.0.0` — App Factory V1.0**.
+Versão estável: **`1.1.0` — App Factory V1.1**.
 
-A auditoria final comprovou bootstrap isolado do plugin, roteamento por pedido comum, criação real de um novo sistema do zero, persistência e regras de negócio, desktop/mobile/reduced-motion, continuidade por segundo agente sem contexto e recuperação após regressão controlada. O perfil `web-admin` está em `v1`; os perfis `website`, `web-app`, `chrome-extension` e `automation` permanecem `validated` até acumularem mais evidência.
+A V1.1 preserva toda a evidência da V1.0 e adiciona Context Engine + Autonomy Engine. O gate dedicado comprovou máquina de estados, retomada sem conversa anterior, mudança externa de contexto, limite de reparo e cache incremental. No próprio repositório da Factory, a segunda passagem reutilizou os metadados dos **504 arquivos mapeados** e reprocessou **0**.
 
-Escopos ainda não validados — como mobile nativo, desktop nativo, jogos e infraestrutura cloud complexa — ficam para versões posteriores e não são promessa da V1.0.
+A tag/release `v1.0.0` permanece como baseline histórica da primeira release estável. Uma eventual tag/release `v1.1.0` é etapa de publicação separada do merge de código.
+
+Escopos ainda não validados — como mobile nativo, desktop nativo, jogos e infraestrutura cloud complexa — não são promessa automática desta versão.
