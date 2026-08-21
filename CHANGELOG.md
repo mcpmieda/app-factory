@@ -1,5 +1,51 @@
 # Changelog
 
+## 1.4.0 — 2026-08-21
+
+Evolução da linha V1 focada em fechar o gap entre **software que passa nos gates** e **software que corresponde objetivamente à intenção**.
+
+### Semantic Verification
+
+- novo `core/SEMANTIC_VERIFICATION.md` com processo proporcional: trabalho funcional relevante recebe contrato verificável antes do código; docs/chores e refactors pequenos sem mudança observável permanecem leves;
+- novo `engine/semantic_verification.py` com schema estruturado para objetivo, escopo, invariantes, contratos e critérios `AC-###` em `given / when / then`;
+- `specs/semantic-contract.json` vira alvo versionável para trabalho semântico relevante;
+- `specs/verification-plan.json` é derivado da spec e exige que cada critério `must` aponte para evidência executável/gate declarado;
+- `specs/review-evidence.json` registra resultado de revisão e fingerprints da spec, plano e conteúdo revisado;
+- mudanças posteriores em spec/plano/conteúdo tornam a revisão anterior stale.
+
+### Revisão desacoplada
+
+- novo `engine/review_packet.py` produz pacote `clean-context` com spec + plano + diff atual, sem incorporar raciocínio ou aprovação anterior da implementação;
+- risco médio/alto não aceita `deterministic-ci` como único reviewer semântico: requer `independent-agent` quando disponível ou `clean-context` provider-neutral;
+- pacote de revisão cobre commits e mudanças tracked atuais do working tree e exclui `specs/review-evidence.json` do diff para não autoalimentar a revisão.
+
+### Autonomia e testes derivados da intenção
+
+- Autonomy Engine ganha fase `specification` e evento `spec-ready` quando `spec_required=true`;
+- `verification-pass` é rejeitado se a rastreabilidade semântica exigida estiver inválida;
+- `review-pass` é rejeitado se o review evidence estiver ausente, stale ou inválido;
+- fluxo legado continua disponível para trabalho que não exige spec;
+- `app-planner`, `verification`, `factory-router`, `ENTRYPOINT`, `WORKFLOW` e `DEFINITION_OF_DONE` passam a derivar critérios/testes da intenção antes da implementação, sem transformar o schema em formulário para o usuário;
+- nova Skill `semantic-verification`, totalizando 16 Skills portáteis;
+- CLI adiciona `--require-spec`, `spec-template`, `spec-validate`, `verification-plan-init`, `semantic-status`, `review-packet` e `record-semantic-review`.
+
+### Complementos avaliados
+
+- visual regression passa a ser gate condicional (`test:visual`) quando existe baseline visual estável e regressão é risco material, evitando snapshots frágeis em UI exploratória;
+- call graph universal superficial não é promovido: análise semântica profunda de dependência precisa de piloto por linguagem/stack;
+- typecheck/build/lockfile/runtime continuam defesa principal contra APIs inexistentes; integrações pouco tipadas ou dependentes de runtime devem receber smoke/integration evidence específica.
+
+### Evidência
+
+- `core/SEMANTIC_VERIFICATION.md`;
+- `engine/semantic_verification.py`;
+- `engine/review_packet.py`;
+- integração em `engine/autonomy_engine.py`, `engine/ci_executor.py` e `scripts/factory.py`;
+- `skills/semantic-verification/SKILL.md`;
+- `tests/v1_4/`;
+- `scripts/validate_v1_4.py`;
+- `.github/workflows/validate-v1-4-semantic.yml`.
+
 ## 1.3.0 — 2026-08-21
 
 Evolução da linha V1 que adiciona aprendizado adaptativo local sobre a Execution Fabric, sem permitir que histórico ultrapasse capacidade, segurança, fallback da tarefa ou Definition of Done.
@@ -65,7 +111,7 @@ Evolução da linha V1 que transforma a escolha de executor em uma camada execut
 
 - `current_agent` passa a ser formalmente o primeiro backend quando possui todas as capacidades necessárias;
 - GitHub Actions/CI passa a ser backend preferencial para teste/build/headless e outras provas determinísticas;
-- Codex deixa de existir como dependência arquitetural: pode ser um `local_full` quando capacidade interativa/local for realmente exigida;
+- Codex deixa de existir como dependência arquitetural: pode ser um `local_full` quando capacidade interativa/local for realmente necessária;
 - starter `web-admin`, plugin e documentação operacional passam a registrar baseline `v1.2.0`.
 
 ### Validado
