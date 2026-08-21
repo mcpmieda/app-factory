@@ -83,6 +83,47 @@ def context_key(action: str, capabilities: Iterable[str]) -> str:
     return f"{safe_action}|{','.join(safe_capabilities)}"
 
 
+def valid_timestamp(value: Any) -> str | None:
+    if not isinstance(value, str) or len(value) > 40:
+        return None
+    try:
+        datetime.fromisoformat(value.replace("Z", "+00:00"))
+    except ValueError:
+        return None
+    return value
+
+
+def sanitize_loaded_event(value: Any) -> dict[str, Any] | None:
+    """Treat persisted learning as untrusted local input and reconstruct the safe schema."""
+    if not isinstance(value, dict):
+        return None
+    timestamp = valid_timestamp(value.get("at"))
+    backend_raw = value.get("backend")
+    outcome = value.get("outcome")
+    capabilities_raw = value.get("capabilities")
+    if timestamp is None or not isinstance(backend_raw, str) or outcome not in ALLOWED_OUTCOMES:
+        return None
+    if not isinstance(capabilities_raw, list):
+        return None
+    try:
+        backend = normalize_backend(backend_raw)
+        capabilities = normalize_capabilities(capabilities_raw)
+    except ValueError:
+        return None
+    action = normalize_action(str(value.get("action", "other")))
+    duration = value.get("duration_ms")
+    safe_duration = max(0, min(duration, 86_400_000)) if type(duration) is int else None
+    return {
+        "at": timestamp,
+        "context": context_key(action, capabilities),
+        "action": action,
+        "capabilities": list(capabilities),
+        "backend": backend,
+        "outcome": outcome,
+        "duration_ms": safe_duration,
+    }
+
+
 def read_learning_state(root: Path | str) -> dict[str, Any]:
     path = learning_path(root)
     try:
@@ -91,11 +132,18 @@ def read_learning_state(root: Path | str) -> dict[str, Any]:
         value = None
     if not isinstance(value, dict):
         return {"schema_version": LEARNING_SCHEMA_VERSION, "events": []}
-    events = value.get("events")
-    if not isinstance(events, list):
-        value["events"] = []
-    value["schema_version"] = LEARNING_SCHEMA_VERSION
-    return value
+    raw_events = value.get("events")
+    events = []
+    if isinstance(raw_events, list):
+        for raw in raw_events[-EVENT_LIMIT:]:
+            event = sanitize_loaded_event(raw)
+            if event is not None:
+                events.append(event)
+    state: dict[str, Any] = {"schema_version": LEARNING_SCHEMA_VERSION, "events": events}
+    updated_at = valid_timestamp(value.get("updated_at"))
+    if updated_at:
+        state["updated_at"] = updated_at
+    return state
 
 
 def write_learning_state(root: Path | str, state: dict[str, Any]) -> None:
@@ -161,7 +209,7 @@ def aggregate_context(
             continue
         bucket = buckets.setdefault(
             backend,
-            {"successes": 0, "failures": 0, "blocked": 0, "cancelled": 0, "durations_ms": []},
+            {"successes": 0, "failures": 0, "blocked": 0, "cancelled": 0, "success_durations_ms": []},
         )
         outcome = event.get("outcome")
         if outcome == "success":
@@ -173,13 +221,13 @@ def aggregate_context(
         elif outcome == "cancelled":
             bucket["cancelled"] += 1
         duration = event.get("duration_ms")
-        if isinstance(duration, int) and duration >= 0 and outcome in {"success", "failure"}:
-            bucket["durations_ms"].append(duration)
+        if type(duration) is int and duration >= 0 and outcome == "success":
+            bucket["success_durations_ms"].append(duration)
 
     result: dict[str, dict[str, Any]] = {}
     for backend, bucket in buckets.items():
         resolved = int(bucket["successes"]) + int(bucket["failures"])
-        durations = list(bucket["durations_ms"])
+        durations = list(bucket["success_durations_ms"])
         result[backend] = {
             "successes": int(bucket["successes"]),
             "failures": int(bucket["failures"]),
@@ -187,7 +235,7 @@ def aggregate_context(
             "cancelled": int(bucket["cancelled"]),
             "resolved_samples": resolved,
             "posterior_success": round(posterior_success(int(bucket["successes"]), int(bucket["failures"])), 6),
-            "median_duration_ms": int(statistics.median(durations)) if durations else None,
+            "median_success_duration_ms": int(statistics.median(durations)) if durations else None,
         }
     return dict(sorted(result.items()))
 
@@ -259,7 +307,7 @@ def recommend_backend(
     qualified.sort(
         key=lambda backend: (
             float(stats[backend]["posterior_success"]),
-            -(stats[backend]["median_duration_ms"] or 10**18),
+            -(stats[backend]["median_success_duration_ms"] or 10**18),
             backend,
         ),
         reverse=True,
@@ -278,8 +326,8 @@ def recommend_backend(
             "signal": "success-rate",
         }
 
-    baseline_duration = baseline_stats.get("median_duration_ms")
-    best_duration = stats[best].get("median_duration_ms")
+    baseline_duration = baseline_stats.get("median_success_duration_ms")
+    best_duration = stats[best].get("median_success_duration_ms")
     if (
         abs(score_margin) <= DURATION_TIE_SCORE_DELTA
         and baseline_score >= 0.75
@@ -293,7 +341,7 @@ def recommend_backend(
             **base,
             "mode": "learned",
             "backend": best,
-            "reason": "Success confidence is comparable and the alternative median duration is materially lower.",
+            "reason": "Success confidence is comparable and the alternative median successful duration is materially lower.",
             "signal": "duration",
         }
 
