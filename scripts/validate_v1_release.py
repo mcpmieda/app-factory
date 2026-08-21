@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Small V1 release preflight composed with the existing executable gates."""
+"""Current stable V1 release-line preflight composed with executable gates."""
 
 from __future__ import annotations
 
@@ -23,6 +23,7 @@ SECRET_PATTERNS = {
     "GitHub classic token": re.compile(rb"ghp_[A-Za-z0-9]{36}"),
     "private key": re.compile(rb"-----BEGIN (?:RSA |EC |OPENSSH )?PRIVATE KEY-----"),
 }
+SEMVER = re.compile(r"^(\d+)\.(\d+)\.(\d+)$")
 
 
 def stop(message: str) -> None:
@@ -60,19 +61,23 @@ def validate_repository_hygiene() -> None:
                 stop(f"possible {label} in {relative}")
 
 
-def validate_version_coherence() -> None:
-    manifest = json.loads(
-        (ROOT / ".codex-plugin/plugin.json").read_text(encoding="utf-8")
-    )
+def current_version() -> tuple[str, tuple[int, int, int]]:
+    manifest = json.loads((ROOT / ".codex-plugin/plugin.json").read_text(encoding="utf-8"))
     version = manifest.get("version")
-    if not isinstance(version, str) or not version.startswith("1.0.0"):
-        stop("plugin manifest must identify the V1.0 release line")
+    match = SEMVER.fullmatch(version) if isinstance(version, str) else None
+    if not match:
+        stop("plugin manifest must identify a stable SemVer release")
+    parts = tuple(int(value) for value in match.groups())
+    if parts[0] != 1:
+        stop("this validator covers the V1 release line only")
+    return version, parts  # type: ignore[return-value]
 
+
+def validate_version_coherence() -> tuple[str, tuple[int, int, int]]:
+    version, parts = current_version()
     expected_baseline = f"v{version}"
     template = ROOT / "starters/web-admin/template"
-    template_metadata = json.loads(
-        (template / ".factory-template.json").read_text(encoding="utf-8")
-    )
+    template_metadata = json.loads((template / ".factory-template.json").read_text(encoding="utf-8"))
     if template_metadata.get("factoryBaseline") != expected_baseline:
         stop(
             "web-admin template baseline diverges from plugin version: "
@@ -83,16 +88,23 @@ def validate_version_coherence() -> None:
         template / "PROJECT_STATE.md": f"Factory baseline: `{expected_baseline}`",
         template / "src/config/project.ts": f'factoryBaseline: "{expected_baseline}"',
         template / "src/config/project.test.ts": f'factoryBaseline: "{expected_baseline}"',
-        ROOT / "README.md": version,
-        ROOT / "PROJECT_STATE.md": "V1.0 — estável",
+        ROOT / "README.md": f"`{version}`",
+        ROOT / "PROJECT_STATE.md": f"versão: `{version}`",
         ROOT / "profiles/web-admin/PROFILE.md": "Status: `v1`",
     }
     for path, marker in required_markers.items():
         if marker not in path.read_text(encoding="utf-8"):
             stop(f"version marker {marker!r} missing from {path.relative_to(ROOT)}")
 
+    if parts >= (1, 1, 0):
+        state = (ROOT / "PROJECT_STATE.md").read_text(encoding="utf-8")
+        for marker in ("V1.1 — estável", "Context Engine", "Autonomy Engine"):
+            if marker not in state:
+                stop(f"V1.1 state marker {marker!r} missing from PROJECT_STATE.md")
+    return version, parts
 
-def validate_composed_gates() -> None:
+
+def validate_composed_gates(parts: tuple[int, int, int]) -> None:
     required_workflows = {
         ".github/workflows/validate-factory.yml": "validate_plugin.py",
         ".github/workflows/validate-web-admin-starter.yml": "generated-postgres-auth",
@@ -101,6 +113,9 @@ def validate_composed_gates() -> None:
         ".github/workflows/validate-web-admin-pilot.yml": "npm run e2e",
         ".github/workflows/validate-v1-release.yml": "validate_v1_bootstrap.py",
     }
+    if parts >= (1, 1, 0):
+        required_workflows[".github/workflows/validate-v1-1-autonomy.yml"] = "Real-repository incremental cache proof"
+
     for raw_path, marker in required_workflows.items():
         path = ROOT / raw_path
         if not path.is_file() or marker not in path.read_text(encoding="utf-8"):
@@ -131,9 +146,11 @@ def validate_composed_gates() -> None:
 
 def main() -> int:
     validate_repository_hygiene()
-    validate_version_coherence()
-    validate_composed_gates()
-    print("OK: V1 version coherence, gate composition, final project contract, secrets and artifacts validated.")
+    version, parts = validate_version_coherence()
+    validate_composed_gates(parts)
+    print(
+        f"OK: V1 release {version} coherence, gate composition, final project contract, secrets and artifacts validated."
+    )
     return 0
 
 
