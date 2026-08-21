@@ -14,12 +14,13 @@ DEFAULT_MAX_REPAIRS = 3
 HISTORY_LIMIT = 60
 
 PHASES = {
-    "context", "planning", "implementation", "verification", "repair",
+    "context", "planning", "specification", "implementation", "verification", "repair",
     "review", "delivery", "blocked", "done",
 }
 
 EVENTS = {
     "plan-ready",
+    "spec-ready",
     "implementation-started",
     "implementation-ready",
     "verification-pass",
@@ -39,6 +40,7 @@ HUMAN_CATEGORIES = {"product", "cost", "risk", "credential", "data", "legal", "o
 
 EVENT_ALLOWED_PHASES = {
     "plan-ready": {"planning"},
+    "spec-ready": {"specification"},
     "implementation-started": {"implementation"},
     "implementation-ready": {"implementation"},
     "verification-pass": {"verification"},
@@ -103,7 +105,12 @@ def infer_goal(root: Path) -> str:
     return "Continuar o projeto a partir do estado versionado atual."
 
 
-def new_state(goal: str, context: ScanResult, max_repairs: int = DEFAULT_MAX_REPAIRS) -> dict[str, Any]:
+def new_state(
+    goal: str,
+    context: ScanResult,
+    max_repairs: int = DEFAULT_MAX_REPAIRS,
+    require_spec: bool = False,
+) -> dict[str, Any]:
     now = utc_now()
     return {
         "schema_version": STATE_SCHEMA_VERSION,
@@ -115,6 +122,8 @@ def new_state(goal: str, context: ScanResult, max_repairs: int = DEFAULT_MAX_REP
         "context_generated_at": context.repo_map["generated_at"],
         "context_delta": context.repo_map["delta"],
         "plan_summary": None,
+        "spec_required": bool(require_spec),
+        "spec_fingerprint": None,
         "implementation_summary": None,
         "verification": {"status": "unknown", "summary": None},
         "repair_attempts": 0,
@@ -128,11 +137,16 @@ def new_state(goal: str, context: ScanResult, max_repairs: int = DEFAULT_MAX_REP
     }
 
 
-def init_project(root: Path | str, goal: str | None = None, max_repairs: int = DEFAULT_MAX_REPAIRS) -> dict[str, Any]:
+def init_project(
+    root: Path | str,
+    goal: str | None = None,
+    max_repairs: int = DEFAULT_MAX_REPAIRS,
+    require_spec: bool = False,
+) -> dict[str, Any]:
     root = Path(root).resolve()
     context = scan_repository(root)
     actual_goal = (goal or infer_goal(root)).strip()
-    state = new_state(actual_goal, context, max_repairs=max_repairs)
+    state = new_state(actual_goal, context, max_repairs=max_repairs, require_spec=require_spec)
     write_state(root, state)
     return state
 
@@ -216,6 +230,13 @@ def action_for(state: dict[str, Any]) -> dict[str, Any]:
         }
     if phase == "planning":
         return {**base, "action": "plan", "reason": "Transformar o objetivo em uma fatia funcional verificável.", "recommended_executor": "current_agent"}
+    if phase == "specification":
+        return {
+            **base,
+            "action": "specify",
+            "reason": "Materializar objetivo, invariantes e critérios de aceite verificáveis antes da implementação.",
+            "recommended_executor": "current_agent",
+        }
     if phase == "implementation":
         return {**base, "action": "implement", "reason": "Executar a maior fatia segura do plano atual.", "recommended_executor": "current_agent_first"}
     if phase == "verification":
@@ -228,7 +249,12 @@ def action_for(state: dict[str, Any]) -> dict[str, Any]:
             "recommended_executor": "current_agent_then_ci",
         }
     if phase == "review":
-        return {**base, "action": "review", "reason": "Revisar especificação, diff, segurança e qualidade antes da entrega.", "recommended_executor": "current_agent_or_independent_reviewer"}
+        return {
+            **base,
+            "action": "review",
+            "reason": "Revisar spec, rastreabilidade, diff, segurança e qualidade antes da entrega.",
+            "recommended_executor": "independent_reviewer_or_clean_context",
+        }
     if phase == "delivery":
         return {**base, "action": "deliver", "reason": "Integrar/entregar somente com gates aprovados.", "recommended_executor": "github_or_current_agent"}
     return {**base, "action": "inspect_state", "reason": f"Fase desconhecida: {phase!r}.", "recommended_executor": "current_agent"}
@@ -278,6 +304,16 @@ def record_event(
 
     if event == "plan-ready":
         state["plan_summary"] = summary
+        state["phase"] = "specification" if state.get("spec_required") else "implementation"
+    elif event == "spec-ready":
+        from .semantic_verification import read_spec, spec_fingerprint, validate_spec
+
+        spec = read_spec(root)
+        errors = validate_spec(spec)
+        if errors:
+            raise ValueError("Semantic specification is not valid: " + "; ".join(errors))
+        assert spec is not None
+        state["spec_fingerprint"] = spec_fingerprint(spec)
         state["phase"] = "implementation"
     elif event == "implementation-started":
         state["phase"] = "implementation"
@@ -286,6 +322,12 @@ def record_event(
         state["phase"] = "verification"
         state["verification"] = {"status": "unknown", "summary": None}
     elif event == "verification-pass":
+        if state.get("spec_required"):
+            from .semantic_verification import validate_verification_plan
+
+            errors = validate_verification_plan(root)
+            if errors:
+                raise ValueError("Semantic verification plan is not valid: " + "; ".join(errors))
         state["verification"] = {"status": "pass", "summary": summary}
         state["phase"] = "review"
         state["repair_attempts"] = 0
@@ -303,6 +345,12 @@ def record_event(
     elif event == "repair-ready":
         state["phase"] = "verification"
     elif event == "review-pass":
+        if state.get("spec_required"):
+            from .semantic_verification import validate_review_evidence
+
+            errors = validate_review_evidence(root)
+            if errors:
+                raise ValueError("Semantic review evidence is not valid: " + "; ".join(errors))
         state["review"] = {"status": "pass", "summary": summary}
         state["phase"] = "delivery"
     elif event == "review-fail":
@@ -351,12 +399,22 @@ class ResumeResult:
     context: ScanResult
 
 
-def resume_project(root: Path | str, goal: str | None = None, max_repairs: int = DEFAULT_MAX_REPAIRS) -> ResumeResult:
+def resume_project(
+    root: Path | str,
+    goal: str | None = None,
+    max_repairs: int = DEFAULT_MAX_REPAIRS,
+    require_spec: bool = False,
+) -> ResumeResult:
     root = Path(root).resolve()
     state = read_state(root)
     context = scan_repository(root)
     if state is None:
-        state = new_state((goal or infer_goal(root)).strip(), context, max_repairs=max_repairs)
+        state = new_state(
+            (goal or infer_goal(root)).strip(),
+            context,
+            max_repairs=max_repairs,
+            require_spec=require_spec,
+        )
         write_state(root, state)
     else:
         reconcile_if_needed(root, state, context)
