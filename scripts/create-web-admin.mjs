@@ -27,7 +27,14 @@ const recipesDirectory = join(
   "web-admin",
   "recipes",
 );
-const factoryBaseline = "v0.7";
+const factoryManifest = JSON.parse(
+  await readFile(join(repositoryRoot, ".codex-plugin", "plugin.json"), "utf8"),
+);
+const templateMetadata = JSON.parse(
+  await readFile(join(templateDirectory, ".factory-template.json"), "utf8"),
+);
+const factoryBaseline = `v${factoryManifest.version}`;
+const templateBaseline = templateMetadata.factoryBaseline;
 const motionProfile = "ambient";
 
 function usage() {
@@ -309,6 +316,7 @@ async function main() {
     const replacements = [
       ["Web Admin Starter", input.name],
       ["web-admin-starter", packageName],
+      [templateBaseline, factoryBaseline],
     ];
     const recipeIds = recipes.map((recipe) => recipe.id);
     const formattedRecipeIds = `[${recipeIds.map((id) => JSON.stringify(id)).join(", ")}]`;
@@ -318,6 +326,7 @@ async function main() {
       "PROJECT_STATE.md",
       "PRODUCT.md",
       "src/config/project.ts",
+      "src/config/project.test.ts",
     ]) {
       await replaceInFile(join(destination, file), replacements);
     }
