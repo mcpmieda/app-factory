@@ -40,6 +40,8 @@ Não guardar:
 
 Ações desconhecidas são reduzidas para `other`; backends/capacidades desconhecidos são rejeitados. O dataset é limitado e fica fora do Git por padrão.
 
+O arquivo local também é tratado como entrada não confiável quando lido: campos extras são descartados, contexto é recalculado e eventos com backend/capacidade/outcome inválidos são ignorados.
+
 ## Contexto comparável
 
 Aprendizado só compara eventos com a mesma:
@@ -56,8 +58,10 @@ Default:
 
 - pelo menos 5 resultados resolvidos para o backend baseline;
 - pelo menos 5 para a alternativa;
-- prior Beta conservador para evitar confiança extrema cedo demais;
-- preferência por alternativa somente quando a margem de sucesso for material ou, com sucesso alto/equivalente, quando a duração mediana for materialmente menor.
+- prior Beta(2,2) conservador para evitar confiança extrema cedo demais;
+- preferência por alternativa somente quando a margem de sucesso for material ou, com sucesso alto/equivalente, quando a **duração mediana das execuções bem-sucedidas** for materialmente menor.
+
+A duração de falhas não participa da métrica de velocidade: falhar rápido nunca melhora a preferência de executor.
 
 `blocked` e `cancelled` são preservados para auditoria agregada, mas não contam como sucesso/falha resolvida.
 
@@ -99,11 +103,13 @@ A decisão informa:
 - candidatos elegíveis;
 - quantidade de amostras;
 - sucesso posterior estimado;
-- mediana de duração quando disponível;
+- mediana de duração das execuções bem-sucedidas quando disponível;
 - razão da decisão.
 
-Quando faltam dados, o Learning Engine deve dizer `insufficient-data` e preservar a ordem baseline.
+Quando faltam dados, o Learning Engine informa `insufficient-data` e preserva a ordem baseline.
 
 ## Portabilidade
 
-O formato é local e baseado em JSON/stdlib. Outro agente pode recuperar a evidência no mesmo projeto sem depender da conversa anterior. Não existe envio automático para servidor da App Factory ou aprendizado entre usuários/tenants na V1.3.
+O formato é local e baseado em JSON/stdlib. Outro agente no mesmo ambiente pode recuperar a evidência sem depender da conversa anterior. Não existe envio automático para servidor da App Factory ou aprendizado entre usuários/tenants na V1.3.
+
+Como `.factory/learning.json` fica fora do Git, uma nova máquina pode não receber esse histórico. Nesse caso a Factory continua corretamente pelo baseline V1.2 e reaprende; Learning Engine é otimização, não requisito de continuidade.
