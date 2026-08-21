@@ -30,12 +30,12 @@ from engine.execution_engine import (  # noqa: E402
     route_action,
 )
 from engine.learning_engine import learning_status, record_learning_event  # noqa: E402
+from engine.review_packet import build_clean_review_packet  # noqa: E402
 from engine.semantic_verification import (  # noqa: E402
     CHANGE_TYPES,
     REVIEW_MODES,
     RISK_LEVELS,
     VERDICTS,
-    build_clean_review_packet,
     create_verification_plan,
     new_spec,
     read_spec,
@@ -152,7 +152,8 @@ def parser() -> argparse.ArgumentParser:
     sub.add_parser("spec-validate", help="Validate specs/semantic-contract.json")
     sub.add_parser("verification-plan-init", help="Generate verification-plan rows from the current semantic spec")
     sub.add_parser("semantic-status", help="Validate semantic spec, traceability and review freshness")
-    sub.add_parser("review-packet", help="Emit a clean-context review packet without implementation reasoning")
+    review_packet = sub.add_parser("review-packet", help="Emit a clean-context spec + diff review packet without implementation reasoning")
+    review_packet.add_argument("--base", default="main", help="Git base ref used to build the review diff (default: main)")
 
     review = sub.add_parser("record-semantic-review", help="Record decoupled semantic review evidence")
     review.add_argument("--mode", required=True, choices=sorted(REVIEW_MODES))
@@ -268,7 +269,7 @@ def main() -> int:
         emit(status.to_dict())
         return 0 if status.ready_for_delivery else 1
     if args.command == "review-packet":
-        emit(build_clean_review_packet(project_root))
+        emit(build_clean_review_packet(project_root, base_ref=args.base))
         return 0
     if args.command == "record-semantic-review":
         try:
