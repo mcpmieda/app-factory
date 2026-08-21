@@ -1,6 +1,6 @@
 ---
 name: factory-router
-description: Use whenever a user asks to create, build, design, improve, modernize, maintain, debug, automate, integrate, migrate, extend, or continue a software project, app, system, website, API, browser extension, internal tool, automation, mobile app, desktop app, or GitHub project. Also use for broad outcome-only requests such as "quero criar um sistema", "quero um app", "melhore este projeto", or "automatize este processo". This is the universal entrypoint that classifies the work, chooses the minimum necessary App Factory process, routes between ChatGPT/Codex/other agents, and activates specialized Skills without requiring the user to mention App Factory explicitly.
+description: Use whenever a user asks to create, build, design, improve, modernize, maintain, debug, automate, integrate, migrate, extend, or continue a software project, app, system, website, API, browser extension, internal tool, automation, mobile app, desktop app, or GitHub project. Also use for broad outcome-only requests such as "quero criar um sistema", "quero um app", "melhore este projeto", or "automatize este processo". This is the universal entrypoint that classifies the work, selects a validated project profile when appropriate, chooses the minimum necessary App Factory process, routes between ChatGPT/Codex/other agents, and activates specialized Skills without requiring the user to mention App Factory explicitly.
 ---
 
 # Factory Router
@@ -24,20 +24,23 @@ Activate from software-development intent itself. The user may describe only an 
    - technical research/decision.
 4. If a project repository already exists, inspect its versioned state before planning from memory.
 5. Classify scale with `core/PROJECT_SCALE.md`.
-6. Apply `core/RISK_MODEL.md`.
-7. Choose the execution environment with `core/TASK_ROUTER.md`.
-8. Load only the specialized Skills needed for the current block.
-9. Prefer reuse of mature solutions when appropriate.
-10. Define and execute the largest safe complete functional slice possible in the current environment.
+6. Select a validated project profile from `profiles/` when the product clearly matches one; do not force a profile when none fits.
+7. Apply `core/RISK_MODEL.md`.
+8. Choose the execution environment with `core/TASK_ROUTER.md`.
+9. Load only the specialized Skills needed for the current block.
+10. Prefer reuse of mature solutions when appropriate.
+11. Define and execute the largest safe complete functional slice possible in the current environment.
 
 ## Common routing examples
 
 ### "Quero criar um sistema de patrimônio para a escola"
 
 - mode: new project;
+- likely profile: `web-admin`;
 - start with `app-planner`;
 - determine scale and product requirements;
-- make routine technical choices autonomously;
+- read `profiles/web-admin/PROFILE.md` before choosing routine stack details;
+- apply only modules the product actually needs;
 - use `ui-builder`, `architecture`, `database`, `security-review` and others only as needed;
 - move to Codex when implementation requires local repo, terminal, dependencies, tests or browser verification.
 
@@ -55,7 +58,7 @@ The user should not need to:
 
 - name the Factory;
 - choose a framework without reason;
-- know which Skill to invoke;
+- know which profile or Skill to invoke;
 - know whether ChatGPT or Codex is appropriate;
 - repeat context already stored in GitHub;
 - run commands an agent can safely run.

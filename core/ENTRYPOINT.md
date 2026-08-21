@@ -24,7 +24,7 @@ Também ative quando o usuário expressar apenas o resultado, por exemplo:
 - "Quero automatizar este processo."
 - "Continue o projeto X."
 
-O usuário não precisa conhecer stack, arquitetura, Skills ou agentes.
+O usuário não precisa conhecer stack, arquitetura, perfis, Skills ou agentes.
 
 ## Primeira passagem obrigatória
 
@@ -32,12 +32,21 @@ O usuário não precisa conhecer stack, arquitetura, Skills ou agentes.
 2. Determine se é projeto novo, evolução, manutenção, bug, automação ou pesquisa técnica.
 3. Se existir repositório/projeto, leia primeiro o estado versionado (`AGENTS.md`, `PROJECT_STATE.md`, produto/arquitetura e diff relevante).
 4. Classifique a escala em `core/PROJECT_SCALE.md`.
-5. Aplique risco em `core/RISK_MODEL.md`.
-6. Escolha o ambiente com `core/TASK_ROUTER.md`.
-7. Carregue apenas as Skills necessárias.
-8. Pesquise solução existente antes de construir equivalente do zero quando houver ganho real.
-9. Defina o próximo bloco funcional completo.
-10. Execute imediatamente tudo que o ambiente atual permitir com segurança.
+5. Verifique `profiles/` e selecione um perfil validado quando o produto corresponder claramente; não force perfil quando nenhum servir.
+6. Aplique risco em `core/RISK_MODEL.md`.
+7. Escolha o ambiente com `core/TASK_ROUTER.md`.
+8. Carregue apenas as Skills necessárias.
+9. Pesquise solução existente antes de construir equivalente do zero quando houver ganho real.
+10. Defina o próximo bloco funcional completo.
+11. Execute imediatamente tudo que o ambiente atual permitir com segurança.
+
+## Regra de perfis
+
+Perfis transformam evidência real em defaults condicionais. Eles não substituem entendimento do produto.
+
+Exemplo: um sistema de patrimônio com login, CRUD, filtros e dashboard provavelmente corresponde a `profiles/web-admin/PROFILE.md`. A Factory pode usar os defaults comprovados desse perfil, mas só ativa autenticação, banco, ReUI ou outros módulos quando o produto realmente precisar.
+
+Requisitos específicos do projeto têm precedência sobre defaults do perfil, salvo conflito de segurança.
 
 ## Regra de GitHub
 
@@ -50,6 +59,7 @@ Quando o projeto ganhar repositório próprio, grave nele pelo menos:
 - `AGENTS.md` com vínculo explícito à App Factory;
 - `PROJECT_STATE.md`;
 - artefatos de produto/arquitetura proporcionais à escala;
+- perfil selecionado e desvios relevantes quando aplicável;
 - testes/CI quando aplicáveis.
 
 ### Projeto existente
@@ -77,6 +87,7 @@ O agente deve saber, mesmo que não exponha todos os detalhes:
 
 - modo do trabalho;
 - escala;
+- perfil selecionado, se houver;
 - risco;
 - Skill(s) necessárias;
 - ChatGPT, Codex ou outro ambiente recomendado;
