@@ -12,5 +12,5 @@ export const projectConfig = projectConfigSchema.parse({
   description:
     "Uma base administrativa enxuta para implementar a primeira fatia funcional.",
   profile: "web-admin",
-  factoryBaseline: "v1.0.0",
+  factoryBaseline: "v1.1.0",
 });

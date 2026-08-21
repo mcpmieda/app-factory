@@ -1,7 +1,7 @@
 {
   "name": "app-factory",
-  "version": "1.0.0",
-  "description": "Portable AI software-development factory with automatic software-intent routing, planning, tool selection, architecture, UI, security and executable verification.",
+  "version": "1.1.0",
+  "description": "Portable AI software-development factory with incremental context, autonomous next-action routing, planning, tool selection and executable verification.",
   "author": {
     "name": "mcpmieda",
     "url": "https://github.com/mcpmieda"
@@ -10,16 +10,16 @@
   "skills": "./skills/",
   "interface": {
     "displayName": "App Factory",
-    "shortDescription": "Automatically route, plan, build and verify software work.",
-    "longDescription": "A portable software-development factory that activates from software intent without requiring the user to name the Factory, then plans complete functional slices, routes work to the right agent, chooses coherent technology/UI and requires executable verification before completion.",
+    "shortDescription": "Automatically recover context, route, build and verify software work.",
+    "longDescription": "A portable software-development factory that activates from software intent, recovers incremental repository context and autonomous state, plans complete functional slices, prefers the current agent plus GitHub/CI when sufficient, and requires executable verification before delivery.",
     "developerName": "mcpmieda",
     "category": "Productivity",
     "capabilities": ["Interactive"],
     "websiteURL": "https://github.com/mcpmieda/app-factory",
     "defaultPrompt": [
       "I want to create a software system. Route it through App Factory automatically.",
-      "Route this software task to ChatGPT or Codex and plan a complete, verifiable slice.",
-      "Review the UI approach and verification plan."
+      "Resume this software project from its repository state and continue autonomously.",
+      "Use the lightest executor that can implement and verify this software change."
     ]
   }
 }

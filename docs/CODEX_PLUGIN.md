@@ -12,25 +12,28 @@ app-factory/
 │   └── marketplace.json
 ├── skills/
 ├── core/
+├── engine/
 ├── policies/
 ├── templates/
 └── ...
 ```
 
-O manifest aponta `skills` para `./skills/`, que já é a fonte portátil usada pelos outros agentes.
+O manifest aponta `skills` para `./skills/`, que já é a fonte portátil usada pelos outros agentes. O runtime V1.1 em `engine/` é neutro e não depende do Codex.
 
 ## Por que usar a raiz como plugin
 
 - evita cópia de Skills;
 - reduz risco de divergência entre Codex e outros agentes;
-- preserva Core/policies/templates no mesmo repositório;
+- preserva Core/engine/policies/templates no mesmo repositório;
 - mantém o plugin como adaptador fino, não como nova fonte de verdade.
 
 ## Estado
 
-`1.0.0` — **V1.0 estável**.
+`1.1.0` — **V1.1 estável**.
 
-O Codex CLI oficial `0.149.0` reconhece o marketplace local, instala a App Factory e descobre as 11 Skills, incluindo `factory-router`. A auditoria V1 compara SHA-256 de todas as Skills entre o checkout limpo e o cache instalado e rejeita omissão, duplicação, divergência ou pacote pesado.
+O Codex CLI oficial `0.149.0` reconhece o marketplace local, instala a App Factory e descobre as **13 Skills**, incluindo `factory-router`, `context-engine` e `autonomy-engine`. O bootstrap isolado compara SHA-256 de todas as Skills entre checkout limpo e cache instalado e rejeita omissão, duplicação, divergência ou pacote pesado.
+
+A V1.1 também reduz a dependência operacional do Codex: o Task Router prefere agente atual + GitHub/CI quando essa rota consegue implementar e provar o trabalho. Codex continua sendo um executor importante para runtime/browser/debug/migrations interativos, mas não é mais o destino automático de qualquer tarefa com testes ou múltiplos arquivos.
 
 ## Marketplace local com fonte única
 
@@ -45,6 +48,19 @@ codex --enable plugins plugin add app-factory@app-factory-local
 
 O Codex/ChatGPT Desktop pode exigir reinstalação/reinício e nova conversa para carregar alterações do plugin.
 
+## Runtime autônomo
+
+Quando houver checkout/runtime disponível, os agentes compartilham a mesma interface:
+
+```text
+python scripts/factory.py --root <projeto> context
+python scripts/factory.py --root <projeto> resume
+python scripts/factory.py --root <projeto> next
+python scripts/factory.py --root <projeto> record <evento>
+```
+
+O usuário normalmente não executa esses comandos; o agente/adaptador faz isso internamente.
+
 ## Validação reproduzível
 
 Execute:
@@ -53,30 +69,32 @@ Execute:
 python scripts/validate_factory.py
 python scripts/validate_skills.py
 python scripts/validate_plugin.py
+python scripts/validate_v1_1.py
 python scripts/validate_v1_bootstrap.py
 python scripts/validate_v1_release.py
 ```
 
-No piloto também foi usado o validador oficial do `plugin-creator`.
-
 As evidências completas estão em:
 
-`research/V0.2_CODEX_PLUGIN_PILOT.md` (piloto histórico) e `research/V1.0_FINAL_AUDIT.md` (auditoria final).
+- `research/V0.2_CODEX_PLUGIN_PILOT.md` — piloto histórico;
+- `research/V1.0_FINAL_AUDIT.md` — auditoria da primeira release estável;
+- `research/V1.1_AUTONOMOUS_CONTEXT_VALIDATION.md` — validação do runtime autônomo.
 
 ## Resultado arquitetural
 
-O piloto e a auditoria final confirmaram o desenho:
-
 ```text
-APP FACTORY CORE
+APP FACTORY CORE + ENGINE
 (portátil)
       │
       ├── Skills abertas
+      ├── Context/Autonomy runtime
       ├── core/policies/templates
       └── scripts/testes
       │
+      ├──────── current-agent + GitHub/CI
+      │
       ▼
-ADAPTADOR CODEX
+ADAPTADOR/EXECUTOR CODEX
       ├── plugin.json
       └── marketplace local
 ```
@@ -85,11 +103,4 @@ Nenhum arquivo do Core ou Skill é mantido como segunda fonte. O cache de instal
 
 ## MCP e hooks
 
-Não adicionar MCP ou hooks por padrão.
-
-Eles só entram quando houver caso concreto em que:
-
-- MCP forneça ferramenta/dados que Skills e ferramentas existentes não cubram;
-- hook automatize proteção real e simples.
-
-Plugins com hooks exigem revisão/confiança do usuário; portanto a Factory deve manter hooks raros, claros e auditáveis.
+Não adicionar MCP ou hooks por padrão. Eles só entram quando houver caso concreto em que MCP forneça ferramenta/dados ausentes ou um hook automatize proteção real e simples. Hooks devem permanecer raros, claros e auditáveis.
