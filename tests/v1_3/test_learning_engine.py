@@ -83,6 +83,48 @@ class LearningEngineTests(unittest.TestCase):
             )
         self.assertFalse((root / ".factory" / "learning.json").exists())
 
+    def test_tampered_learning_file_is_sanitized_on_read(self) -> None:
+        temp, root = self.make_root()
+        self.addCleanup(temp.cleanup)
+        factory = root / ".factory"
+        factory.mkdir()
+        secret = "NOME-PESSOAL-PROMPT-SECRETO"
+        (factory / "learning.json").write_text(
+            json.dumps(
+                {
+                    "schema_version": 999,
+                    "secret_top_level": secret,
+                    "events": [
+                        {
+                            "at": learning.utc_now(),
+                            "action": secret,
+                            "capabilities": ["test"],
+                            "backend": "github_ci",
+                            "outcome": "success",
+                            "duration_ms": 100,
+                            "raw_prompt": secret,
+                        },
+                        {
+                            "at": learning.utc_now(),
+                            "action": "verify",
+                            "capabilities": ["test"],
+                            "backend": secret,
+                            "outcome": "success",
+                            "duration_ms": 1,
+                        },
+                    ],
+                }
+            ),
+            encoding="utf-8",
+        )
+        state = read_learning_state(root)
+        self.assertEqual(state["schema_version"], 1)
+        self.assertEqual(len(state["events"]), 1)
+        self.assertEqual(state["events"][0]["action"], "other")
+        self.assertNotIn(secret, json.dumps(state))
+        self.assertNotIn("raw_prompt", json.dumps(state))
+        self.assertNotIn(secret, json.dumps(learning_status(root)))
+
     def test_dataset_is_bounded(self) -> None:
         temp, root = self.make_root()
         self.addCleanup(temp.cleanup)
@@ -290,6 +332,29 @@ class LearningEngineTests(unittest.TestCase):
         self.assertEqual(recommendation["mode"], "learned")
         self.assertEqual(recommendation["backend"], "sandbox")
         self.assertEqual(recommendation["signal"], "duration")
+
+    def test_failure_duration_does_not_make_backend_look_faster(self) -> None:
+        temp, root = self.make_root()
+        self.addCleanup(temp.cleanup)
+        for _ in range(5):
+            record_learning_event(
+                root,
+                action="verify",
+                capabilities=VERIFY_CAPS,
+                backend="github_ci",
+                outcome="success",
+                duration_ms=4000,
+            )
+            record_learning_event(
+                root,
+                action="verify",
+                capabilities=VERIFY_CAPS,
+                backend="github_ci",
+                outcome="failure",
+                duration_ms=1,
+            )
+        stats = aggregate_context(root, action="verify", capabilities=VERIFY_CAPS)["github_ci"]
+        self.assertEqual(stats["median_success_duration_ms"], 4000)
 
     def test_blocked_and_cancelled_do_not_inflate_resolved_samples(self) -> None:
         temp, root = self.make_root()
