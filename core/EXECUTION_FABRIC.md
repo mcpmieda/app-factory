@@ -61,13 +61,14 @@ Por padrão:
 - `shell=False` no executor Python;
 - nenhuma credencial/secret é necessária;
 - comandos são construídos a partir de IDs conhecidos, não do valor textual de scripts recebido do usuário;
+- instalação de dependências só é proposta quando existe lockfile compatível; `package.json` sem lockfile não recebe `npm install` permissivo como fallback;
 - um gate falho interrompe a sequência para preservar evidência clara.
 
 ## Fallback
 
-`engine/execution_engine.py` mantém histórico bounded em `.factory/execution.json`.
+`engine/execution_engine.py` mantém histórico bounded em `.factory/execution.json`. Esse arquivo é cache operacional local e fica fora do Git por padrão.
 
-Depois do limite de falhas configurado para uma mesma ação/backend, aquele backend é temporariamente rejeitado na próxima decisão e a Factory tenta o próximo backend capaz disponível.
+O fallback é escopado pela tarefa autônoma atual (`task_key`). Depois do limite de falhas configurado para uma mesma tarefa + ação + backend, aquele backend é temporariamente rejeitado e a Factory tenta o próximo backend capaz disponível. Falhas de uma tarefa antiga não penalizam uma tarefa nova.
 
 Isso é diferente do repair loop do Autonomy Engine:
 
@@ -88,7 +89,9 @@ python scripts/factory.py gates
 python scripts/factory.py run-gates
 ```
 
-`next`, `resume` e `record` também retornam uma decisão `execution` automaticamente.
+`next`, `resume` e `record` também retornam uma decisão `execution` automaticamente. A CLI deriva `task_key` do estado atual do Autonomy Engine quando disponível.
+
+A decisão automática usa as capacidades padrão da fase. Quando a tarefa tiver exigência adicional conhecida — como browser interativo ou migration real — o agente deve refinar a rota com essas capacidades antes de executar.
 
 O usuário não deve precisar executar esses comandos manualmente; são o protocolo portátil entre agentes.
 
