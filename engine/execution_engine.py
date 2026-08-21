@@ -271,20 +271,22 @@ def failed_backends_for_action(
     *,
     threshold: int = DEFAULT_FAILURE_THRESHOLD,
 ) -> set[str]:
+    """Return backends whose most recent consecutive failures reach threshold."""
     threshold = max(1, int(threshold))
     attempts = read_execution_state(root).get("attempts", [])
     counts: dict[str, int] = {}
-    resolved: set[str] = set()
+    closed: set[str] = set()
     for item in reversed(attempts):
         if not isinstance(item, dict) or item.get("action") != action:
             continue
         backend = item.get("backend")
-        if not isinstance(backend, str) or backend in resolved:
+        if not isinstance(backend, str) or backend in closed:
             continue
         outcome = item.get("outcome")
         if outcome == "success":
-            resolved.add(backend)
-            counts.pop(backend, None)
+            # A success ends the historical window for this backend, but failures
+            # already counted while scanning backward happened *after* that success.
+            closed.add(backend)
             continue
         if outcome == "failure":
             counts[backend] = counts.get(backend, 0) + 1
