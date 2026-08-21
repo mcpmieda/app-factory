@@ -19,11 +19,12 @@ Leia `core/ENTRYPOINT.md` para o contrato de ativação automática.
 7. Use `core/EXECUTION_FABRIC.md` + `execution-router` para traduzir a ação em capacidades e eliminar backends incapazes/indisponíveis.
 8. Quando houver histórico local suficiente, aplique `core/LEARNING_ENGINE.md`/`learning-engine` somente entre candidatos já elegíveis; sem evidência suficiente, preserve o baseline.
 9. Aplique `core/RISK_MODEL.md`; risco e Definition of Done vencem qualquer preferência aprendida.
-10. Consulte `core/WORKFLOW.md` para projeto novo ou manutenção.
-11. Carregue somente as Skills relevantes.
-12. Consulte templates, políticas e referências apenas quando necessários.
-13. Antes de criar algo do zero, verifique se existe solução consolidada, componente, biblioteca, template ou registry adequado.
-14. Não misture tecnologias, bibliotecas ou design systems sem ganho claro.
+10. Para software real novo, use `projects/<slug>/` como destino padrão e siga `core/INSPECTION_ENVIRONMENT.md` para URL canônica, preview e hospedagem.
+11. Consulte `core/WORKFLOW.md` para projeto novo ou manutenção.
+12. Carregue somente as Skills relevantes.
+13. Consulte templates, políticas e referências apenas quando necessários.
+14. Antes de criar algo do zero, verifique se existe solução consolidada, componente, biblioteca, template ou registry adequado.
+15. Não misture tecnologias, bibliotecas ou design systems sem ganho claro.
 
 ## Regra de serviço ao usuário
 
@@ -39,6 +40,7 @@ Prefira:
 - decisões técnicas rotineiras autônomas;
 - `current_agent` + GitHub/CI antes de handoff;
 - aprendizado local conservador quando houver evidência real suficiente;
+- endereço de inspeção simples e estável sob `escolaieda.com/<slug>` quando a infraestrutura estiver configurada;
 - explicações simples para decisões relevantes.
 
 Consulte o usuário quando a decisão envolver objetivo de produto, preferência subjetiva, gasto, risco destrutivo, credencial/dado indisponível ou decisão legal/organizacional.
