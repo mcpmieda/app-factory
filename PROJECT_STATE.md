@@ -4,28 +4,31 @@
 
 ## Objetivo atual
 
-Manter a **App Factory V1.3 estável** como baseline recuperável, autônomo e adaptativo para criação/evolução de software: recuperar contexto, calcular a próxima ação, escolher executor por capacidade e usar aprendizado técnico local somente quando houver evidência suficiente, sem reduzir segurança ou verificabilidade.
+Manter a **App Factory V1.4 estável** como baseline recuperável, autônomo, adaptativo e semanticamente verificável para criação/evolução de software: recuperar contexto, transformar intenção relevante em critérios objetivos, calcular a próxima ação, escolher executor por capacidade, provar o resultado e aprender somente com evidência técnica segura.
 
 ## Estado
 
-- fase: `V1.3 — estável`;
-- versão: `1.3.0`;
+- fase: `V1.4 — estável`;
+- versão: `1.4.0`;
 - baseline publicada anterior preservada: tag/release `v1.0.0`;
 - V1.1 / Issue #32: Context Engine + Autonomy Engine concluídos;
 - V1.2 / Issue #36: Execution Fabric + CI Executor concluídos;
-- V1.3 / Issue #38: Learning Engine implementado para a release V1.3;
+- V1.3 / Issue #38: Learning Engine concluído;
+- V1.4 / Issue #41: Semantic Verification Layer implementado para a release V1.4;
 - Context Engine: incremental, stdlib, SHA-256, delta `added/changed/removed`, stack/símbolos/imports/dependências locais e exclusão de segredos/build/dependencies/binários;
-- Autonomy Engine: `init/status/next/resume/record`, transições explícitas, repair loop default 3 e intervenção humana categorizada;
+- Autonomy Engine: `init/status/next/resume/record`, transições explícitas, repair loop default 3, intervenção humana categorizada e fase `specification` quando `spec_required=true`;
+- Semantic Verification: `specs/semantic-contract.json` + `specs/verification-plan.json` + `specs/review-evidence.json`, critérios `given/when/then`, fingerprints contra evidência stale e revisão desacoplada para risco médio/alto;
+- clean-context review: `engine/review_packet.py` produz pacote de revisão com spec + diff atual, sem depender do raciocínio da implementação ou de aprovação anterior;
 - Execution Fabric: roteamento por capacidades, backends `current_agent/github_ci/sandbox/local_full`, fallback escopado pela tarefa atual e histórico operacional bounded;
-- CI Executor: gates declarados/allowlisted, sem comandos de prompt, `shell=False`, sem secrets por padrão e instalação reproduzível somente com lockfile compatível;
+- CI Executor: gates declarados/allowlisted, sem comandos de prompt, `shell=False`, sem secrets por padrão, instalação reproduzível somente com lockfile compatível e suporte condicional a `test:visual`;
 - Learning Engine: **local-only**, bounded, sem telemetria externa, metadados técnicos allowlisted, amostra mínima/prior conservador e explicação `baseline/learned/insufficient-data`;
-- aprendizado: incapacidade, indisponibilidade, failure threshold, risco e Definition of Done sempre vencem score histórico;
+- aprendizado: incapacidade, indisponibilidade, failure threshold, risco, contrato semântico e Definition of Done sempre vencem score histórico;
 - velocidade aprendida: usa duração mediana de execuções bem-sucedidas; falha rápida não melhora preferência;
 - `local_full`: não pode ser promovido sobre backend leve capaz somente por aprendizado;
 - perfil `web-admin`: `v1`;
 - perfis `website`, `web-app`, `chrome-extension` e `automation`: `validated`;
-- plugin Codex: `1.3.0`, com 15 Skills portáteis;
-- CI: gates V1 anteriores preservados + `Validate V1.3 Learning Engine`.
+- plugin: `1.4.0`, com 16 Skills portáteis;
+- CI: gates V1 anteriores preservados + `Validate V1.4 Semantic Verification`.
 
 ## Decisões vigentes
 
@@ -37,8 +40,18 @@ Manter a **App Factory V1.3 estável** como baseline recuperável, autônomo e a
 - `.factory/state.json` mantém continuidade do Autonomy Engine e pode ser versionado em handoffs importantes;
 - `.factory/execution.json` mantém histórico bounded local de tentativas e fica fora do Git por padrão;
 - `.factory/learning.json` mantém aprendizado local allowlisted e fica fora do Git por padrão;
-- ausência do arquivo de learning em outra máquina não bloqueia continuidade: a Factory usa o baseline seguro V1.2 e reaprende;
-- o agente calcula próxima ação e executor; o usuário não conduz fases técnicas rotineiras;
+- ausência do arquivo de learning em outra máquina não bloqueia continuidade: a Factory usa o baseline seguro e reaprende;
+- o agente calcula próxima ação, necessidade de spec e executor; o usuário não conduz fases técnicas rotineiras nem preenche schema técnico;
+- funcionalidade nova, bugfix relevante, regra de negócio, contrato de dados/API ou mudança estrutural de médio/alto risco recebe Semantic Verification antes da implementação;
+- documentação/chore e refactor pequeno sem mudança observável permanecem leves;
+- `specs/semantic-contract.json` é o alvo verificável quando Semantic Verification se aplica;
+- todo critério `must` deve apontar para evidência executável/gate declarado em `specs/verification-plan.json`;
+- rastreabilidade não substitui a execução real dos gates;
+- risco médio/alto exige revisão `independent-agent` quando disponível ou `clean-context` provider-neutral; deterministic CI sozinho não é reviewer semântico suficiente;
+- review evidence é ligado por fingerprint à spec, plano e conteúdo revisado; mudança posterior torna a aprovação stale;
+- visual regression é condicional a baseline visual estável e risco material, evitando snapshots frágeis em UI exploratória;
+- Context Engine não finge possuir call graph universal; análise semântica profunda de dependências precisa ser pilotada por linguagem/stack antes de virar regra;
+- typecheck/build/lockfile/runtime são defesa padrão contra APIs inexistentes; integrações pouco tipadas/de runtime recebem smoke/integration test quando necessário;
 - backend é escolhido por capacidade, não por marca;
 - ordem baseline: `current_agent → github_ci → sandbox → local_full` entre backends elegíveis;
 - aprendizado só pode reordenar candidatos leves já elegíveis com evidência suficiente;
@@ -51,7 +64,22 @@ Manter a **App Factory V1.3 estável** como baseline recuperável, autônomo e a
 - reuse-first, baseline/diff/rollback, instalação limpa, testes executáveis e CI reproduzível continuam gates permanentes;
 - Living UI / Semantic Motion permanece transversal quando existe UI, com `ambient` contextual e `prefers-reduced-motion` obrigatório.
 
-## Evidência V1.3
+## Evidência V1.4
+
+- `core/SEMANTIC_VERIFICATION.md`;
+- `engine/semantic_verification.py`;
+- `engine/review_packet.py`;
+- fase `specification` e guards em `engine/autonomy_engine.py`;
+- integração em `scripts/factory.py`;
+- `skills/semantic-verification/SKILL.md`;
+- `scripts/validate_v1_4.py`;
+- `tests/v1_4/`;
+- `.github/workflows/validate-v1-4-semantic.yml`;
+- `core/DEFINITION_OF_DONE.md`, `core/WORKFLOW.md`, `core/ENTRYPOINT.md`, `skills/app-planner/SKILL.md` e `skills/verification/SKILL.md` atualizados.
+
+A validação V1.4 cobre spec proporcional, invariantes/IDs, critérios `must`, rastreabilidade até gates declarados, stale spec/plan/review, recusa de deterministic-CI-only review em risco médio/alto, clean-context review, fingerprint do conteúdo atual, pacote spec+diff sem raciocínio anterior, fase semântica do Autonomy Engine, compatibilidade do fluxo legado e integração CLI.
+
+## Evidência V1.3 preservada
 
 - `core/LEARNING_ENGINE.md`;
 - `engine/learning_engine.py`;
@@ -61,8 +89,6 @@ Manter a **App Factory V1.3 estável** como baseline recuperável, autônomo e a
 - `tests/v1_3/`;
 - `.github/workflows/validate-v1-3-learning.yml`;
 - `research/V1.3_LEARNING_ENGINE_VALIDATION.md`.
-
-A validação V1.3 cobre privacidade do schema, sanitização de arquivo local adulterado, dataset bounded, amostra mínima, prior conservador, escolha aprendida apenas entre backends elegíveis, incapacidade acima de score, proteção de `local_full`, failure threshold da tarefa atual, isolamento entre tarefas, duração somente de execuções bem-sucedidas, persistência entre sessões e integração CLI.
 
 ## Evidência V1.2 preservada
 
@@ -92,9 +118,9 @@ A validação V1.3 cobre privacidade do schema, sanitização de arquivo local a
 
 ## Próxima ação
 
-Usar V1.3 como baseline corrente. Em projeto existente, começar por `resume`; deixar Context/Autonomy recuperar o estado, Execution Fabric filtrar executores, Learning Engine influenciar somente quando houver evidência confiável e CI provar o resultado.
+Usar V1.4 como baseline corrente. Em projeto existente, começar por `resume`; deixar Context/Autonomy recuperar o estado, Factory Router decidir se Semantic Verification é necessária, Execution Fabric filtrar executores, Learning Engine influenciar somente quando houver evidência confiável, CI provar o comportamento e revisão desacoplada fechar o gap entre intenção e implementação quando o risco justificar.
 
-Escopos ainda não validados — como mobile nativo, desktop nativo, jogos e cloud complexa — continuam exigindo piloto/evidência próprios antes de virarem perfis estáveis.
+Escopos ainda não validados — como call graph semântico profundo universal, mobile nativo, desktop nativo, jogos e cloud complexa — continuam exigindo piloto/evidência próprios antes de virarem capacidades/perfis estáveis.
 
 ## Handoff
 
@@ -104,7 +130,7 @@ Outro agente deve começar por:
 2. `python scripts/factory.py --root <projeto> resume` quando o runtime estiver disponível;
 3. este `PROJECT_STATE.md` quando estiver modificando a própria Factory;
 4. `core/ENTRYPOINT.md`;
-5. `core/CONTEXT_ENGINE.md`, `core/AUTONOMY_ENGINE.md`, `core/EXECUTION_FABRIC.md` e `core/LEARNING_ENGINE.md`;
-6. `skills/factory-router/SKILL.md`, `skills/execution-router/SKILL.md` e `skills/learning-engine/SKILL.md`;
+5. `core/CONTEXT_ENGINE.md`, `core/AUTONOMY_ENGINE.md`, `core/SEMANTIC_VERIFICATION.md`, `core/EXECUTION_FABRIC.md` e `core/LEARNING_ENGINE.md`;
+6. `skills/factory-router/SKILL.md`, `skills/semantic-verification/SKILL.md`, `skills/execution-router/SKILL.md` e `skills/learning-engine/SKILL.md`;
 7. o perfil indicado pelo produto;
 8. `ui/UI_POLICY.md` e `ui/MOTION_POLICY.md` quando houver interface.
