@@ -6,7 +6,7 @@ Validate Living UI / Semantic Motion in the fictitious **Pulse Desk** operations
 
 ## Current state
 
-- phase: V0.8 executable validation;
+- phase: V0.8 executable validation completed;
 - App Factory profile: `web-admin`;
 - Factory baseline: `v0.7`;
 - Motion Profile: `ambient` contextual;
@@ -26,4 +26,4 @@ Validate Living UI / Semantic Motion in the fictitious **Pulse Desk** operations
 
 ## Next action
 
-Run the full V0.8 verification gate and review the resulting evidence before promoting primitives.
+Retain this example as executable V0.8 evidence. Future changes should preserve its motion, accessibility and Playwright contracts unless the App Factory Motion Policy is deliberately revised.
