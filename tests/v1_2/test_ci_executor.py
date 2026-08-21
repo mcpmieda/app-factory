@@ -40,9 +40,19 @@ class CIExecutorTests(unittest.TestCase):
         self.addCleanup(temp.cleanup)
         plan = build_ci_plan(root)
         self.assertEqual(plan["install_argv"], ["npm", "ci"])
+        self.assertTrue(plan["reproducible_install"])
         self.assertFalse(plan["security"]["shell"])
         self.assertFalse(plan["security"]["prompt_commands"])
         self.assertFalse(plan["security"]["secrets_required"])
+
+    def test_package_without_lockfile_has_no_permissive_install_command(self) -> None:
+        temp, root = self.make_node_repo()
+        self.addCleanup(temp.cleanup)
+        (root / "package-lock.json").unlink()
+        plan = build_ci_plan(root)
+        self.assertEqual(plan["package_manager"], "npm")
+        self.assertIsNone(plan["install_argv"])
+        self.assertFalse(plan["reproducible_install"])
 
     def test_known_python_validator_can_run_without_shell(self) -> None:
         temp = tempfile.TemporaryDirectory()
