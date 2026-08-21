@@ -89,6 +89,8 @@ app-factory/
 │   └── web-admin/
 ├── ui/
 ├── registry/
+├── pilots/
+│   └── web-admin/
 ├── research/
 └── scripts/
 ```
@@ -113,6 +115,6 @@ app-factory/
 
 ## Estado
 
-Versão de trabalho: `0.2.1-alpha`
+Versão de trabalho: `0.3-web-admin-pilot`
 
-A pesquisa avaliou 58 referências, o adaptador Codex passou por piloto real e o piloto `web-admin` da Issue #4 produziu evidências de execução. A V1 só promoverá defaults após revisão dos aprendizados e guardrails do piloto.
+A pesquisa avaliou 58 referências, o adaptador Codex passou por piloto real e o piloto `web-admin` da Issue #4 foi implementado com autenticação, banco, CRUD, testes e evidência de navegador. O experimento aguarda revisão em draft PR antes de qualquer promoção de defaults da V1.
