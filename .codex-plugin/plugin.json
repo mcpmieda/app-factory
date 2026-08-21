@@ -1,7 +1,7 @@
 {
   "name": "app-factory",
-  "version": "1.1.0",
-  "description": "Portable AI software-development factory with incremental context, autonomous next-action routing, planning, tool selection and executable verification.",
+  "version": "1.2.0",
+  "description": "Portable AI software-development factory with incremental context, autonomous next-action routing and capability-based execution backends.",
   "author": {
     "name": "mcpmieda",
     "url": "https://github.com/mcpmieda"
@@ -10,16 +10,16 @@
   "skills": "./skills/",
   "interface": {
     "displayName": "App Factory",
-    "shortDescription": "Automatically recover context, route, build and verify software work.",
-    "longDescription": "A portable software-development factory that activates from software intent, recovers incremental repository context and autonomous state, plans complete functional slices, prefers the current agent plus GitHub/CI when sufficient, and requires executable verification before delivery.",
+    "shortDescription": "Recover context, choose an executor, build, verify and continue automatically.",
+    "longDescription": "A portable software-development factory that activates from software intent, recovers incremental repository context and autonomous state, then routes each action to the lightest capable backend, preferring the current agent and GitHub CI before a full local executor.",
     "developerName": "mcpmieda",
     "category": "Productivity",
     "capabilities": ["Interactive"],
     "websiteURL": "https://github.com/mcpmieda/app-factory",
     "defaultPrompt": [
       "I want to create a software system. Route it through App Factory automatically.",
-      "Resume this software project from its repository state and continue autonomously.",
-      "Use the lightest executor that can implement and verify this software change."
+      "Resume this software project and continue with the lightest capable execution backend.",
+      "Use GitHub CI for deterministic verification before escalating to a local executor."
     ]
   }
 }
