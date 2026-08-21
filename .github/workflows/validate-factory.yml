@@ -18,3 +18,5 @@ jobs:
           python-version: "3.12"
       - name: Validate Factory structure
         run: python scripts/validate_factory.py
+      - name: Validate Agent Skills constraints
+        run: python scripts/validate_skills.py
