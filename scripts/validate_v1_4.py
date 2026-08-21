@@ -12,8 +12,12 @@ ROOT = Path(__file__).resolve().parents[1]
 REQUIRED = [
     "core/SEMANTIC_VERIFICATION.md",
     "engine/semantic_verification.py",
+    "engine/review_packet.py",
     "skills/semantic-verification/SKILL.md",
     "tests/v1_4/test_semantic_verification.py",
+    "tests/v1_4/test_autonomy_semantic.py",
+    "tests/v1_4/test_cli_semantic.py",
+    "tests/v1_4/test_review_packet.py",
     ".github/workflows/validate-v1-4-semantic.yml",
 ]
 
@@ -39,6 +43,20 @@ def validate_structure() -> None:
         if marker not in engine:
             fail(f"Semantic Verification contract marker missing: {marker}")
 
+    packet = (ROOT / "engine/review_packet.py").read_text(encoding="utf-8")
+    for marker in (
+        ':(exclude)specs/review-evidence.json',
+        '"Fresh review input only.',
+        '"diff": diff',
+    ):
+        if marker not in packet:
+            fail(f"Clean-context review packet marker missing: {marker}")
+
+    autonomy = (ROOT / "engine/autonomy_engine.py").read_text(encoding="utf-8")
+    for marker in ('"specification"', '"spec-ready"', 'validate_verification_plan', 'validate_review_evidence'):
+        if marker not in autonomy:
+            fail(f"Autonomy semantic gate marker missing: {marker}")
+
 
 def run_tests() -> None:
     subprocess.run(
@@ -61,7 +79,7 @@ def run_tests() -> None:
 def main() -> int:
     validate_structure()
     run_tests()
-    print("OK: V1.4 semantic spec, traceability, stale-evidence and decoupled-review contracts validated.")
+    print("OK: V1.4 semantic spec, traceability, clean-context diff review, stale-evidence and autonomy contracts validated.")
     return 0
 
 
