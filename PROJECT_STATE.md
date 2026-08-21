@@ -4,41 +4,50 @@
 
 ## Objetivo atual
 
-Validar a App Factory em uma aplicação web administrativa real antes de promover tecnologias e padrões a defaults da V1.
+Transformar os aprendizados validados do piloto V0.3 em um perfil `web-admin` reutilizável e, depois, gerar um starter limpo para um segundo teste do zero.
 
 ## Estado
 
-- fase: `V0.3 — piloto web-admin com bloqueadores de revisão corrigidos`;
-- baseline oficial: `main` após merge do PR #2 (`d917a891b364502d01b3644431f4b5df1d4d588c`);
+- fase: `V0.4 — promoção do perfil web-admin`;
+- baseline oficial: `main` após merge do PR #6 (`2e786d39505cfdbc766f6481535cb65413d2b735`);
 - V0.1 bootstrap: concluída;
 - V0.2 pesquisa: concluída e integrada;
+- V0.2.1 entry router: concluído e integrado;
 - Issue #3 / Codex Plugin: concluída e revisada;
-- adaptador Codex: validado em piloto real;
-- 10 Skills: validadas e descobertas pelo Codex;
-- CI: valida estrutura, Agent Skills e Codex Plugin.
+- V0.3 piloto web-admin: concluído, revisado, CI reproduzível e integrado;
+- Issues #4 e #8: concluídas;
+- CI: valida Core/Skills/plugin e o piloto web-admin em checkout limpo.
 
 ## Decisões vigentes
 
 - Core permanece neutro e portátil;
 - Codex usa adaptador/plugin fino sem duplicar Skills;
+- intenção de software ativa a Factory automaticamente;
 - processo varia por escala XS/S/M/L;
-- `shadcn + ReUI` é candidato preferencial do perfil admin;
-- HeroUI é perfil alternativo;
-- Better Auth + Drizzle + Zod foram aprovados para promoção ao perfil web-admin, ainda não são defaults universais;
-- Playwright foi aprovado como default E2E do perfil;
-- Spec Kit deve ser usado proporcionalmente à escala;
-- starters devem ser componíveis, sem serviços opcionais impostos.
+- Factory pode selecionar perfil validado em `profiles/` após entender o produto;
+- perfil não é dogma e módulos opcionais só entram quando necessários;
+- no perfil `web-admin`, shadcn é a base visual;
+- ReUI é opcional/seletivo por componente avançado;
+- HeroUI é perfil visual alternativo;
+- Better Auth é primeira opção condicional quando o projeto exige autenticação própria;
+- Drizzle é primeira opção condicional quando o projeto exige persistência própria;
+- provider de banco é escolhido pelo ambiente; SQLite/better-sqlite3 fica local/teste salvo requisito real;
+- Zod, Vitest, Playwright e lint oficial do Next foram promovidos para o perfil;
+- Biome fica opcional/complementar;
+- Spec Kit continua proporcional à escala;
+- starters permanecem componíveis, sem serviços opcionais impostos;
+- instalação limpa e CI reproduzível são gates, não apenas testes locais.
 
 ## Trabalho atual
 
-- bloco: Issue #8 — corrigir reprodutibilidade e prova do ciclo destrutivo no draft PR #6;
-- ambiente recomendado: Codex;
-- motivo: exige scaffold real, dependências, banco, autenticação, build, testes e navegador;
-- regra: construir o piloto de forma isolada e não alterar o Core para acomodar resultados locais sem evidência.
+- bloco: promover `profiles/web-admin/PROFILE.md` e ligar o perfil ao `factory-router`/`app-planner`;
+- ambiente recomendado: ChatGPT + GitHub;
+- motivo: é consolidação de arquitetura/documentação já comprovada, sem necessidade de ambiente local neste bloco;
+- branch: `promote/web-admin-profile-v0.4`.
 
 ## Próxima ação
 
-Revisar os checks finais do draft PR #6 após a correção da Issue #8. Confirmar `npm ci` reproduzível e o Playwright ampliado antes de qualquer promoção ao Core; não fazer merge automático.
+Após CI/revisão e merge da V0.4, criar uma Issue para Codex gerar um starter `web-admin` limpo a partir do perfil, sem copiar cegamente `pilots/web-admin/`, e validar um segundo app do zero.
 
 ## Handoff
 
@@ -46,6 +55,7 @@ Outro agente deve começar por:
 
 1. `AGENTS.md`;
 2. este `PROJECT_STATE.md`;
-3. `research/V0.3_WEB_ADMIN_PILOT.md`;
-4. `pilots/web-admin/README.md`;
-5. Issues #4/#8 e o draft PR #6.
+3. `profiles/web-admin/PROFILE.md`;
+4. `research/V0.3_WEB_ADMIN_PILOT.md`;
+5. `starters/web-admin/README.md`;
+6. PR da branch `promote/web-admin-profile-v0.4` quando existir.
