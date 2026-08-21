@@ -8,7 +8,7 @@ Validar a App Factory em uma aplicação web administrativa real antes de promov
 
 ## Estado
 
-- fase: `V0.3 — piloto web-admin em revisão`;
+- fase: `V0.3 — piloto web-admin com bloqueadores de revisão corrigidos`;
 - baseline oficial: `main` após merge do PR #2 (`d917a891b364502d01b3644431f4b5df1d4d588c`);
 - V0.1 bootstrap: concluída;
 - V0.2 pesquisa: concluída e integrada;
@@ -31,14 +31,14 @@ Validar a App Factory em uma aplicação web administrativa real antes de promov
 
 ## Trabalho atual
 
-- bloco: Issue #4 — piloto `web-admin` implementado na branch `pilot/web-admin-v0.3` e aberto no draft PR #6;
+- bloco: Issue #8 — corrigir reprodutibilidade e prova do ciclo destrutivo no draft PR #6;
 - ambiente recomendado: Codex;
 - motivo: exige scaffold real, dependências, banco, autenticação, build, testes e navegador;
 - regra: construir o piloto de forma isolada e não alterar o Core para acomodar resultados locais sem evidência.
 
 ## Próxima ação
 
-Revisar o draft PR da Issue #4, especialmente o advisory transitivo do `drizzle-kit`, a classificação opcional do ReUI e a futura escolha de provider de produção. Não promover o piloto ao Core antes da revisão.
+Revisar os checks finais do draft PR #6 após a correção da Issue #8. Confirmar `npm ci` reproduzível e o Playwright ampliado antes de qualquer promoção ao Core; não fazer merge automático.
 
 ## Handoff
 
@@ -48,4 +48,4 @@ Outro agente deve começar por:
 2. este `PROJECT_STATE.md`;
 3. `research/V0.3_WEB_ADMIN_PILOT.md`;
 4. `pilots/web-admin/README.md`;
-5. Issue #4 e seu draft PR.
+5. Issues #4/#8 e o draft PR #6.

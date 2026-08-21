@@ -61,6 +61,28 @@ test("runs the authenticated resource lifecycle", async ({ page }, testInfo) => 
   await page.reload()
   await expect(page.getByText(editedName, { exact: true })).toBeVisible()
 
+  await page.getByRole("button", { name: `Reativar ${editedName}` }).click()
+  await expect(page.getByText(editedName, { exact: true })).toHaveCount(0)
+  await page.getByLabel("Filtrar por atividade").selectOption("active")
+  await page.getByRole("button", { name: "Aplicar filtros" }).click()
+  await expect(page.getByText(editedName, { exact: true })).toBeVisible()
+
+  await page.getByRole("button", { name: `Desativar ${editedName}` }).click()
+  await expect(page.getByRole("heading", { name: "Desativar este registro?" })).toBeVisible()
+  await expect(page.getByRole("button", { name: "Excluir", exact: true })).toHaveCount(0)
+  await page.getByRole("button", { name: "Cancelar" }).click()
+
+  await page.getByRole("button", { name: `Desativar ${editedName}` }).click()
+  await page.getByRole("button", { name: "Desativar", exact: true }).click()
+  await page.getByLabel("Filtrar por atividade").selectOption("inactive")
+  await page.getByRole("button", { name: "Aplicar filtros" }).click()
+  await page.getByRole("button", { name: `Excluir ${editedName}` }).click()
+  await expect(page.getByRole("heading", { name: "Excluir permanentemente?" })).toBeVisible()
+  await page.getByRole("button", { name: "Excluir", exact: true }).click()
+  await expect(page.getByText(editedName, { exact: true })).toHaveCount(0)
+  await page.reload()
+  await expect(page.getByText(editedName, { exact: true })).toHaveCount(0)
+
   const signOut = page.getByRole("button", { name: "Sair" })
   if (!(await signOut.isVisible())) {
     await page.getByRole("button", { name: "Abrir menu" }).click()

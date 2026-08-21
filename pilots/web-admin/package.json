@@ -2,6 +2,11 @@
   "name": "web-admin",
   "version": "0.1.0",
   "type": "module",
+  "packageManager": "npm@10.9.9",
+  "engines": {
+    "node": ">=22 <25",
+    "npm": "10.x"
+  },
   "private": true,
   "scripts": {
     "dev": "next dev",

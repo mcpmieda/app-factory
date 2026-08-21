@@ -6,13 +6,13 @@ Piloto V0.3 da App Factory: painel administrativo local para gestão de recursos
 
 ## Requisitos
 
-- Node.js 22+ (validado também com Node.js 24);
-- npm 10+.
+- Node.js 22–24;
+- npm 10.9.9 (linha fixada em `packageManager` para reproduzir o CI).
 
 ## Executar localmente
 
 ```bash
-npm install
+npm ci
 npm run setup
 npm run dev
 ```
@@ -33,6 +33,8 @@ npm run e2e
 ```
 
 Para uma máquina sem Chromium do Playwright, execute uma vez `npx playwright install chromium`.
+
+O lockfile é gerado com npm 10.9.9 e validado no CI com a mesma versão. Use `npm ci` para instalações reproduzíveis; `npm install` fica reservado a mudanças intencionais de dependências.
 
 ## Estrutura relevante
 
