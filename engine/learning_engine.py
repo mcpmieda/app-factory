@@ -16,6 +16,36 @@ BETA_SUCCESS_PRIOR = 2
 BETA_FAILURE_PRIOR = 2
 ALLOWED_OUTCOMES = {"success", "failure", "blocked", "cancelled"}
 PROTECTED_HEAVY_BACKENDS = {"local_full"}
+SAFE_BACKENDS = {"current_agent", "github_ci", "sandbox", "local_full"}
+SAFE_ACTIONS = {
+    "plan",
+    "reconcile_context",
+    "implement",
+    "verify",
+    "repair",
+    "review",
+    "deliver",
+    "resolve_blocker",
+    "request_human",
+    "done",
+    "inspect_state",
+}
+SAFE_CAPABILITIES = {
+    "reasoning",
+    "repo_read",
+    "repo_write",
+    "github_api",
+    "review",
+    "deterministic_commands",
+    "build",
+    "test",
+    "headless_browser",
+    "ephemeral_services",
+    "interactive_shell",
+    "interactive_browser",
+    "local_services",
+    "live_migration",
+}
 
 
 def utc_now() -> str:
@@ -27,26 +57,24 @@ def learning_path(root: Path | str) -> Path:
 
 
 def normalize_action(action: str) -> str:
-    compact = "".join(ch for ch in str(action).strip().lower() if ch.isalnum() or ch in {"-", "_", ":"})
-    if not compact:
-        raise ValueError("action must contain a safe identifier")
-    return compact[:80]
+    """Classify action without persisting arbitrary/user-provided text."""
+    compact = str(action).strip().lower().replace("-", "_")
+    return compact if compact in SAFE_ACTIONS else "other"
 
 
 def normalize_backend(backend: str) -> str:
-    compact = "".join(ch for ch in str(backend).strip().lower() if ch.isalnum() or ch in {"-", "_", ":"})
-    if not compact:
-        raise ValueError("backend must contain a safe identifier")
-    return compact[:80]
+    compact = str(backend).strip().lower()
+    if compact not in SAFE_BACKENDS:
+        raise ValueError(f"unsupported learning backend: {backend}")
+    return compact
 
 
 def normalize_capabilities(capabilities: Iterable[str]) -> tuple[str, ...]:
-    result: set[str] = set()
-    for value in capabilities:
-        compact = "".join(ch for ch in str(value).strip().lower() if ch.isalnum() or ch in {"-", "_", ":"})
-        if compact:
-            result.add(compact[:80])
-    return tuple(sorted(result))
+    result = tuple(sorted({str(value).strip().lower() for value in capabilities if str(value).strip()}))
+    unknown = set(result) - SAFE_CAPABILITIES
+    if unknown:
+        raise ValueError(f"unsupported learning capabilities: {', '.join(sorted(unknown))}")
+    return result
 
 
 def context_key(action: str, capabilities: Iterable[str]) -> str:
@@ -85,7 +113,7 @@ def record_learning_event(
     outcome: str,
     duration_ms: int | None = None,
 ) -> dict[str, Any]:
-    """Persist only allowlisted execution metadata; never prompts, code, logs or summaries."""
+    """Persist only allowlisted execution metadata; never prompts, code, logs, summaries or task text."""
     safe_outcome = str(outcome).strip().lower()
     if safe_outcome not in ALLOWED_OUTCOMES:
         raise ValueError(f"unsupported learning outcome: {outcome}")
@@ -129,7 +157,7 @@ def aggregate_context(
         if not isinstance(event, dict) or event.get("context") != key:
             continue
         backend = event.get("backend")
-        if not isinstance(backend, str):
+        if not isinstance(backend, str) or backend not in SAFE_BACKENDS:
             continue
         bucket = buckets.setdefault(
             backend,
@@ -182,8 +210,10 @@ def learning_status(root: Path | str) -> dict[str, Any]:
         "contexts": len(contexts),
         "outcomes": dict(sorted(outcomes.items())),
         "backends": dict(sorted(backends.items())),
+        "updated_at": state.get("updated_at"),
         "local_only": True,
         "external_telemetry": False,
+        "persisted_fields": ["at", "context", "action", "capabilities", "backend", "outcome", "duration_ms"],
     }
 
 
@@ -217,14 +247,12 @@ def recommend_backend(
     if not alternatives:
         return {**base, "mode": "insufficient-data", "backend": baseline, "reason": "No eligible lightweight alternative exists."}
 
+    minimum = max(1, int(min_samples))
     baseline_stats = stats.get(baseline)
-    if not baseline_stats or baseline_stats["resolved_samples"] < max(1, int(min_samples)):
+    if not baseline_stats or baseline_stats["resolved_samples"] < minimum:
         return {**base, "mode": "insufficient-data", "backend": baseline, "reason": "Baseline does not yet have enough resolved samples."}
 
-    qualified = [
-        backend for backend in alternatives
-        if stats.get(backend, {}).get("resolved_samples", 0) >= max(1, int(min_samples))
-    ]
+    qualified = [backend for backend in alternatives if stats.get(backend, {}).get("resolved_samples", 0) >= minimum]
     if not qualified:
         return {**base, "mode": "insufficient-data", "backend": baseline, "reason": "Alternatives do not yet have enough resolved samples."}
 
