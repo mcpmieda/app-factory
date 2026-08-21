@@ -23,7 +23,7 @@ Concluir a validação **universal** fora do perfil `web-admin` e entregar evid�
 - V0.8 Living UI executável: concluída, revisada e integrada;
 - perfil `web-admin`: `v1-rc`;
 - Issues #4, #8, #10, #12, #15 e #19: concluídas;
-- Issue #22: implementada na branch `pilot/universal-validation-v0.9`, draft PR #24 aberto e aguardando revisão/CI;
+- Issue #22: implementada na branch `pilot/universal-validation-v0.9`, draft PR #24 com CI verde e aguardando revisão;
 - perfis `website`, `web-app`, `chrome-extension` e `automation`: `validated`;
 - CI atual: gates anteriores preservados e quatro jobs universais independentes adicionados.
 
@@ -55,12 +55,12 @@ Concluir a validação **universal** fora do perfil `web-admin` e entregar evid�
 - pilotos: `examples/website-pilot`, `web-app-pilot`, `chrome-extension-pilot`, `automation-pilot`;
 - evidência: `research/V0.9_UNIVERSAL_VALIDATION.md` e screenshots V0.9;
 - continuidade: website e automation recuperados por agentes isolados sem contexto;
-- status final condicionado a checks verdes do draft PR;
+- status executável confirmado pelos cinco checks do draft PR;
 - nenhum merge automático.
 
 ## Próxima ação
 
-Revisar o draft PR da Issue #22 e aguardar todos os checks. Sem bloqueador objetivo após CI, iniciar diretamente **V1.0 — auditoria final end-to-end em ambiente limpo**, sem fase intermediária de refinamento.
+Revisar o draft PR #24 da Issue #22. Sem bloqueador objetivo após CI verde, iniciar diretamente **V1.0 — auditoria final end-to-end em ambiente limpo**, sem fase intermediária de refinamento.
 
 ## Handoff
 
