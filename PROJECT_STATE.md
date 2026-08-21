@@ -12,8 +12,8 @@ Manter a **App Factory V1.1 estável** como baseline recuperável e mais autôno
 - versão: `1.1.0`;
 - baseline anterior preservada: tag/release `v1.0.0`;
 - Issue #32 / Autonomous Context Engine: concluída na release V1.1;
-- Context Engine: incremental, stdlib, SHA-256, delta `added/changed/removed`, mapa de stack/símbolos/imports e exclusão de segredos/build/dependencies/binários;
-- Autonomy Engine: `init/status/next/resume/record`, fases explícitas, repair loop default 3 e intervenção humana categorizada;
+- Context Engine: incremental, stdlib, SHA-256, delta `added/changed/removed`, mapa de stack/símbolos/imports/dependências locais e exclusão de segredos/build/dependencies/binários;
+- Autonomy Engine: `init/status/next/resume/record`, fases e transições explícitas, repair loop default 3 e intervenção humana categorizada;
 - execução: current-agent + GitHub/CI primeiro; Codex/local passa a ser fallback de capacidade real, não regra automática;
 - perfil `web-admin`: `v1`;
 - perfis `website`, `web-app`, `chrome-extension` e `automation`: `validated`;
@@ -28,6 +28,7 @@ Manter a **App Factory V1.1 estável** como baseline recuperável e mais autôno
 - `.factory/context/` é cache regenerável e não fonte de verdade;
 - `.factory/state.json` é estado compacto de continuidade e pode ser versionado em handoffs importantes;
 - o agente calcula e executa o próximo passo técnico; não pede ao usuário para conduzir fases rotineiras;
+- eventos fora da fase permitida são rejeitados antes de alterar o estado;
 - falha técnica entra em reparo limitado; ao estagnar, mudar estratégia/executor antes de envolver o usuário;
 - intervenção humana é reservada a produto/regra de negócio, preferência subjetiva, custo, risco alto, credencial/dado indisponível e decisão legal/organizacional;
 - current-agent + GitHub/CI deve ser tentado antes de Codex quando fornecer prova suficiente;
@@ -51,7 +52,7 @@ Manter a **App Factory V1.1 estável** como baseline recuperável e mais autôno
 - `.github/workflows/validate-v1-1-autonomy.yml`;
 - `.github/workflows/validate-v1-release.yml`.
 
-O gate dedicado comprovou 13 Skills estruturalmente válidas, máquina de estados, repair loop limitado, retomada sem histórico, detecção de mudança externa e cache incremental. No repositório real, a segunda passagem reaproveitou os metadados dos 504 arquivos mapeados e reprocessou 0 arquivos.
+O gate dedicado comprovou 13 Skills estruturalmente válidas, máquina de estados com transições protegidas, repair loop limitado, retomada sem histórico, detecção de mudança externa e cache incremental. No repositório real, a segunda passagem reaproveitou os metadados dos 505 arquivos mapeados e reprocessou 0 arquivos.
 
 ## Evidência V1.0 preservada
 
