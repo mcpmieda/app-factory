@@ -28,7 +28,7 @@ O manifest aponta `skills` para `./skills/`, que já é a fonte portátil usada 
 
 ## Estado
 
-`1.0.0-rc.1` — **release candidate aguardando revisão final**.
+`1.0.0` — **V1.0 estável**.
 
 O Codex CLI oficial `0.149.0` reconhece o marketplace local, instala a App Factory e descobre as 11 Skills, incluindo `factory-router`. A auditoria V1 compara SHA-256 de todas as Skills entre o checkout limpo e o cache instalado e rejeita omissão, duplicação, divergência ou pacote pesado.
 
@@ -54,17 +54,18 @@ python scripts/validate_factory.py
 python scripts/validate_skills.py
 python scripts/validate_plugin.py
 python scripts/validate_v1_bootstrap.py
+python scripts/validate_v1_release.py
 ```
 
 No piloto também foi usado o validador oficial do `plugin-creator`.
 
 As evidências completas estão em:
 
-`research/V0.2_CODEX_PLUGIN_PILOT.md` (piloto histórico) e `research/V1.0_FINAL_AUDIT.md` (gate atual).
+`research/V0.2_CODEX_PLUGIN_PILOT.md` (piloto histórico) e `research/V1.0_FINAL_AUDIT.md` (auditoria final).
 
 ## Resultado arquitetural
 
-O piloto confirmou o desenho:
+O piloto e a auditoria final confirmaram o desenho:
 
 ```text
 APP FACTORY CORE
@@ -84,7 +85,7 @@ Nenhum arquivo do Core ou Skill é mantido como segunda fonte. O cache de instal
 
 ## MCP e hooks
 
-Não adicionar MCP ou hooks por padrão nesta fase.
+Não adicionar MCP ou hooks por padrão.
 
 Eles só entram quando houver caso concreto em que:
 

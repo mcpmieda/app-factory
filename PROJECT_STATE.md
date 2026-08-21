@@ -4,27 +4,19 @@
 
 ## Objetivo atual
 
-Executar a **auditoria final V1.0 end-to-end em ambiente limpo**, provando bootstrap/plugin isolado, roteamento por pedido comum, criação real do zero, qualidade executável, continuidade por outro agente e recuperação após regressão controlada.
+Manter a **App Factory V1.0 estável** como baseline recuperável para criação e evolução de software por agentes, preservando validação executável, continuidade via GitHub e perfis condicionais.
 
 ## Estado
 
-- fase: `V1.0 release candidate — aguardando revisão final`;
-- baseline oficial: `main` após merge da V0.9 (`38421c037c04df1999701e56a7c8946e80bba486`);
-- V0.1 bootstrap: concluída e integrada;
-- V0.2 pesquisa: concluída e integrada;
-- V0.2.1 entry router: concluído e integrado;
-- V0.3 piloto web-admin: concluído e integrado;
-- V0.4 perfil web-admin: concluído e integrado;
-- V0.5 starter + segundo app: concluída e integrada;
-- V0.6 hardening PostgreSQL/Auth: concluído e integrado;
-- V0.7 Living UI / Semantic Motion: concluída e integrada;
-- V0.8 Living UI executável: concluída e integrada;
-- V0.9 validação universal: concluída, revisada e integrada;
-- Issue #22: concluída;
-- Issue #25: aberta e liberada para Codex;
-- perfil `web-admin`: `v1-rc`;
+- fase: `V1.0 — estável`;
+- versão: `1.0.0`;
+- baseline de release: `main` após a auditoria final V1.0;
+- V0.1 a V0.9: concluídas, revisadas e integradas;
+- Issue #25 / auditoria final V1.0: concluída e aprovada;
+- perfil `web-admin`: `v1`;
 - perfis `website`, `web-app`, `chrome-extension` e `automation`: `validated`;
-- CI: Core/Skills/plugin, web-admin starter/recipes, PostgreSQL/Auth real, asset-admin, Living UI e quatro pilotos universais.
+- plugin Codex: `1.0.0`, com bootstrap isolado e 11 Skills verificadas sem duplicação;
+- CI: Core/Skills/plugin, web-admin starter/recipes, PostgreSQL/Auth real, asset-admin, Living UI, quatro pilotos universais e gate V1 final.
 
 ## Decisões vigentes
 
@@ -38,24 +30,25 @@ Executar a **auditoria final V1.0 end-to-end em ambiente limpo**, provando boots
 - `prefers-reduced-motion` é obrigatório para movimento não essencial;
 - `web-admin` tem caminho validado Better Auth + Drizzle + PostgreSQL quando necessário;
 - website, web-app, Chrome extension e automation possuem contratos validados próprios;
-- instalação limpa, testes executáveis, CI reproduzível, recuperação e continuidade via GitHub são gates de release;
-- refinamentos não bloqueantes e novos perfis ficam para pós-V1.
+- instalação limpa, testes executáveis, CI reproduzível, recuperação e continuidade via GitHub são gates permanentes;
+- refinamentos não bloqueantes e novos perfis ficam para versões posteriores.
 
-## Trabalho atual
+## Evidência da V1.0
 
-- bloco: Issue #25 — auditoria final V1.0;
-- ambiente recomendado: Codex em configuração/diretórios isolados sempre que possível;
-- pedido final do teste é linguagem natural e não contém stack/framework;
-- projeto de auditoria deve nascer do zero e provar uma jornada real de empréstimo/devolução de equipamentos;
-- segundo agente sem contexto deve conseguir compreender, modificar e validar o projeto apenas pelo repositório;
-- uma regressão controlada deve ser detectada e recuperada antes do baseline final verde;
-- nenhuma tag/release V1.0 deve ser criada antes da revisão final do ChatGPT.
+- `research/V1.0_FINAL_AUDIT.md`;
+- `audits/v1-final/equipment-loans/`;
+- `research/evidence/V1_CONTINUITY_HANDOFF.md`;
+- `research/evidence/V1_CONTROLLED_RECOVERY.md`;
+- `.github/workflows/validate-v1-release.yml`;
+- `scripts/validate_v1_bootstrap.py` e `scripts/validate_v1_release.py`.
+
+A auditoria final comprovou bootstrap isolado do plugin, roteamento a partir de linguagem comum, criação de projeto novo, persistência e regra de negócio, browser desktop/mobile, reduced motion, continuidade por segundo agente sem contexto e detecção/recuperação de regressão controlada.
 
 ## Próxima ação
 
-Revisar o draft PR da Issue #25, seus checks, o relatório `research/V1.0_FINAL_AUDIT.md`, a evidência do segundo agente e o teste de recuperação. Não fazer merge, tag ou release antes dessa revisão.
+Usar V1.0 como baseline estável. Novos trabalhos devem nascer de necessidade real de produto ou manutenção; não criar nova fase apenas para refinamento cosmético ou expansão nominal de cobertura.
 
-Se todos os critérios objetivos passarem e o relatório declarar `APP FACTORY V1.0 READY FOR RELEASE`, a próxima ação será revisar, integrar e publicar/taguear a V1.0. Não criar fase intermediária apenas por refinamento.
+Escopos ainda não validados — como mobile nativo, desktop nativo, jogos e cloud complexa — devem receber piloto/evidência próprios antes de virarem perfis estáveis.
 
 ## Handoff
 
@@ -63,9 +56,9 @@ Outro agente deve começar por:
 
 1. `AGENTS.md`;
 2. este `PROJECT_STATE.md`;
-3. Issue #25;
-4. `core/ENTRYPOINT.md`;
-5. `skills/factory-router/SKILL.md`;
-6. `profiles/README.md`;
-7. somente depois, os Skills/perfis que o roteamento indicar;
-8. `research/V0.9_UNIVERSAL_VALIDATION.md` apenas como evidência anterior, não como instrução para copiar os pilotos.
+3. `core/ENTRYPOINT.md`;
+4. `skills/factory-router/SKILL.md`;
+5. `profiles/README.md`;
+6. o perfil indicado pelo produto;
+7. `ui/UI_POLICY.md` e `ui/MOTION_POLICY.md` quando houver interface;
+8. `research/V1.0_FINAL_AUDIT.md` quando precisar auditar a origem da release.

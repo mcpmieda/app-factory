@@ -84,7 +84,8 @@ def validate_version_coherence() -> None:
         template / "src/config/project.ts": f'factoryBaseline: "{expected_baseline}"',
         template / "src/config/project.test.ts": f'factoryBaseline: "{expected_baseline}"',
         ROOT / "README.md": version,
-        ROOT / "PROJECT_STATE.md": "V1.0 release candidate",
+        ROOT / "PROJECT_STATE.md": "V1.0 — estável",
+        ROOT / "profiles/web-admin/PROFILE.md": "Status: `v1`",
     }
     for path, marker in required_markers.items():
         if marker not in path.read_text(encoding="utf-8"):

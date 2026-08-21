@@ -65,7 +65,7 @@ Depois, basta descrever o software em linguagem comum — por exemplo, `Quero cr
 13. `core/WORKFLOW.md` — ciclo de projeto novo e manutenção.
 14. `core/DEFINITION_OF_DONE.md` — como provar que terminou.
 15. `PORTABILITY.md` — continuidade entre agentes.
-16. `docs/CODEX_PLUGIN.md` — adaptador Codex validado em piloto.
+16. `docs/CODEX_PLUGIN.md` — adaptador Codex validado em piloto e auditoria final.
 
 ## Living UI / Semantic Motion
 
@@ -84,7 +84,7 @@ A política cobre seis funções: ambiente, interação, dados, estado, atençã
 
 ## Perfis
 
-### web-admin — candidato V1 (`v1-rc`)
+### web-admin — V1 estável (`v1`)
 
 Para sistemas administrativos, CRUDs, dashboards e ferramentas internas.
 
@@ -113,7 +113,7 @@ O perfil herda `Motion Profile: ambient`, reduzindo para comportamento `subtle` 
 
 O perfil completo está em `profiles/web-admin/PROFILE.md`.
 
-### Perfis universais V0.9 (`validated`)
+### Perfis universais (`validated`)
 
 `website`, `web-app`, `chrome-extension` e `automation` possuem um piloto completo e gates próprios. Os perfis registram contratos condicionais; Astro, Vite/React, Vite vanilla e Python foram adequados aos pilotos, mas não são stacks universais congeladas. Veja `research/V0.9_UNIVERSAL_VALIDATION.md`.
 
@@ -149,6 +149,8 @@ app-factory/
 │   ├── web-app-pilot/
 │   ├── chrome-extension-pilot/
 │   └── automation-pilot/
+├── audits/
+│   └── v1-final/
 ├── research/
 └── scripts/
 ```
@@ -179,6 +181,8 @@ app-factory/
 
 ## Estado
 
-Versão de trabalho: `1.0.0-rc.1` — **V1.0 release candidate, aguardando revisão final**.
+Versão estável: **`1.0.0` — App Factory V1.0**.
 
-O perfil `web-admin` está em `v1-rc`; os quatro perfis universais estão `validated`. A auditoria final exercita bootstrap isolado, criação real de um novo `web-admin`, continuidade entre agentes e recuperação controlada. Nenhuma tag ou release V1.0 foi publicada.
+A auditoria final comprovou bootstrap isolado do plugin, roteamento por pedido comum, criação real de um novo sistema do zero, persistência e regras de negócio, desktop/mobile/reduced-motion, continuidade por segundo agente sem contexto e recuperação após regressão controlada. O perfil `web-admin` está em `v1`; os perfis `website`, `web-app`, `chrome-extension` e `automation` permanecem `validated` até acumularem mais evidência.
+
+Escopos ainda não validados — como mobile nativo, desktop nativo, jogos e infraestrutura cloud complexa — ficam para versões posteriores e não são promessa da V1.0.
