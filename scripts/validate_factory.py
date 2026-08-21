@@ -13,12 +13,15 @@ REQUIRED = [
     "README.md",
     "AGENTS.md",
     "APP_FACTORY_PLAN.md",
+    "core/ENTRYPOINT.md",
     "core/PRINCIPLES.md",
     "core/HUMAN_INTERACTION.md",
     "core/TASK_ROUTER.md",
     "core/WORKFLOW.md",
     "core/RISK_MODEL.md",
     "core/DEFINITION_OF_DONE.md",
+    "skills/factory-router/SKILL.md",
+    "templates/project/AGENTS.md",
 ]
 
 SKILL_HEADER = re.compile(
@@ -46,7 +49,7 @@ def main() -> int:
         if not SKILL_HEADER.search(text):
             fail(f"Frontmatter inválido ou incompleto: {skill.relative_to(ROOT)}")
 
-    print(f"OK: {len(REQUIRED)} arquivos core e {len(skill_files)} Skills validados.")
+    print(f"OK: {len(REQUIRED)} arquivos obrigatórios e {len(skill_files)} Skills validados.")
     return 0
 
 

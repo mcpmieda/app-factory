@@ -8,6 +8,7 @@ Transformar uma ideia em software funcional usando um método reutilizável que 
 
 A App Factory não é um prompt gigante. Ela combina:
 
+- entrada universal por intenção de software;
 - `AGENTS.md` como mapa operacional;
 - Core curto e modular;
 - Skills especializadas carregadas conforme a tarefa;
@@ -19,6 +20,16 @@ A App Factory não é um prompt gigante. Ela combina:
 - adaptadores finos por agente;
 - GitHub como fonte de verdade para continuidade.
 
+## Experiência desejada
+
+O usuário pode começar somente com o resultado, por exemplo:
+
+> Quero criar um sistema de patrimônio para a escola.
+
+Ele não precisa dizer "use a App Factory", escolher framework, descobrir Skills ou decidir sozinho entre ChatGPT e Codex.
+
+Quando o plugin estiver instalado, `factory-router` é a Skill universal que reconhece intenção de desenvolvimento e aciona o processo adequado. Quando um projeto novo ganha repositório, ele recebe `templates/project/AGENTS.md`, que mantém o vínculo com a Factory para futuras conversas e outros agentes.
+
 ## Princípio central
 
 A IA deve trabalhar para atingir o objetivo do usuário, não apenas obedecer literalmente ao pedido. Deve fazer sozinha tudo que puder com segurança, reduzir cliques e conhecimento técnico exigido do usuário, recomendar caminhos melhores quando existirem e pedir intervenção humana somente quando houver decisão de negócio, preferência subjetiva, autorização de risco ou dado realmente indisponível.
@@ -26,15 +37,17 @@ A IA deve trabalhar para atingir o objetivo do usuário, não apenas obedecer li
 ## Comece por aqui
 
 1. `AGENTS.md` — mapa para agentes.
-2. `APP_FACTORY_PLAN.md` — visão, fases e decisões já tomadas.
-3. `core/PRINCIPLES.md` — princípios universais.
-4. `core/HUMAN_INTERACTION.md` — o que a IA faz sozinha e o que depende do usuário.
-5. `core/PROJECT_SCALE.md` — profundidade XS/S/M/L.
-6. `core/TASK_ROUTER.md` — quando usar ChatGPT, Codex ou outro agente.
-7. `core/WORKFLOW.md` — ciclo de projeto novo e manutenção.
-8. `core/DEFINITION_OF_DONE.md` — como provar que terminou.
-9. `PORTABILITY.md` — continuidade entre agentes.
-10. `docs/CODEX_PLUGIN.md` — adaptador Codex validado em piloto.
+2. `core/ENTRYPOINT.md` — ativação automática por intenção.
+3. `skills/factory-router/SKILL.md` — roteador universal.
+4. `APP_FACTORY_PLAN.md` — visão, fases e decisões já tomadas.
+5. `core/PRINCIPLES.md` — princípios universais.
+6. `core/HUMAN_INTERACTION.md` — o que a IA faz sozinha e o que depende do usuário.
+7. `core/PROJECT_SCALE.md` — profundidade XS/S/M/L.
+8. `core/TASK_ROUTER.md` — quando usar ChatGPT, Codex ou outro agente.
+9. `core/WORKFLOW.md` — ciclo de projeto novo e manutenção.
+10. `core/DEFINITION_OF_DONE.md` — como provar que terminou.
+11. `PORTABILITY.md` — continuidade entre agentes.
+12. `docs/CODEX_PLUGIN.md` — adaptador Codex validado em piloto.
 
 ## Estrutura atual
 
@@ -48,6 +61,7 @@ app-factory/
 ├── .agents/plugins/
 │   └── marketplace.json
 ├── core/
+│   ├── ENTRYPOINT.md
 │   ├── PRINCIPLES.md
 │   ├── HUMAN_INTERACTION.md
 │   ├── PROJECT_SCALE.md
@@ -56,6 +70,7 @@ app-factory/
 │   ├── RISK_MODEL.md
 │   └── DEFINITION_OF_DONE.md
 ├── skills/
+│   ├── factory-router/
 │   ├── app-planner/
 │   ├── architecture/
 │   ├── tool-router/
@@ -68,6 +83,8 @@ app-factory/
 │   └── deployment/
 ├── policies/
 ├── templates/
+│   └── project/
+│       └── AGENTS.md
 ├── starters/
 │   └── web-admin/
 ├── ui/
@@ -78,7 +95,9 @@ app-factory/
 
 ## Decisões consolidadas
 
+- A intenção de criar/evoluir software deve acionar a Factory sem palavra-chave manual.
 - GitHub é a fonte técnica de verdade.
+- Novos projetos recebem um `AGENTS.md` que aponta de volta para a Factory sem duplicar todo o Core.
 - A Factory orienta o usuário sobre quando usar ChatGPT e quando usar Codex.
 - ChatGPT é preferido para produto, pesquisa, arquitetura conceitual, documentação e revisão.
 - Codex é preferido para execução local, múltiplos arquivos, terminal, dependências, testes, build, navegador, debugging e migrations.
@@ -94,6 +113,6 @@ app-factory/
 
 ## Estado
 
-Versão de trabalho: `0.2-research`
+Versão de trabalho: `0.2.1-alpha`
 
-A pesquisa avaliou 58 referências e o adaptador Codex passou por piloto real. A próxima fase é o piloto `web-admin` da Issue #4 para validar a stack candidata em aplicação real antes de promover defaults da V1.
+A pesquisa avaliou 58 referências, o adaptador Codex passou por piloto real e o piloto `web-admin` da Issue #4 produziu evidências de execução. A V1 só promoverá defaults após revisão dos aprendizados e guardrails do piloto.

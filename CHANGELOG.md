@@ -1,5 +1,21 @@
 # Changelog
 
+## 0.2.1-alpha — 2026-08-21
+
+Ativação automática da App Factory por intenção de software.
+
+### Criado
+
+- `core/ENTRYPOINT.md` com contrato de entrada universal;
+- Skill `factory-router` para pedidos como criar, melhorar, corrigir, automatizar ou continuar software sem exigir a frase "use a App Factory";
+- `templates/project/AGENTS.md` para novos projetos manterem vínculo explícito com a Factory;
+- plugin Codex atualizado para anunciar roteamento automático;
+- validador estrutural passa a exigir o entrypoint, router e template de handoff.
+
+### Experiência desejada
+
+Um pedido simples como `Quero criar um sistema de patrimônio para a escola` deve ser suficiente para classificar o trabalho, escolher profundidade, carregar Skills, decidir ChatGPT/Codex e iniciar o maior bloco seguro possível.
+
 ## 0.2-research — 2026-08-21
 
 Pesquisa estruturada e validação do primeiro adaptador real da App Factory.
