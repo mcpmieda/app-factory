@@ -22,5 +22,10 @@
 - **D-020:** Learning Engine é local-only e privacy-safe por padrão; somente metadados técnicos allowlisted podem ser persistidos e nenhuma telemetria externa é enviada.
 - **D-021:** aprendizado é subordinado a capacidade, disponibilidade, fallback da tarefa, segurança/risco e Definition of Done; amostra pequena não altera o baseline e `local_full` não é promovido sobre backend leve capaz apenas por score.
 - **D-022:** duração usada pelo aprendizado mede execuções bem-sucedidas; falhar rápido nunca deve melhorar a preferência de executor.
+- **D-023:** software real novo criado pela Factory deve usar, por padrão, `projects/<slug-do-projeto>/`; `examples/`, `audits/` e `starters/` permanecem reservados a evidência, auditoria e moldes da própria Factory.
+- **D-024:** o endereço canônico de inspeção/uso deve ser simples e baseado em caminho sob `escolaieda.com`, por exemplo `https://escolaieda.com/bancodenotas`; o slug público preferido é compacto, em minúsculas, sem acentos, espaços ou pontuação quando isso não gerar ambiguidade.
+- **D-025:** hospedagem é detalhe interno: conteúdo estático pode ser servido diretamente pelo site escolar; aplicações com backend/runtime podem usar Vercel ou outro backend adequado, mas devem permanecer acessíveis pelo mesmo padrão `escolaieda.com/<slug>` através de rewrite/proxy quando a infraestrutura permitir.
+- **D-026:** URLs temporárias de preview/deploy são técnicas e descartáveis; a Factory deve apresentar ao usuário principalmente o endereço canônico simples e manter o mesmo link após atualizações aprovadas.
+- **D-027:** alterações de DNS, domínio ou roteamento global do `escolaieda.com` são infraestrutura de maior impacto e exigem implantação controlada; até essa camada estar configurada, a Factory deve registrar a URL canônica desejada sem fingir que o roteamento já existe.
 
 Quando uma decisão for substituída, registrar a nova decisão e marcar a anterior como superada; não apagar silenciosamente o histórico.
