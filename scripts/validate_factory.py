@@ -20,7 +20,10 @@ REQUIRED = [
     "core/WORKFLOW.md",
     "core/RISK_MODEL.md",
     "core/DEFINITION_OF_DONE.md",
+    "ui/UI_POLICY.md",
+    "ui/MOTION_POLICY.md",
     "skills/factory-router/SKILL.md",
+    "skills/ui-builder/SKILL.md",
     "templates/project/AGENTS.md",
 ]
 
