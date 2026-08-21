@@ -14,6 +14,10 @@ import test from "node:test";
 
 const repositoryRoot = resolve(import.meta.dirname, "..");
 const generator = join(repositoryRoot, "scripts", "create-web-admin.mjs");
+const pluginManifest = JSON.parse(
+  await readFile(join(repositoryRoot, ".codex-plugin", "plugin.json"), "utf8"),
+);
+const expectedFactoryBaseline = `v${pluginManifest.version}`;
 
 function generate(destination, name, recipes = []) {
   return spawnSync(
@@ -46,14 +50,18 @@ test("generator resolves recipe providers, motion baseline, order and failures s
     const baseManifest = await json(join(base, ".app-factory.json"));
     assert.deepEqual(baseManifest.recipes, []);
     assert.equal(baseManifest.profile, "web-admin");
-    assert.equal(baseManifest.factoryBaseline, "v0.7");
+    assert.equal(baseManifest.factoryBaseline, expectedFactoryBaseline);
     assert.equal(baseManifest.motionProfile, "ambient");
     const baseProjectState = await readFile(
       join(base, "PROJECT_STATE.md"),
       "utf8",
     );
     assert.match(baseProjectState, /Patrimônio Escolar/);
-    assert.match(baseProjectState, /Factory baseline: `v0\.7`/);
+    assert.ok(
+      baseProjectState.includes(
+        `Factory baseline: \`${expectedFactoryBaseline}\``,
+      ),
+    );
     assert.match(baseProjectState, /Motion Profile: `ambient` contextual/);
     assert.match(
       await readFile(
@@ -116,7 +124,7 @@ test("generator resolves recipe providers, motion baseline, order and failures s
       "database-drizzle-postgres",
       "auth-better-auth",
     ]);
-    assert.equal(postgresManifest.factoryBaseline, "v0.7");
+    assert.equal(postgresManifest.factoryBaseline, expectedFactoryBaseline);
     assert.equal(postgresManifest.motionProfile, "ambient");
     const postgresPackage = await json(join(postgresAuth, "package.json"));
     assert.equal(postgresPackage.dependencies.postgres, "3.4.9");
