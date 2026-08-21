@@ -4,58 +4,75 @@
 
 ## Objetivo atual
 
-Manter a **App Factory V1.2 estável** como baseline recuperável e autônomo para criação/evolução de software, escolhendo o executor por capacidade e usando o agente atual + GitHub/CI antes de qualquer executor local completo sempre que essa rota conseguir provar o trabalho.
+Manter a **App Factory V1.3 estável** como baseline recuperável, autônomo e adaptativo para criação/evolução de software: recuperar contexto, calcular a próxima ação, escolher executor por capacidade e usar aprendizado técnico local somente quando houver evidência suficiente, sem reduzir segurança ou verificabilidade.
 
 ## Estado
 
-- fase: `V1.2 — estável`;
-- versão: `1.2.0`;
+- fase: `V1.3 — estável`;
+- versão: `1.3.0`;
 - baseline publicada anterior preservada: tag/release `v1.0.0`;
 - V1.1 / Issue #32: Context Engine + Autonomy Engine concluídos;
-- V1.2 / Issue #36: Execution Fabric concluída;
+- V1.2 / Issue #36: Execution Fabric + CI Executor concluídos;
+- V1.3 / Issue #38: Learning Engine implementado para a release V1.3;
 - Context Engine: incremental, stdlib, SHA-256, delta `added/changed/removed`, stack/símbolos/imports/dependências locais e exclusão de segredos/build/dependencies/binários;
 - Autonomy Engine: `init/status/next/resume/record`, transições explícitas, repair loop default 3 e intervenção humana categorizada;
-- Execution Fabric: roteamento por capacidades, backend atual/CI/sandbox/local, histórico bounded de tentativas e fallback previsível;
-- CI Executor: gates declarados/allowlisted, sem comandos de prompt, `shell=False`, sem secrets por padrão;
-- execução: `current_agent → github_ci → sandbox → local_full`, respeitando capacidades e disponibilidade reais;
+- Execution Fabric: roteamento por capacidades, backends `current_agent/github_ci/sandbox/local_full`, fallback escopado pela tarefa atual e histórico operacional bounded;
+- CI Executor: gates declarados/allowlisted, sem comandos de prompt, `shell=False`, sem secrets por padrão e instalação reproduzível somente com lockfile compatível;
+- Learning Engine: **local-only**, bounded, sem telemetria externa, metadados técnicos allowlisted, amostra mínima/prior conservador e explicação `baseline/learned/insufficient-data`;
+- aprendizado: incapacidade, indisponibilidade, failure threshold, risco e Definition of Done sempre vencem score histórico;
+- velocidade aprendida: usa duração mediana de execuções bem-sucedidas; falha rápida não melhora preferência;
+- `local_full`: não pode ser promovido sobre backend leve capaz somente por aprendizado;
 - perfil `web-admin`: `v1`;
 - perfis `website`, `web-app`, `chrome-extension` e `automation`: `validated`;
-- plugin Codex: `1.2.0`, com 14 Skills verificadas sem duplicação;
-- CI: gates V1 anteriores preservados + `Validate V1.2 Execution Fabric`.
+- plugin Codex: `1.3.0`, com 15 Skills portáteis;
+- CI: gates V1 anteriores preservados + `Validate V1.3 Learning Engine`.
 
 ## Decisões vigentes
 
 - intenção de software ativa a Factory automaticamente;
 - AI serve ao objetivo, não ao texto literal do prompt;
+- GitHub é a fonte técnica de verdade; conversa não é a autoridade operacional;
 - `resume`/Context Engine recuperam contexto antes de depender de memória de conversa;
 - `.factory/context/` é cache regenerável, não fonte de verdade;
-- `.factory/state.json` mantém continuidade do Autonomy Engine;
-- `.factory/execution.json` mantém histórico bounded de execução, sem logs brutos;
-- o agente calcula a próxima ação e o backend; o usuário não conduz fases técnicas rotineiras;
+- `.factory/state.json` mantém continuidade do Autonomy Engine e pode ser versionado em handoffs importantes;
+- `.factory/execution.json` mantém histórico bounded local de tentativas e fica fora do Git por padrão;
+- `.factory/learning.json` mantém aprendizado local allowlisted e fica fora do Git por padrão;
+- ausência do arquivo de learning em outra máquina não bloqueia continuidade: a Factory usa o baseline seguro V1.2 e reaprende;
+- o agente calcula próxima ação e executor; o usuário não conduz fases técnicas rotineiras;
 - backend é escolhido por capacidade, não por marca;
-- `current_agent` é preferido quando consegue implementar/revisar diretamente;
-- `github_ci` é executor real para comandos determinísticos, build, testes, headless browser e serviços efêmeros;
-- `sandbox`/`local_full` só entram quando declarados disponíveis e necessários;
-- Codex é um possível `local_full`, não dependência arquitetural;
-- prompts nunca viram shell diretamente;
-- eventos fora de fase são rejeitados antes de alterar estado;
+- ordem baseline: `current_agent → github_ci → sandbox → local_full` entre backends elegíveis;
+- aprendizado só pode reordenar candidatos leves já elegíveis com evidência suficiente;
+- dados insuficientes preservam o baseline;
+- prompts nunca viram shell diretamente e nunca entram no dataset de learning;
+- Learning Engine não persiste prompt, objetivo do usuário, nomes pessoais, código, conteúdo de arquivos, summaries/logs, task keys, secrets ou URLs privadas;
+- eventos de learning carregados do disco são tratados como entrada não confiável e reconstruídos pelo schema seguro;
 - falha técnica entra em repair/fallback limitado; não vira pergunta ao usuário por reflexo;
 - intervenção humana continua reservada a produto/regra de negócio, preferência subjetiva, custo, risco alto, credencial/dado indisponível e decisão legal/organizacional;
 - reuse-first, baseline/diff/rollback, instalação limpa, testes executáveis e CI reproduzível continuam gates permanentes;
 - Living UI / Semantic Motion permanece transversal quando existe UI, com `ambient` contextual e `prefers-reduced-motion` obrigatório.
 
-## Evidência V1.2
+## Evidência V1.3
+
+- `core/LEARNING_ENGINE.md`;
+- `engine/learning_engine.py`;
+- integração em `engine/execution_engine.py` e `scripts/factory.py`;
+- `skills/learning-engine/SKILL.md`;
+- `scripts/validate_v1_3.py`;
+- `tests/v1_3/`;
+- `.github/workflows/validate-v1-3-learning.yml`;
+- `research/V1.3_LEARNING_ENGINE_VALIDATION.md`.
+
+A validação V1.3 cobre privacidade do schema, sanitização de arquivo local adulterado, dataset bounded, amostra mínima, prior conservador, escolha aprendida apenas entre backends elegíveis, incapacidade acima de score, proteção de `local_full`, failure threshold da tarefa atual, isolamento entre tarefas, duração somente de execuções bem-sucedidas, persistência entre sessões e integração CLI.
+
+## Evidência V1.2 preservada
 
 - `core/EXECUTION_FABRIC.md`;
 - `engine/execution_engine.py`;
 - `engine/ci_executor.py`;
 - `skills/execution-router/SKILL.md`;
-- `scripts/factory.py`;
 - `scripts/validate_v1_2.py`;
 - `tests/v1_2/`;
 - `.github/workflows/validate-v1-2-execution.yml`.
-
-A validação V1.2 comprova current-agent para planejamento/implementação quando suficiente, GitHub CI para verificação determinística/headless, recusa de backend incapaz, ausência de backend local implícito, fallback após falhas repetidas e descoberta de gates sem executar strings arbitrárias vindas de prompt.
 
 ## Evidência V1.1 preservada
 
@@ -75,7 +92,7 @@ A validação V1.2 comprova current-agent para planejamento/implementação quan
 
 ## Próxima ação
 
-Usar V1.2 como baseline corrente e implementar o Learning Engine em evolução separada, para que aprendizado use dados gerados pela Execution Fabric sem alterar regras de segurança/capacidade.
+Usar V1.3 como baseline corrente. Em projeto existente, começar por `resume`; deixar Context/Autonomy recuperar o estado, Execution Fabric filtrar executores, Learning Engine influenciar somente quando houver evidência confiável e CI provar o resultado.
 
 Escopos ainda não validados — como mobile nativo, desktop nativo, jogos e cloud complexa — continuam exigindo piloto/evidência próprios antes de virarem perfis estáveis.
 
@@ -87,7 +104,7 @@ Outro agente deve começar por:
 2. `python scripts/factory.py --root <projeto> resume` quando o runtime estiver disponível;
 3. este `PROJECT_STATE.md` quando estiver modificando a própria Factory;
 4. `core/ENTRYPOINT.md`;
-5. `core/CONTEXT_ENGINE.md`, `core/AUTONOMY_ENGINE.md` e `core/EXECUTION_FABRIC.md`;
-6. `skills/factory-router/SKILL.md` e `skills/execution-router/SKILL.md`;
+5. `core/CONTEXT_ENGINE.md`, `core/AUTONOMY_ENGINE.md`, `core/EXECUTION_FABRIC.md` e `core/LEARNING_ENGINE.md`;
+6. `skills/factory-router/SKILL.md`, `skills/execution-router/SKILL.md` e `skills/learning-engine/SKILL.md`;
 7. o perfil indicado pelo produto;
 8. `ui/UI_POLICY.md` e `ui/MOTION_POLICY.md` quando houver interface.
