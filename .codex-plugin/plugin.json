@@ -1,0 +1,6 @@
+{
+  "name": "app-factory",
+  "version": "0.2.0-alpha",
+  "description": "Portable AI software-development factory with planning, tool routing, UI, architecture, maintenance, verification, security and deployment skills.",
+  "skills": "./skills/"
+}
