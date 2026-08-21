@@ -4,12 +4,12 @@
 
 ## Objetivo atual
 
-Revisar a implementação da **V0.8 Living UI / Semantic Motion**, já comprovada em interface gerada, antes de decidir o merge.
+Validar a App Factory de forma **universal** fora do perfil `web-admin`, usando quatro famílias representativas (`website`, `web-app`, `chrome-extension`, `automation`) antes da auditoria final V1.0.
 
 ## Estado
 
-- fase: `V0.8 — implementada, aguardando revisão do draft PR`;
-- baseline oficial: `main` no início da Issue #19 (`2730c2a2e8915abbebf5c3e00133b416f5229354`);
+- fase: `V0.9 — validação universal dos principais tipos de projeto`;
+- baseline oficial: `main` após merge da V0.8 (`2fb28bbd4a8d3cde338f52f6521415d17f2a3581`);
 - V0.1 bootstrap: concluída;
 - V0.2 pesquisa: concluída e integrada;
 - V0.2.1 entry router: concluído e integrado;
@@ -18,48 +18,50 @@ Revisar a implementação da **V0.8 Living UI / Semantic Motion**, já comprovad
 - V0.4 perfil web-admin: concluído e integrado;
 - V0.5 starter + segundo app: concluída, revisada e integrada;
 - V0.6 hardening PostgreSQL/Auth: concluído, revisado e integrado;
-- V0.7 Living UI / Semantic Motion: concluída, CI aprovada e integrada;
+- V0.7 Living UI / Semantic Motion: concluída e integrada;
+- V0.8 Living UI executável: concluída, revisada e integrada;
 - perfil `web-admin`: `v1-rc`;
-- Issues #4, #8, #10, #12 e #15: concluídas;
-- Issue #19: implementação concluída na branch `codex/issue-19-living-ui-validation`, sem merge;
-- `examples/living-ui-admin`: app Pulse Desk gerado pelo baseline V0.7 e validado em desktop/mobile/reduced motion;
-- CI: mantém Core/Skills/plugin, starter/recipes/asset-admin e adiciona gate dedicado Living UI.
+- Issues #4, #8, #10, #12, #15 e #19: concluídas;
+- Issue #22: aberta e liberada para Codex;
+- CI atual: Core/Skills/plugin, web-admin starter e recipes, PostgreSQL/Auth real, asset-admin e Living UI desktop/mobile/reduced-motion.
 
 ## Decisões vigentes
 
 - Core permanece neutro e portátil;
 - intenção de software ativa a Factory automaticamente;
 - processo varia por escala XS/S/M/L;
+- AI serve ao objetivo, não ao texto literal do prompt;
+- reuse-first: pesquisar/reusar solução madura quando isso reduzir trabalho e risco;
 - perfis validados são defaults condicionais, não dogmas;
+- stack do `web-admin` não deve contaminar automaticamente outros tipos de projeto;
 - `web-admin` usa shadcn como base visual e ReUI seletivamente;
 - HeroUI é alternativa visual legítima e pode ser exigido como sistema único;
 - Living UI / Semantic Motion é transversal e independente do design system;
 - Motion Profile default contextual: `ambient`;
-- perfis: `none`, `subtle`, `ambient`, `expressive`;
-- motion deve comunicar ambiente, interação, dados, estado, atenção ou navegação;
+- perfis de motion: `none`, `subtle`, `ambient`, `expressive`;
 - `prefers-reduced-motion` é obrigatório para movimento não essencial;
-- leitura longa, densidade, concentração e performance podem atenuar `ambient` para comportamento `subtle`;
-- atenção deve parar/reduzir após cumprir a função;
+- atenção deve parar/reduzir após cumprir sua função;
 - dados/gráficos só devem reanimar quando houver mudança real;
-- `AmbientSurface` e `AttentionPulse` são os únicos primitives promovidos pela V0.8;
-- motion de dado específico do produto não deve virar abstração genérica sem contrato de mudança real;
-- projeto gerado pelo starter V0.7 registra `motionProfile: ambient` em `.app-factory.json`;
-- motion não autoriza misturar design systems ou instalar biblioteca nova sem necessidade;
+- `AmbientSurface` e `AttentionPulse` são primitives opt-in comprovados;
 - Better Auth/Drizzle permanecem módulos condicionais do `web-admin`;
-- SQLite é local/teste e PostgreSQL é caminho de produção validado;
-- instalação limpa e CI reproduzível continuam gates.
+- SQLite é local/teste e PostgreSQL é caminho de produção validado para `web-admin`;
+- instalação limpa, testes executáveis, CI reproduzível e continuidade via GitHub permanecem gates.
 
 ## Trabalho atual
 
-- bloco concluído: Issue #19 — validar Living UI em interface real gerada;
-- evidência: `research/V0.8_LIVING_UI_VALIDATION.md` e três screenshots úteis;
-- checks locais: instalação limpa, format, lint, typecheck, testes, build, audit, Playwright desktop/mobile/reduced motion e inspeção visual;
-- promoção: dois wrappers pequenos + tokens/reduced-motion no starter;
-- regra vigente: revisar o draft PR e CI; não fazer merge automático.
+- bloco: Issue #22 — V0.9 validação universal;
+- ambiente recomendado: Codex;
+- pilotos exigidos: website, web-app, Chrome extension MV3 e automation local;
+- objetivo: provar classificação, escolha de stack, reuse-first, implementação, teste e handoff fora do `web-admin`;
+- regra: construir a menor fatia funcional completa por tipo, não quatro produtos grandes;
+- perfis novos só devem ser promovidos após evidência do piloto;
+- nenhum merge automático.
 
 ## Próxima ação
 
-Revisar o draft PR da Issue #19, os checks remotos e as evidências; merge permanece decisão humana separada.
+Executar integralmente a Issue #22 no Codex. Ao concluir, devolver draft PR, CI, evidências e relatório `research/V0.9_UNIVERSAL_VALIDATION.md` para revisão do ChatGPT.
+
+Se a V0.9 terminar sem bloqueador objetivo, a próxima fase deve ser diretamente **V1.0 — auditoria final end-to-end em ambiente limpo**, sem criar novas fases intermediárias apenas por refinamento.
 
 ## Handoff
 
@@ -67,8 +69,11 @@ Outro agente deve começar por:
 
 1. `AGENTS.md`;
 2. este `PROJECT_STATE.md`;
-3. o draft PR da Issue #19;
-4. `research/V0.8_LIVING_UI_VALIDATION.md`;
-5. `examples/living-ui-admin/`;
-6. `ui/MOTION_POLICY.md`;
-7. `profiles/web-admin/PROFILE.md`.
+3. Issue #22;
+4. `core/ENTRYPOINT.md`;
+5. `skills/factory-router/SKILL.md`;
+6. `skills/app-planner/SKILL.md`;
+7. `skills/tool-router/SKILL.md`;
+8. `ui/UI_POLICY.md` e `ui/MOTION_POLICY.md`;
+9. `profiles/README.md` e `profiles/web-admin/PROFILE.md`;
+10. `research/V0.8_LIVING_UI_VALIDATION.md`.
