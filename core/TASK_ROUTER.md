@@ -1,72 +1,75 @@
 # Task Router — escolha de executor
 
-A Factory escolhe o executor pela capacidade necessária para provar o trabalho, não pela palavra "código" nem por preferência de fornecedor.
+A Factory escolhe o executor pela **capacidade necessária para provar o trabalho**, não pela palavra "código" nem por preferência de fornecedor.
 
-## Regra principal — current-agent first
+A política conceitual deste arquivo é executada por `engine/execution_engine.py` e detalhada em `core/EXECUTION_FABRIC.md`.
 
-Antes de fazer handoff, tente a rota mais leve que preserve segurança e verificabilidade:
+## Ordem padrão
 
-1. **agente atual + ferramentas diretas** — leitura, raciocínio, arquivos, GitHub, conectores disponíveis;
-2. **GitHub + CI** — branch/PR e Actions como executor remoto para lint, typecheck, testes, build e outros gates reproduzíveis;
-3. **executor leve disponível** — shell/sandbox/ACP/outro backend quando necessário e seguro;
-4. **Codex ou agente local completo** — quando a tarefa realmente depende de checkout interativo, servidor/browser local, debugging, migrations ou coordenação que o caminho anterior não consegue provar.
+1. **`current_agent`** — agente atual + ferramentas diretas de raciocínio, arquivos, GitHub e conectores;
+2. **`github_ci`** — GitHub Actions/CI para comandos determinísticos, testes, build e prova reproduzível;
+3. **`sandbox`** — executor leve quando realmente disponível;
+4. **`local_full`** — executor local/interativo completo, como Codex ou equivalente.
 
-Nunca reduza Definition of Done só para evitar Codex. Também não use Codex por reflexo quando GitHub/CI já fornece prova suficiente.
+A ordem só vale entre backends capazes. Um backend sem alguma capacidade obrigatória é rejeitado.
 
-## ChatGPT / agente com GitHub
+## Capacidades antes de marcas
 
-Pode permanecer no ambiente atual quando ele consegue:
+A tarefa é traduzida para necessidades como:
 
-- entender produto e arquitetura;
-- pesquisar/comparar soluções;
-- editar arquivos e branches com segurança;
-- abrir/revisar PRs;
-- acionar ou observar CI;
-- ler logs e corrigir falhas;
-- repetir o ciclo até os gates ficarem verdes.
+- `reasoning`;
+- `repo_read` / `repo_write`;
+- `github_api`;
+- `deterministic_commands`;
+- `build` / `test`;
+- `headless_browser`;
+- `interactive_shell` / `interactive_browser`;
+- `ephemeral_services` / `local_services`;
+- `live_migration`.
 
-Múltiplos arquivos, por si só, não obrigam handoff se o agente consegue coordenar as alterações e o CI prova o resultado.
+Assim o Core continua portátil mesmo quando os agentes disponíveis mudarem.
+
+## Current-agent first
+
+Não limite o agente atual a documentação ou pequenas edições. Se ele consegue coordenar arquivos, branch/PR, ler CI, corrigir e repetir com segurança, permaneça nele.
+
+Múltiplos arquivos, build ou testes não obrigam handoff.
 
 ## GitHub Actions como executor remoto
 
-Use CI quando comandos determinísticos podem provar o trabalho sem ambiente interativo, por exemplo:
+Use `github_ci` quando a prova for determinística e não interativa, por exemplo:
 
 - lint/format/typecheck;
 - testes unitários/integrados;
 - build;
 - Playwright headless;
-- banco efêmero/migrations testáveis;
+- banco/serviços efêmeros;
+- migrations descartáveis;
 - validadores e smoke tests.
 
-O agente deve ler o resultado, corrigir e rerodar automaticamente dentro do limite de reparo aplicável.
+`engine/ci_executor.py` só descobre gates de uma allowlist de IDs do próprio repositório. Texto livre de prompt não vira shell.
 
-## Quando Codex/local continua sendo a escolha correta
+## Fallback
 
-Preferir um executor local completo quando houver necessidade real de:
+`.factory/execution.json` mantém histórico bounded de tentativas. Após o limite de falhas do mesmo backend para a mesma ação, a próxima decisão pode rejeitá-lo e escolher o próximo backend capaz.
 
-- browser interativo ou inspeção visual/manual que CI não cobre;
-- debugging de processo/servidor local;
-- dependências/serviços locais difíceis de reproduzir no CI;
-- migrations com ambiente real ou investigação delicada;
-- refatoração ampla cujo feedback rápido de terminal é essencial;
-- operação em muitos arquivos/binários não suportada pelas ferramentas atuais;
-- falha repetida em que o current-agent/CI atingiu o limite de reparo.
+O repair loop do Autonomy Engine continua definindo quantas tentativas técnicas são permitidas; a Execution Fabric define **onde** a próxima tentativa ocorre.
 
-## Heurística
+## Quando `local_full` é correto
 
-1. O agente atual consegue editar e provar via GitHub/CI? → fique no agente atual.
-2. Precisa apenas executar comandos determinísticos? → prefira CI ou sandbox disponível.
-3. Precisa observar/interagir com runtime local? → executor local/Codex.
-4. Precisa de decisão/raciocínio/revisão? → agente atual.
-5. A rota atual falhou repetidamente? → mude estratégia/executor antes de envolver o usuário.
-6. Existe decisão de produto/custo/risco/credencial? → usuário quando realmente necessário.
+Use quando existir capacidade concreta não coberta anteriormente, como:
+
+- browser/runtime interativo;
+- debugging de processo local;
+- serviço local difícil de reproduzir em CI;
+- migration em ambiente real;
+- operações/arquivos que as ferramentas atuais não suportam;
+- estagnação em que um executor local realmente muda a capacidade disponível.
+
+Codex pode cumprir esse papel, mas não é uma dependência do Core.
 
 ## Comunicação
 
-Não exponha roteamento interno a cada passo. Informe troca de ambiente apenas quando o usuário precisa agir ou quando ela muda materialmente custo/risco.
+Não exponha roteamento interno a cada passo. Informe troca de ambiente apenas quando o usuário precisa agir ou quando custo/risco muda materialmente.
 
-Quando houver handoff, registre fase, contexto/fingerprint, Issue/PR e critérios de conclusão no GitHub.
-
-## Portabilidade
-
-O Core fala em capacidades (`current agent`, `CI`, `local executor`, `browser executor`) e adaptadores mapeiam essas capacidades para ChatGPT, Codex, Claude Code, Cursor, ACP ou outra ferramenta disponível.
+Se o backend necessário não estiver disponível, tente fallback/reparo antes de transformar a situação em intervenção humana. Decisões humanas continuam regidas por `core/HUMAN_INTERACTION.md`.
