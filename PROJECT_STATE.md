@@ -23,7 +23,7 @@ Concluir a validação **universal** fora do perfil `web-admin` e entregar evid�
 - V0.8 Living UI executável: concluída, revisada e integrada;
 - perfil `web-admin`: `v1-rc`;
 - Issues #4, #8, #10, #12, #15 e #19: concluídas;
-- Issue #22: implementada na branch `pilot/universal-validation-v0.9`, aguardando revisão/CI do draft PR;
+- Issue #22: implementada na branch `pilot/universal-validation-v0.9`, draft PR #24 aberto e aguardando revisão/CI;
 - perfis `website`, `web-app`, `chrome-extension` e `automation`: `validated`;
 - CI atual: gates anteriores preservados e quatro jobs universais independentes adicionados.
 
@@ -68,7 +68,7 @@ Outro agente deve começar por:
 
 1. `AGENTS.md`;
 2. este `PROJECT_STATE.md`;
-3. `research/V0.9_UNIVERSAL_VALIDATION.md` e draft PR da Issue #22;
+3. `research/V0.9_UNIVERSAL_VALIDATION.md` e draft PR #24 da Issue #22;
 4. `core/ENTRYPOINT.md`;
 5. `skills/factory-router/SKILL.md`;
 6. `skills/app-planner/SKILL.md`;
