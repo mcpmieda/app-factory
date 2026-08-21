@@ -6,20 +6,41 @@ O Autonomy Engine mantém uma máquina de estados curta para que a App Factory c
 
 O usuário fornece objetivo e decisões genuinamente humanas. O agente executa o ciclo técnico e registra eventos no runtime.
 
-Estados principais:
+Fluxo leve, quando não há mudança funcional relevante:
 
 `context → planning → implementation → verification → repair → review → delivery → done`
 
+Fluxo para funcionalidade/regra/contrato ou risco que exija Semantic Verification:
+
+`context → planning → specification → implementation → verification → repair → review → delivery → done`
+
 `blocked` existe para impedimentos reais. Mudança externa de contexto pode interromper temporariamente qualquer fase ativa e exigir `reconcile_context` antes da retomada.
+
+## Specification
+
+A fase `specification` é ativada com `require_spec` quando a classificação do trabalho indicar que a prova semântica é necessária. O agente, não o usuário, deve decidir isso pela política em `core/SEMANTIC_VERIFICATION.md`.
+
+`plan-ready` envia o estado para `specification` quando `spec_required=true`. O evento `spec-ready` só é aceito se `specs/semantic-contract.json` estiver válido; o fingerprint da spec é registrado antes da implementação.
+
+Depois:
+
+- `verification-pass` é recusado se o plano de rastreabilidade semântica estiver inválido ou se algum `must` obrigatório não tiver evidência executável declarada;
+- `review-pass` é recusado se a revisão semântica estiver ausente, inválida ou stale;
+- risco médio/alto exige review desacoplado pela política semântica.
+
+Assim, a máquina de estados não depende apenas de o mesmo agente afirmar que verificou.
 
 ## Interface interna
 
 ```bash
-python scripts/factory.py init --goal "Criar um sistema de patrimônio"
+python scripts/factory.py init --goal "Criar um sistema de patrimônio" --require-spec
 python scripts/factory.py status
 python scripts/factory.py next
 python scripts/factory.py resume
 python scripts/factory.py record plan-ready --summary "..."
+python scripts/factory.py spec-validate
+python scripts/factory.py verification-plan-init
+python scripts/factory.py review-packet --base main
 ```
 
 O usuário não deve precisar memorizar ou executar esses comandos. Eles são uma interface comum para ChatGPT, Codex, Claude Code, Cursor, CI ou outro executor.
@@ -34,6 +55,7 @@ Ele contém:
 - fase/status;
 - fingerprint do contexto reconhecido;
 - resumo de planejamento/implementação;
+- se Semantic Verification é exigida e o fingerprint da spec reconhecida;
 - última verificação e revisão;
 - tentativas de reparo;
 - bloqueios e motivo de intervenção humana;
@@ -53,6 +75,8 @@ O histórico é bounded; não é um log infinito.
 4. compara fingerprints;
 5. se o repositório mudou fora do fluxo, retorna `reconcile_context`;
 6. caso contrário retorna a próxima fase.
+
+Quando um estado novo precisar de Semantic Verification, o agente inicializa/resume com `require_spec`; isso não deve virar uma escolha técnica delegada ao usuário.
 
 ## Repair loop
 
@@ -75,6 +99,6 @@ O engine não tenta escrever software arbitrário por heurística. Ele decide es
 
 A autonomia vem da combinação:
 
-`máquina de estados + contexto incremental + agente + ferramentas + CI`.
+`máquina de estados + contexto incremental + contrato semântico quando aplicável + agente + ferramentas + CI + revisão desacoplada`.
 
 Isso preserva portabilidade e evita criar um runtime monolítico que fique obsoleto quando modelos mudarem.
