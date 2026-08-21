@@ -1,51 +1,67 @@
-# web-admin — piloto V0.3
+# web-admin — perfil validado V0.4
 
-> Arquitetura candidata derivada da V0.2. Ainda não é starter estável.
+> Este diretório descreve como gerar o futuro starter `web-admin`. O código do piloto em `pilots/web-admin/` continua sendo evidência experimental e não deve ser copiado cegamente como template definitivo.
 
 ## Objetivo
 
-Validar a App Factory em um sistema administrativo realista sem carregar dependências que o produto não precisa.
+Criar sistemas administrativos reais com bootstrap enxuto, UI consistente, módulos opcionais e verificações reproduzíveis.
 
-## Base candidata
+## Base padrão do perfil
 
 - TypeScript;
-- Next.js como forte candidato para o piloto full-stack;
+- Next.js App Router;
+- React;
 - Tailwind CSS;
-- shadcn/ui;
-- ReUI para padrões avançados de admin;
-- Zod para contratos/validação;
-- Playwright para E2E;
-- Vitest para unit/integration quando adequado.
+- shadcn/ui como base do design system;
+- Zod para validação/contratos;
+- Vitest para unit/integration adequados;
+- Playwright para E2E crítico;
+- ESLint/configuração oficial do Next para lint específico.
 
-## Módulos opcionais
+Detalhes e limites: `profiles/web-admin/PROFILE.md`.
+
+## Módulos opcionais ativados por necessidade
 
 ### auth
 
-Candidato: Better Auth.
+Primeira opção do perfil quando login/identidade forem necessários: **Better Auth**.
 
-Ativar somente se o projeto exigir login/identidade.
+Não instalar autenticação em projetos que não precisam dela.
 
 ### database
 
-Candidato: Drizzle + banco escolhido conforme o ambiente.
+Primeira opção do perfil quando houver persistência própria: **Drizzle**.
 
-Ativar somente se houver persistência própria.
+O provider deve ser decidido conforme o ambiente. SQLite/better-sqlite3 fica como alternativa local/teste, não default de produção.
+
+### advanced-ui
+
+**ReUI seletivo**, por componente. Recomendado quando Data Grid, filtros complexos, calendário, Kanban ou outro padrão avançado reduzir trabalho de forma concreta.
+
+Após instalação:
+- revisar arquivos/dependências gerados;
+- remover módulos não usados;
+- executar lint/typecheck/testes.
+
+### formatting
+
+Biome pode ser usado como formatter complementar. Não substitui automaticamente o lint oficial do framework.
 
 ### forms
 
-Avaliar React Hook Form ou TanStack Form conforme complexidade e integração com componentes adotados. Não congelar antes do piloto.
+Começar simples. Avaliar React Hook Form/TanStack Form apenas quando a complexidade justificar.
 
 ### client-server-state
 
-TanStack Query entra quando cache/mutações client-side trouxerem benefício real. Não usar por padrão em toda página se Server Components/Server Actions ou fetch simples resolverem melhor.
+TanStack Query, Zustand ou equivalente entram apenas quando cache/sincronização/estado compartilhado trouxerem benefício real.
 
 ### observability
 
-Sentry/OpenTelemetry somente quando o ambiente/criticidade justificar.
+Sentry/OpenTelemetry somente conforme criticidade e operação real.
 
 ### monorepo
 
-Turborepo somente se houver múltiplos apps/pacotes com benefício concreto.
+Turborepo somente se existirem múltiplos apps/pacotes com benefício concreto.
 
 ## Estrutura candidata
 
@@ -59,32 +75,48 @@ src/
 │   └── <feature>/
 │       ├── components/
 │       ├── schemas/
-│       ├── api/
+│       ├── data/
 │       └── tests/
 ├── lib/
 ├── config/
 └── types/
 ```
 
-A organização feature-based foi reforçada por referências como Bulletproof React e pelo dashboard starter auditado. A Factory deve adaptar, não copiar cegamente.
+Simplificar para projetos menores quando necessário.
 
-## Fatia piloto
+## Primeira fatia funcional
 
-Construir um módulo completo de exemplo, como `items` ou `users`, contendo:
+O starter deve permitir construir um módulo completo como `items`, `users` ou equivalente, contendo quando aplicável:
 
 - listagem;
 - busca/filtros;
 - criação;
 - edição;
 - validação;
-- persistência quando o módulo de banco estiver ativo;
+- persistência;
 - loading/empty/error/success states;
 - responsividade;
 - testes unitários úteis;
 - fluxo E2E com Playwright.
 
-## Definition of Done do piloto
+## Gate obrigatório de reprodutibilidade
 
+O piloto V0.3 demonstrou que teste local não basta. O starter deve prever CI em checkout limpo com:
+
+1. package manager/lockfile consistente;
+2. instalação reproduzível (`npm ci` ou equivalente);
+3. setup/migrations/seed quando aplicável;
+4. format check;
+5. lint;
+6. typecheck sem depender de artefato gerado previamente;
+7. testes unit/integration;
+8. build;
+9. auditoria de dependências proporcional;
+10. Playwright desktop/mobile do fluxo crítico.
+
+## Definition of Done
+
+- instalação limpa passa;
 - lint/format validado;
 - typecheck;
 - testes;
@@ -93,18 +125,21 @@ Construir um módulo completo de exemplo, como `items` ou `users`, contendo:
 - fluxo crítico passa em Playwright;
 - desktop e mobile verificados;
 - nenhum segredo no repositório;
+- operações destrutivas relevantes têm proteção e teste;
 - diff revisado;
 - agentes conseguem retomar pelo GitHub sem contexto da conversa.
 
-## O que o piloto deve responder
+## O que já foi respondido pelo piloto V0.3
 
-1. A estrutura é simples para uma IA navegar?
-2. shadcn + ReUI convivem sem conflito relevante?
-3. Better Auth + Drizzle funciona de forma limpa quando ativado?
-4. Zod integra bem os contratos necessários?
-5. Playwright oferece feedback suficiente para o agente corrigir sozinho?
-6. Biome simplifica o tooling sem perder checks importantes?
-7. O Codex Plugin descobre e aplica as Skills corretamente?
-8. O processo exige pouca intervenção manual do usuário?
+1. **A estrutura é navegável por IA?** Sim, com documentação curta + código organizado + estado no GitHub.
+2. **shadcn + ReUI convivem?** Sim, mas ReUI funciona melhor como fonte seletiva de componentes avançados, não como segunda base obrigatória.
+3. **Better Auth + Drizzle funcionam juntos?** Sim no piloto; ambos foram promovidos como primeiras opções condicionais do perfil.
+4. **Zod funcionou bem?** Sim; promoção aprovada.
+5. **Playwright fornece feedback suficiente?** Sim; promoção aprovada como E2E crítico.
+6. **Biome substitui ESLint?** Não neste perfil; fica opcional/complementar.
+7. **Codex Plugin aplica Skills corretamente?** Sim, validado na fase anterior.
+8. **O processo reduziu intervenção manual?** Sim; o Codex executou scaffold, dependências, migrations, testes, browser e correções, e o ChatGPT fez a revisão/gates.
 
-Somente depois dessas respostas os candidatos viram defaults da V1.
+## Próximo passo técnico
+
+Transformar este perfil em um starter gerável limpo, separado do piloto, e validá-lo criando um segundo app do zero. Só então marcar o starter como V1 estável.
