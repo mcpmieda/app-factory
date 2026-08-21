@@ -27,7 +27,8 @@ const recipesDirectory = join(
   "web-admin",
   "recipes",
 );
-const factoryBaseline = "v0.6";
+const factoryBaseline = "v0.7";
+const motionProfile = "ambient";
 
 function usage() {
   return [
@@ -341,6 +342,7 @@ async function main() {
     const manifest = [
       "{",
       '  "profile": "web-admin",',
+      `  "motionProfile": ${JSON.stringify(motionProfile)},`,
       `  "factoryBaseline": ${JSON.stringify(factoryBaseline)},`,
       `  "generatedAt": ${JSON.stringify(new Date().toISOString())},`,
       '  "source": "starters/web-admin/template",',
@@ -357,6 +359,7 @@ async function main() {
       `Created ${input.name} at ${isAbsolute(input.destination) ? destination : input.destination}`,
     );
     console.log(`Profile: web-admin (${factoryBaseline})`);
+    console.log(`Motion Profile: ${motionProfile}`);
     console.log(
       `Recipes: ${recipes.map((recipe) => recipe.id).join(", ") || "none"}`,
     );
