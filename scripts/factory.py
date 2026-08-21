@@ -45,13 +45,26 @@ def available_backends(args: argparse.Namespace) -> list[str]:
     return csv_values(raw)
 
 
+def current_task_key(project_root: Path) -> str | None:
+    state = read_state(project_root)
+    if not isinstance(state, dict):
+        return None
+    created_at = state.get("created_at")
+    return str(created_at) if created_at else None
+
+
 def execution_for_action(project_root: Path, action: dict[str, object], backends: list[str]) -> dict[str, object]:
     action_name = str(action.get("action") or "inspect_state")
     if action_name == "request_human":
         return {"backend": "human", "action": action_name, "reason": "A decisão foi explicitamente classificada como humana."}
     if action_name == "done":
         return {"backend": None, "action": action_name, "reason": "Nenhuma execução adicional é necessária."}
-    return route_action(project_root, action_name, available_backends=backends).to_dict()
+    return route_action(
+        project_root,
+        action_name,
+        available_backends=backends,
+        task_key=current_task_key(project_root),
+    ).to_dict()
 
 
 def parser() -> argparse.ArgumentParser:
@@ -89,6 +102,7 @@ def parser() -> argparse.ArgumentParser:
     route.add_argument("--interactive-shell", action="store_true")
     route.add_argument("--interactive-browser", action="store_true")
     route.add_argument("--live-migration", action="store_true")
+    route.add_argument("--task-key", help="Optional task scope; defaults to current Autonomy state creation id")
 
     sub.add_parser("execution-status", help="Show bounded execution attempt history")
 
@@ -99,6 +113,7 @@ def parser() -> argparse.ArgumentParser:
     attempt.add_argument("--need", action="append", default=[])
     attempt.add_argument("--summary")
     attempt.add_argument("--duration-ms", type=int)
+    attempt.add_argument("--task-key", help="Optional task scope; defaults to current Autonomy state creation id")
 
     sub.add_parser("gates", help="Discover repository-owned allowlisted deterministic CI gates")
     run_gates = sub.add_parser("run-gates", help="Run discovered allowlisted gates without shell evaluation")
@@ -156,6 +171,7 @@ def main() -> int:
             project_root,
             args.action,
             available_backends=backends,
+            task_key=args.task_key or current_task_key(project_root),
             headless_browser=args.headless_browser,
             interactive_shell=args.interactive_shell,
             interactive_browser=args.interactive_browser,
@@ -176,6 +192,7 @@ def main() -> int:
             outcome=args.outcome,
             summary=args.summary,
             duration_ms=args.duration_ms,
+            task_key=args.task_key or current_task_key(project_root),
         )
         emit(state)
         return 0
