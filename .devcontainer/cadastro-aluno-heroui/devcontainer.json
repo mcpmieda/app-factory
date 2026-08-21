@@ -1,0 +1,21 @@
+{
+  "name": "Cadastro de Aluno - HeroUI",
+  "image": "mcr.microsoft.com/devcontainers/javascript-node:1-22-bookworm",
+  "forwardPorts": [3000],
+  "portsAttributes": {
+    "3000": {
+      "label": "Cadastro de Aluno",
+      "onAutoForward": "openBrowser"
+    }
+  },
+  "postCreateCommand": "cd projects/cadastro-aluno-factory-heroui && bash scripts/bootstrap.sh",
+  "postStartCommand": "bash -lc \"cd projects/cadastro-aluno-factory-heroui && if ! pgrep -f 'next dev' >/dev/null; then (npm run dev > /tmp/cadastro-aluno.log 2>&1 &); fi\"",
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "dbaeumer.vscode-eslint",
+        "ms-playwright.playwright"
+      ]
+    }
+  }
+}

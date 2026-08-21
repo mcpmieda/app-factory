@@ -1,0 +1,88 @@
+@import "tailwindcss";
+@import "@heroui/styles";
+
+:root {
+  color-scheme: light;
+  --student-page-bg: #f7f8fc;
+  --student-accent-soft: rgba(79, 70, 229, 0.11);
+  --student-accent-soft-2: rgba(14, 165, 233, 0.08);
+  --student-border-soft: rgba(15, 23, 42, 0.08);
+  --student-text-muted: #64748b;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  background: var(--student-page-bg);
+}
+
+body {
+  margin: 0;
+  min-width: 320px;
+  min-height: 100%;
+  background:
+    radial-gradient(circle at 12% 0%, var(--student-accent-soft), transparent 34rem),
+    radial-gradient(circle at 92% 18%, var(--student-accent-soft-2), transparent 28rem),
+    var(--student-page-bg);
+  color: #0f172a;
+}
+
+.student-shell {
+  position: relative;
+  isolation: isolate;
+}
+
+.student-shell::before {
+  content: "";
+  position: absolute;
+  z-index: -1;
+  top: 2rem;
+  right: 7%;
+  width: 11rem;
+  height: 11rem;
+  border-radius: 9999px;
+  background: rgba(99, 102, 241, 0.07);
+  filter: blur(24px);
+  animation: student-ambient-drift 12s ease-in-out infinite alternate;
+  pointer-events: none;
+}
+
+.student-panel {
+  border: 1px solid var(--student-border-soft);
+}
+
+.student-row {
+  transition:
+    transform 160ms ease,
+    border-color 160ms ease,
+    background-color 160ms ease;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .student-row:hover {
+    transform: translateY(-1px);
+  }
+}
+
+@keyframes student-ambient-drift {
+  from {
+    transform: translate3d(0, 0, 0) scale(1);
+    opacity: 0.72;
+  }
+  to {
+    transform: translate3d(-10px, 12px, 0) scale(1.04);
+    opacity: 1;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .student-shell::before {
+    animation: none;
+  }
+
+  .student-row {
+    transition: none;
+  }
+}
