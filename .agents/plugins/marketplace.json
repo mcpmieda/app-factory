@@ -1,0 +1,20 @@
+{
+  "name": "app-factory-local",
+  "interface": {
+    "displayName": "App Factory Local"
+  },
+  "plugins": [
+    {
+      "name": "app-factory",
+      "source": {
+        "source": "local",
+        "path": "./"
+      },
+      "policy": {
+        "installation": "AVAILABLE",
+        "authentication": "ON_INSTALL"
+      },
+      "category": "Productivity"
+    }
+  ]
+}

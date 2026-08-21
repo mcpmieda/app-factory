@@ -26,7 +26,26 @@ O manifest aponta `skills` para `./skills/`, que já é a fonte portátil usada 
 
 ## Estado
 
-`0.2.0-alpha` — não considerar estável antes de teste local no Codex.
+`0.2.0-alpha` — manifest compatível com o esquema atual e marketplace local
+adicionado para o piloto da Issue #3. A promoção para estável depende da revisão
+das evidências do piloto.
+
+## Marketplace local sem cópia
+
+O arquivo `.agents/plugins/marketplace.json` aponta a entrada `app-factory`
+para `./`, isto é, a própria raiz do repositório. Assim, o host lê
+`.codex-plugin/plugin.json` e `skills/` diretamente da fonte portátil, sem criar
+`plugins/app-factory`, copiar Skills ou duplicar `core/`.
+
+Para registrar a origem em um Codex CLI que exponha os comandos de plugins:
+
+```text
+codex plugin marketplace add <raiz-do-repositorio>
+codex plugin add app-factory@app-factory-local
+```
+
+O Codex/ChatGPT Desktop precisa ser reiniciado e o smoke test deve ser feito em
+uma nova conversa para carregar a instalação atualizada.
 
 ## Teste necessário
 
@@ -35,10 +54,21 @@ Em uma fase executada no Codex/local:
 1. clonar/abrir `mcpmieda/app-factory`;
 2. validar que o plugin é reconhecido por marketplace/local install;
 3. confirmar descoberta das Skills;
-4. invocar pelo menos `app-planner`, `tool-router` e `verification`;
+4. invocar pelo menos `app-planner`, `tool-router`, `ui-builder` e `verification`;
 5. confirmar que nenhuma Skill precisa duplicar o Core;
 6. registrar incompatibilidades;
 7. somente depois promover a versão do plugin.
+
+Execute também os validadores versionados:
+
+```text
+python scripts/validate_factory.py
+python scripts/validate_skills.py
+python scripts/validate_plugin.py
+```
+
+As evidências executáveis do piloto estão em
+`research/V0.2_CODEX_PLUGIN_PILOT.md`.
 
 ## MCP e hooks
 

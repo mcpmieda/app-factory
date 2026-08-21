@@ -2,5 +2,24 @@
   "name": "app-factory",
   "version": "0.2.0-alpha",
   "description": "Portable AI software-development factory with planning, tool routing, UI, architecture, maintenance, verification, security and deployment skills.",
-  "skills": "./skills/"
+  "author": {
+    "name": "mcpmieda",
+    "url": "https://github.com/mcpmieda"
+  },
+  "repository": "https://github.com/mcpmieda/app-factory",
+  "skills": "./skills/",
+  "interface": {
+    "displayName": "App Factory",
+    "shortDescription": "Plan, route, build and verify software with portable workflows.",
+    "longDescription": "A portable software-development factory for planning complete functional slices, routing work to the right agent, choosing coherent UI systems and requiring executable verification before completion.",
+    "developerName": "mcpmieda",
+    "category": "Productivity",
+    "capabilities": ["Interactive"],
+    "websiteURL": "https://github.com/mcpmieda/app-factory",
+    "defaultPrompt": [
+      "Plan a complete, verifiable application slice.",
+      "Route this software task to ChatGPT or Codex.",
+      "Review the UI approach and verification plan."
+    ]
+  }
 }

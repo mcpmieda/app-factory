@@ -20,3 +20,5 @@ jobs:
         run: python scripts/validate_factory.py
       - name: Validate Agent Skills constraints
         run: python scripts/validate_skills.py
+      - name: Validate Codex Plugin package
+        run: python scripts/validate_plugin.py
