@@ -7,13 +7,14 @@ Este arquivo é o mapa de trabalho para qualquer agente que use ou modifique a A
 1. Entenda o objetivo real do usuário.
 2. Leia `core/PRINCIPLES.md`.
 3. Siga `core/HUMAN_INTERACTION.md` para decidir o que o agente deve fazer sozinho e o que realmente depende do usuário.
-4. Use `core/TASK_ROUTER.md` para escolher ChatGPT, Codex ou outro ambiente adequado.
-5. Aplique `core/RISK_MODEL.md`.
-6. Consulte `core/WORKFLOW.md` para projeto novo ou manutenção.
-7. Carregue somente as Skills relevantes.
-8. Consulte templates, políticas e referências apenas quando necessários.
-9. Antes de criar algo do zero, verifique se existe solução consolidada, componente, biblioteca, template ou registry adequado.
-10. Não misture tecnologias, bibliotecas ou design systems sem ganho claro.
+4. Classifique a profundidade necessária em `core/PROJECT_SCALE.md`.
+5. Use `core/TASK_ROUTER.md` para escolher ChatGPT, Codex ou outro ambiente adequado.
+6. Aplique `core/RISK_MODEL.md`.
+7. Consulte `core/WORKFLOW.md` para projeto novo ou manutenção.
+8. Carregue somente as Skills relevantes.
+9. Consulte templates, políticas e referências apenas quando necessários.
+10. Antes de criar algo do zero, verifique se existe solução consolidada, componente, biblioteca, template ou registry adequado.
+11. Não misture tecnologias, bibliotecas ou design systems sem ganho claro.
 
 ## Regra de serviço ao usuário
 
@@ -29,6 +30,10 @@ Prefira:
 - explicações simples para decisões relevantes.
 
 Consulte o usuário quando a decisão envolver objetivo de produto, preferência subjetiva, gasto, risco destrutivo, dados indisponíveis ou autorização não coberta.
+
+## Profundidade do processo
+
+Não aplicar o mesmo ritual a todo trabalho. Projetos pequenos usam planejamento leve; aplicações relevantes ou críticas podem usar fluxo spec-driven mais completo. A Factory deve escolher a menor profundidade que preserve segurança, qualidade e continuidade.
 
 ## Continuidade
 
