@@ -16,16 +16,22 @@ SCHEMA_VERSION = 1
 DEFAULT_MAX_BYTES = 512 * 1024
 IGNORE_DIRS = {
     ".git", ".hg", ".svn", ".factory", ".idea", ".vscode", "node_modules",
+    ".ssh", ".gnupg", ".aws", ".azure", ".kube",
     "vendor", "dist", "build", "out", ".next", ".nuxt", ".svelte-kit",
     "coverage", "target", ".cache", ".turbo", ".vercel", ".venv", "venv",
     "__pycache__", ".pytest_cache", ".mypy_cache", ".ruff_cache",
     "playwright-report", "test-results",
 }
 SENSITIVE_NAMES = {
-    ".env", "credentials.json", "service-account.json", "id_rsa", "id_ed25519",
-    "secrets.json", "secrets.yaml", "secrets.yml",
+    ".env", ".envrc", ".npmrc", ".pypirc", ".netrc", ".git-credentials",
+    "credentials", "credentials.json", "credentials.ini", "service-account.json",
+    "id_rsa", "id_ed25519", "kubeconfig", "auth.json",
+    "secrets.json", "secrets.yaml", "secrets.yml", "terraform.tfvars",
 }
-SENSITIVE_SUFFIXES = {".pem", ".key", ".p12", ".pfx", ".jks", ".keystore"}
+SENSITIVE_SUFFIXES = {
+    ".pem", ".key", ".p12", ".pfx", ".jks", ".keystore", ".tfvars",
+}
+SENSITIVE_NAME_PARTS = ("secret", "credential")
 BINARY_SUFFIXES = {
     ".png", ".jpg", ".jpeg", ".gif", ".webp", ".ico", ".bmp", ".pdf",
     ".zip", ".gz", ".tgz", ".7z", ".rar", ".woff", ".woff2", ".ttf",
@@ -90,9 +96,11 @@ def is_sensitive(path: Path) -> bool:
     name = path.name.lower()
     if name in SENSITIVE_NAMES:
         return True
-    if name.startswith(".env."):
+    if name.startswith(".env.") or name.endswith(".tfvars.json"):
         return True
     if path.suffix.lower() in SENSITIVE_SUFFIXES:
+        return True
+    if any(part in name for part in SENSITIVE_NAME_PARTS) and path.suffix.lower() in {".json", ".yaml", ".yml", ".toml", ".ini", ".txt"}:
         return True
     return False
 
@@ -300,6 +308,18 @@ def detect_stack(root: Path, file_paths: set[str], language_counts: dict[str, in
     }
 
 
+def local_dependency_edges(files: dict[str, dict[str, Any]]) -> list[dict[str, str]]:
+    """Return lightweight relative-import edges without pretending to resolve aliases."""
+    edges: list[dict[str, str]] = []
+    for path, meta in sorted(files.items()):
+        for specifier in meta.get("imports", []):
+            if isinstance(specifier, str) and specifier.startswith("."):
+                edges.append({"from": path, "import": specifier})
+                if len(edges) >= 1000:
+                    return edges
+    return edges
+
+
 def fingerprint(files: dict[str, dict[str, Any]]) -> str:
     material = "\n".join(f"{path}:{meta['sha256']}" for path, meta in sorted(files.items()))
     return sha256_bytes(material.encode("utf-8"))
@@ -399,6 +419,7 @@ def scan_repository(root: Path | str, output_dir: Path | str | None = None, max_
             "skipped_binary": skipped_binary,
         },
         "important_files": sorted(path for path, meta in files.items() if meta.get("important")),
+        "local_dependency_edges": local_dependency_edges(files),
         "files": dict(sorted(files.items())),
     }
     summary = render_summary(repo_map)
