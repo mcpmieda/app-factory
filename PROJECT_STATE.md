@@ -4,63 +4,58 @@
 
 ## Objetivo atual
 
-Concluir a validação **universal** fora do perfil `web-admin` e entregar evidência revisável para a auditoria final V1.0.
+Executar a **auditoria final V1.0 end-to-end em ambiente limpo**, provando bootstrap/plugin isolado, roteamento por pedido comum, criação real do zero, qualidade executável, continuidade por outro agente e recuperação após regressão controlada.
 
 ## Estado
 
-- fase: `V0.9 — validação universal dos principais tipos de projeto`;
-- baseline oficial: `main` após merge da V0.8 (`2fb28bbd4a8d3cde338f52f6521415d17f2a3581`);
-- base efetiva da branch após fast-forward de `main`: `5eb720941ff0f5ff5f682502c222652ce95a244c`;
-- V0.1 bootstrap: concluída;
+- fase: `V1.0 — auditoria final end-to-end e release candidate`;
+- baseline oficial: `main` após merge da V0.9 (`38421c037c04df1999701e56a7c8946e80bba486`);
+- V0.1 bootstrap: concluída e integrada;
 - V0.2 pesquisa: concluída e integrada;
 - V0.2.1 entry router: concluído e integrado;
-- Issue #3 / Codex Plugin: concluída e revisada;
-- V0.3 piloto web-admin: concluído, revisado e integrado;
+- V0.3 piloto web-admin: concluído e integrado;
 - V0.4 perfil web-admin: concluído e integrado;
-- V0.5 starter + segundo app: concluída, revisada e integrada;
-- V0.6 hardening PostgreSQL/Auth: concluído, revisado e integrado;
+- V0.5 starter + segundo app: concluída e integrada;
+- V0.6 hardening PostgreSQL/Auth: concluído e integrado;
 - V0.7 Living UI / Semantic Motion: concluída e integrada;
-- V0.8 Living UI executável: concluída, revisada e integrada;
+- V0.8 Living UI executável: concluída e integrada;
+- V0.9 validação universal: concluída, revisada e integrada;
+- Issue #22: concluída;
+- Issue #25: aberta e liberada para Codex;
 - perfil `web-admin`: `v1-rc`;
-- Issues #4, #8, #10, #12, #15 e #19: concluídas;
-- Issue #22: implementada na branch `pilot/universal-validation-v0.9`, draft PR #24 com CI verde e aguardando revisão;
 - perfis `website`, `web-app`, `chrome-extension` e `automation`: `validated`;
-- CI atual: gates anteriores preservados e quatro jobs universais independentes adicionados.
+- CI: Core/Skills/plugin, web-admin starter/recipes, PostgreSQL/Auth real, asset-admin, Living UI e quatro pilotos universais.
 
 ## Decisões vigentes
 
-- Core permanece neutro e portátil;
 - intenção de software ativa a Factory automaticamente;
-- processo varia por escala XS/S/M/L;
 - AI serve ao objetivo, não ao texto literal do prompt;
-- reuse-first: pesquisar/reusar solução madura quando isso reduzir trabalho e risco;
-- perfis validados são defaults condicionais, não dogmas;
-- stack do `web-admin` não deve contaminar automaticamente outros tipos de projeto;
-- `web-admin` usa shadcn como base visual e ReUI seletivamente;
-- HeroUI é alternativa visual legítima e pode ser exigido como sistema único;
-- Living UI / Semantic Motion é transversal e independente do design system;
+- reuse-first e maior fatia segura são regras centrais;
+- perfis são defaults condicionais, não stacks universais;
+- stack `web-admin` não contamina outros tipos por reflexo;
+- Living UI / Semantic Motion é transversal quando existe UI;
 - Motion Profile default contextual: `ambient`;
-- perfis de motion: `none`, `subtle`, `ambient`, `expressive`;
 - `prefers-reduced-motion` é obrigatório para movimento não essencial;
-- atenção deve parar/reduzir após cumprir sua função;
-- dados/gráficos só devem reanimar quando houver mudança real;
-- `AmbientSurface` e `AttentionPulse` são primitives opt-in comprovados;
-- Better Auth/Drizzle permanecem módulos condicionais do `web-admin`;
-- SQLite é local/teste e PostgreSQL é caminho de produção validado para `web-admin`;
-- instalação limpa, testes executáveis, CI reproduzível e continuidade via GitHub permanecem gates.
+- `web-admin` tem caminho validado Better Auth + Drizzle + PostgreSQL quando necessário;
+- website, web-app, Chrome extension e automation possuem contratos validados próprios;
+- instalação limpa, testes executáveis, CI reproduzível, recuperação e continuidade via GitHub são gates de release;
+- refinamentos não bloqueantes e novos perfis ficam para pós-V1.
 
 ## Trabalho atual
 
-- bloco: Issue #22 — V0.9 validação universal concluída localmente;
-- pilotos: `examples/website-pilot`, `web-app-pilot`, `chrome-extension-pilot`, `automation-pilot`;
-- evidência: `research/V0.9_UNIVERSAL_VALIDATION.md` e screenshots V0.9;
-- continuidade: website e automation recuperados por agentes isolados sem contexto;
-- status executável confirmado pelos cinco checks do draft PR;
-- nenhum merge automático.
+- bloco: Issue #25 — auditoria final V1.0;
+- ambiente recomendado: Codex em configuração/diretórios isolados sempre que possível;
+- pedido final do teste é linguagem natural e não contém stack/framework;
+- projeto de auditoria deve nascer do zero e provar uma jornada real de empréstimo/devolução de equipamentos;
+- segundo agente sem contexto deve conseguir compreender, modificar e validar o projeto apenas pelo repositório;
+- uma regressão controlada deve ser detectada e recuperada antes do baseline final verde;
+- nenhuma tag/release V1.0 deve ser criada antes da revisão final do ChatGPT.
 
 ## Próxima ação
 
-Revisar o draft PR #24 da Issue #22. Sem bloqueador objetivo após CI verde, iniciar diretamente **V1.0 — auditoria final end-to-end em ambiente limpo**, sem fase intermediária de refinamento.
+Executar integralmente a Issue #25 no Codex. Ao concluir, devolver draft PR, checks, relatório `research/V1.0_FINAL_AUDIT.md`, evidência do segundo agente e resultado do teste de recuperação para revisão final do ChatGPT.
+
+Se todos os critérios objetivos passarem e o relatório declarar `APP FACTORY V1.0 READY FOR RELEASE`, a próxima ação será revisar, integrar e publicar/taguear a V1.0. Não criar fase intermediária apenas por refinamento.
 
 ## Handoff
 
@@ -68,11 +63,9 @@ Outro agente deve começar por:
 
 1. `AGENTS.md`;
 2. este `PROJECT_STATE.md`;
-3. `research/V0.9_UNIVERSAL_VALIDATION.md` e draft PR #24 da Issue #22;
+3. Issue #25;
 4. `core/ENTRYPOINT.md`;
 5. `skills/factory-router/SKILL.md`;
-6. `skills/app-planner/SKILL.md`;
-7. `skills/tool-router/SKILL.md`;
-8. `ui/UI_POLICY.md` e `ui/MOTION_POLICY.md`;
-9. `profiles/README.md` e `profiles/web-admin/PROFILE.md`;
-10. o `PROJECT_STATE.md` do piloto relevante.
+6. `profiles/README.md`;
+7. somente depois, os Skills/perfis que o roteamento indicar;
+8. `research/V0.9_UNIVERSAL_VALIDATION.md` apenas como evidência anterior, não como instrução para copiar os pilotos.
