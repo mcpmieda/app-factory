@@ -95,6 +95,33 @@ class ExecutionEngineTests(unittest.TestCase):
         decision = route_action(root, "verify", available_backends=["current_agent", "github_ci", "sandbox"])
         self.assertEqual(decision.backend_id, "github_ci")
 
+    def test_old_task_failures_do_not_penalize_new_task(self) -> None:
+        temp, root = self.make_root()
+        self.addCleanup(temp.cleanup)
+        for _ in range(2):
+            record_execution_attempt(
+                root,
+                task_key="task-old",
+                action="verify",
+                backend_id="github_ci",
+                required_capabilities=["deterministic_commands", "test"],
+                outcome="failure",
+            )
+        old_decision = route_action(
+            root,
+            "verify",
+            task_key="task-old",
+            available_backends=["current_agent", "github_ci", "sandbox"],
+        )
+        new_decision = route_action(
+            root,
+            "verify",
+            task_key="task-new",
+            available_backends=["current_agent", "github_ci", "sandbox"],
+        )
+        self.assertEqual(old_decision.backend_id, "sandbox")
+        self.assertEqual(new_decision.backend_id, "github_ci")
+
     def test_execution_history_does_not_persist_raw_multiline_logs(self) -> None:
         temp, root = self.make_root()
         self.addCleanup(temp.cleanup)
