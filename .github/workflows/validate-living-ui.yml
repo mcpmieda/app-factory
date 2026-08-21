@@ -7,6 +7,7 @@ on:
       - "examples/living-ui-admin/**"
       - "research/V0.8_LIVING_UI_VALIDATION.md"
       - "research/evidence/v0.8-living-ui-*.png"
+      - "research/V1.0_FINAL_AUDIT.md"
       - "starters/web-admin/template/src/app/globals.css"
       - "starters/web-admin/template/src/components/motion/**"
   push:
@@ -16,6 +17,7 @@ on:
       - "examples/living-ui-admin/**"
       - "research/V0.8_LIVING_UI_VALIDATION.md"
       - "research/evidence/v0.8-living-ui-*.png"
+      - "research/V1.0_FINAL_AUDIT.md"
       - "starters/web-admin/template/src/app/globals.css"
       - "starters/web-admin/template/src/components/motion/**"
 

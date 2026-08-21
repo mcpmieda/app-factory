@@ -28,21 +28,19 @@ O manifest aponta `skills` para `./skills/`, que já é a fonte portátil usada 
 
 ## Estado
 
-`0.2.0-alpha` — **validado em piloto real na Issue #3 em 2026-08-21**.
+`1.0.0-rc.1` — **release candidate aguardando revisão final**.
 
-O Codex CLI oficial `0.149.0` reconheceu o marketplace local, instalou e habilitou a App Factory, descobriu as 10 Skills e ativou explicitamente `app-planner`, `tool-router`, `ui-builder` e `verification` em smoke test. Os hashes das quatro Skills na origem e no cache instalado foram idênticos.
+O Codex CLI oficial `0.149.0` reconhece o marketplace local, instala a App Factory e descobre as 11 Skills, incluindo `factory-router`. A auditoria V1 compara SHA-256 de todas as Skills entre o checkout limpo e o cache instalado e rejeita omissão, duplicação, divergência ou pacote pesado.
 
-A versão continua `alpha` porque a V0.2 ainda precisa ser integrada ao `main` e o starter `web-admin` ainda será usado como segundo piloto antes da V1.
+## Marketplace local com fonte única
 
-## Marketplace local sem cópia
-
-O arquivo `.agents/plugins/marketplace.json` aponta a entrada `app-factory` para `./`, isto é, a própria raiz do repositório. Assim, o host lê `.codex-plugin/plugin.json` e `skills/` diretamente da fonte portátil, sem criar uma segunda árvore de `skills/` ou `core/`.
+O arquivo `.agents/plugins/marketplace.json` aponta a entrada `app-factory` para `./`, isto é, a própria raiz do repositório. O checkout continua sendo a única fonte mantida. Na instalação, o Codex cria um cache derivado; ele não é editado e a auditoria exige hashes idênticos ao `skills/` de origem.
 
 Para registrar a origem em um Codex CLI que exponha os comandos de plugins:
 
 ```text
-codex plugin marketplace add <raiz-do-repositorio>
-codex plugin add app-factory@app-factory-local
+codex --enable plugins plugin marketplace add <raiz-do-repositorio>
+codex --enable plugins plugin add app-factory@app-factory-local
 ```
 
 O Codex/ChatGPT Desktop pode exigir reinstalação/reinício e nova conversa para carregar alterações do plugin.
@@ -55,13 +53,14 @@ Execute:
 python scripts/validate_factory.py
 python scripts/validate_skills.py
 python scripts/validate_plugin.py
+python scripts/validate_v1_bootstrap.py
 ```
 
 No piloto também foi usado o validador oficial do `plugin-creator`.
 
 As evidências completas estão em:
 
-`research/V0.2_CODEX_PLUGIN_PILOT.md`
+`research/V0.2_CODEX_PLUGIN_PILOT.md` (piloto histórico) e `research/V1.0_FINAL_AUDIT.md` (gate atual).
 
 ## Resultado arquitetural
 
@@ -81,7 +80,7 @@ ADAPTADOR CODEX
       └── marketplace local
 ```
 
-Nenhum arquivo do Core precisou ser duplicado ou alterado para satisfazer o Codex.
+Nenhum arquivo do Core ou Skill é mantido como segunda fonte. O cache de instalação é uma cópia derivada do checkout limpo e deve ter hashes idênticos; `scripts/validate_v1_bootstrap.py` prova essa relação em um `CODEX_HOME` temporário, sem alterar a configuração global do usuário.
 
 ## MCP e hooks
 

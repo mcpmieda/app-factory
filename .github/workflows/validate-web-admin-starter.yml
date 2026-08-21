@@ -10,6 +10,7 @@ on:
       - "examples/asset-admin/**"
       - "profiles/web-admin/PROFILE.md"
       - "research/V0.6_WEB_ADMIN_HARDENING.md"
+      - "research/V1.0_FINAL_AUDIT.md"
   push:
     branches: [main]
     paths:
@@ -20,6 +21,7 @@ on:
       - "examples/asset-admin/**"
       - "profiles/web-admin/PROFILE.md"
       - "research/V0.6_WEB_ADMIN_HARDENING.md"
+      - "research/V1.0_FINAL_AUDIT.md"
 
 permissions:
   contents: read

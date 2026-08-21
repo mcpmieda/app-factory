@@ -1,0 +1,8 @@
+{
+  "profile": "web-admin",
+  "motionProfile": "ambient",
+  "factoryBaseline": "v0.7",
+  "generatedAt": "2026-08-21T17:26:22.325Z",
+  "source": "starters/web-admin/template",
+  "recipes": ["database-drizzle"]
+}

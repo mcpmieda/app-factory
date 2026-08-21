@@ -41,6 +41,15 @@ A IA deve trabalhar para atingir o objetivo do usuário, não apenas obedecer li
 
 ## Comece por aqui
 
+Para usar no Codex 0.149 a partir de um checkout limpo:
+
+```text
+codex --enable plugins plugin marketplace add <raiz-do-app-factory>
+codex --enable plugins plugin add app-factory@app-factory-local
+```
+
+Depois, basta descrever o software em linguagem comum — por exemplo, `Quero criar um sistema simples para controlar empréstimos`. A palavra “App Factory” não é necessária. Para gerar diretamente o baseline administrativo validado, use `node scripts/create-web-admin.mjs <destino> <nome> [--recipe <id>]`.
+
 1. `AGENTS.md` — mapa para agentes.
 2. `core/ENTRYPOINT.md` — ativação automática por intenção e seleção de perfil.
 3. `skills/factory-router/SKILL.md` — roteador universal.
@@ -170,6 +179,6 @@ app-factory/
 
 ## Estado
 
-Versão de trabalho: `0.9-universal-validation`
+Versão de trabalho: `1.0.0-rc.1` — **V1.0 release candidate, aguardando revisão final**.
 
-O perfil `web-admin` está em `v1-rc`; os quatro perfis universais V0.9 estão `validated`. Os pilotos distinguem conteúdo, jornada end-user, extensão MV3 e automação local sem herdar a stack administrativa por reflexo.
+O perfil `web-admin` está em `v1-rc`; os quatro perfis universais estão `validated`. A auditoria final exercita bootstrap isolado, criação real de um novo `web-admin`, continuidade entre agentes e recuperação controlada. Nenhuma tag ou release V1.0 foi publicada.

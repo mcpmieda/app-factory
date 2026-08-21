@@ -6,7 +6,7 @@ describe("projectConfig", () => {
   it("records the reusable Factory profile and baseline", () => {
     expect(projectConfig).toMatchObject({
       profile: "web-admin",
-      factoryBaseline: "v0.7",
+      factoryBaseline: "v1.0.0-rc.1",
     });
     expect(projectConfig.name.length).toBeGreaterThan(1);
   });
