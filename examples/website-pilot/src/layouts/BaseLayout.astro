@@ -1,0 +1,9 @@
+---
+import "../styles/global.css";
+interface Props { title: string; description: string; reading?: boolean; }
+const { title, description, reading = false } = Astro.props;
+const canonical = new URL(Astro.url.pathname, "https://escola-horizonte.example");
+---
+<!doctype html>
+<html lang="pt-BR"><head><meta charset="UTF-8" /><meta name="viewport" content="width=device-width" /><meta name="description" content={description} /><meta name="theme-color" content="#193a32" /><link rel="canonical" href={canonical} /><title>{title}</title></head>
+<body class:list={{ reading }}><a class="skip-link" href="#conteudo">Pular para o conteúdo</a><header class="site-header"><a class="brand" href="/" aria-label="Escola Horizonte, início"><span aria-hidden="true">EH</span> Escola Horizonte</a><nav aria-label="Navegação principal"><a href="/#proposta">Nossa proposta</a><a href="/#vida-escolar">Vida escolar</a><a href="/projeto">Projeto pedagógico</a></nav><a class="header-cta" href="mailto:visitas@horizonte.example?subject=Quero%20conhecer%20a%20escola">Agendar visita</a></header><main id="conteudo"><slot /></main><footer><p><strong>Escola Horizonte</strong> — um cenário inteiramente fictício para validação.</p><a href="mailto:visitas@horizonte.example">visitas@horizonte.example</a></footer></body></html>

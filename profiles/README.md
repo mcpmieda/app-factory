@@ -20,12 +20,12 @@ Use for administrative systems, CRUDs, dashboards, internal tools and data-orien
 
 See `profiles/web-admin/PROFILE.md`.
 
+### `website`, `web-app`, `chrome-extension`, `automation`
+
+Validated by one complete V0.9 pilot each. They provide conditional contracts and gates, not frozen universal stacks. See each profile directory.
+
 ## Planned profiles
 
-- `website`;
-- `web-app` general-purpose;
-- `chrome-extension`;
-- `automation`;
 - API/backend;
 - mobile/desktop when evidence is available.
 

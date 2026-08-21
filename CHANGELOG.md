@@ -1,5 +1,24 @@
 # Changelog
 
+## 0.9-universal-validation — 2026-08-21
+
+Validação da Factory fora do perfil `web-admin` com quatro slices completos.
+
+### Validado
+
+- website Astro estático com duas rotas, SEO, desktop/mobile/teclado/reduced motion;
+- web-app Vite/React voltado ao usuário final com empty, validação, loading e sucesso;
+- extensão Chrome MV3 carregada em Chromium persistent context, permissões mínimas e ZIP de validação;
+- automação Python local com erro parcial, dry-run, escrita atômica e idempotência;
+- recuperação read-only por agentes sem contexto em website e automation;
+- quatro perfis condicionais `validated` e workflow com jobs independentes.
+
+### Evidência
+
+- `research/V0.9_UNIVERSAL_VALIDATION.md`;
+- `examples/{website,web-app,chrome-extension,automation}-pilot/`;
+- `.github/workflows/validate-universal-pilots.yml`.
+
 ## 0.8-living-ui-validation — 2026-08-21
 
 Validação executável de Living UI / Semantic Motion em uma interface administrativa gerada.

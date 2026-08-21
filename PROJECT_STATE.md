@@ -4,12 +4,13 @@
 
 ## Objetivo atual
 
-Validar a App Factory de forma **universal** fora do perfil `web-admin`, usando quatro famílias representativas (`website`, `web-app`, `chrome-extension`, `automation`) antes da auditoria final V1.0.
+Concluir a validação **universal** fora do perfil `web-admin` e entregar evidência revisável para a auditoria final V1.0.
 
 ## Estado
 
 - fase: `V0.9 — validação universal dos principais tipos de projeto`;
 - baseline oficial: `main` após merge da V0.8 (`2fb28bbd4a8d3cde338f52f6521415d17f2a3581`);
+- base efetiva da branch após fast-forward de `main`: `5eb720941ff0f5ff5f682502c222652ce95a244c`;
 - V0.1 bootstrap: concluída;
 - V0.2 pesquisa: concluída e integrada;
 - V0.2.1 entry router: concluído e integrado;
@@ -22,8 +23,9 @@ Validar a App Factory de forma **universal** fora do perfil `web-admin`, usando 
 - V0.8 Living UI executável: concluída, revisada e integrada;
 - perfil `web-admin`: `v1-rc`;
 - Issues #4, #8, #10, #12, #15 e #19: concluídas;
-- Issue #22: aberta e liberada para Codex;
-- CI atual: Core/Skills/plugin, web-admin starter e recipes, PostgreSQL/Auth real, asset-admin e Living UI desktop/mobile/reduced-motion.
+- Issue #22: implementada na branch `pilot/universal-validation-v0.9`, draft PR #24 com CI verde e aguardando revisão;
+- perfis `website`, `web-app`, `chrome-extension` e `automation`: `validated`;
+- CI atual: gates anteriores preservados e quatro jobs universais independentes adicionados.
 
 ## Decisões vigentes
 
@@ -49,19 +51,16 @@ Validar a App Factory de forma **universal** fora do perfil `web-admin`, usando 
 
 ## Trabalho atual
 
-- bloco: Issue #22 — V0.9 validação universal;
-- ambiente recomendado: Codex;
-- pilotos exigidos: website, web-app, Chrome extension MV3 e automation local;
-- objetivo: provar classificação, escolha de stack, reuse-first, implementação, teste e handoff fora do `web-admin`;
-- regra: construir a menor fatia funcional completa por tipo, não quatro produtos grandes;
-- perfis novos só devem ser promovidos após evidência do piloto;
+- bloco: Issue #22 — V0.9 validação universal concluída localmente;
+- pilotos: `examples/website-pilot`, `web-app-pilot`, `chrome-extension-pilot`, `automation-pilot`;
+- evidência: `research/V0.9_UNIVERSAL_VALIDATION.md` e screenshots V0.9;
+- continuidade: website e automation recuperados por agentes isolados sem contexto;
+- status executável confirmado pelos cinco checks do draft PR;
 - nenhum merge automático.
 
 ## Próxima ação
 
-Executar integralmente a Issue #22 no Codex. Ao concluir, devolver draft PR, CI, evidências e relatório `research/V0.9_UNIVERSAL_VALIDATION.md` para revisão do ChatGPT.
-
-Se a V0.9 terminar sem bloqueador objetivo, a próxima fase deve ser diretamente **V1.0 — auditoria final end-to-end em ambiente limpo**, sem criar novas fases intermediárias apenas por refinamento.
+Revisar o draft PR #24 da Issue #22. Sem bloqueador objetivo após CI verde, iniciar diretamente **V1.0 — auditoria final end-to-end em ambiente limpo**, sem fase intermediária de refinamento.
 
 ## Handoff
 
@@ -69,11 +68,11 @@ Outro agente deve começar por:
 
 1. `AGENTS.md`;
 2. este `PROJECT_STATE.md`;
-3. Issue #22;
+3. `research/V0.9_UNIVERSAL_VALIDATION.md` e draft PR #24 da Issue #22;
 4. `core/ENTRYPOINT.md`;
 5. `skills/factory-router/SKILL.md`;
 6. `skills/app-planner/SKILL.md`;
 7. `skills/tool-router/SKILL.md`;
 8. `ui/UI_POLICY.md` e `ui/MOTION_POLICY.md`;
 9. `profiles/README.md` e `profiles/web-admin/PROFILE.md`;
-10. `research/V0.8_LIVING_UI_VALIDATION.md`.
+10. o `PROJECT_STATE.md` do piloto relevante.
