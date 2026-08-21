@@ -31,6 +31,7 @@ REQUIRED = [
     "engine/ci_executor.py",
     "engine/learning_engine.py",
     "engine/semantic_verification.py",
+    "engine/review_packet.py",
     "scripts/factory.py",
     "ui/UI_POLICY.md",
     "ui/MOTION_POLICY.md",
