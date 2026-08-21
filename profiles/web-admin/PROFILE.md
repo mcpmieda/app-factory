@@ -1,6 +1,6 @@
 # Web Admin Profile
 
-Status: `v1-rc`
+Status: `v1`
 
 Este perfil consolida somente decisões comprovadas pelo piloto V0.3 e pelos hardenings posteriores. Ele não é uma stack universal para todo software.
 
@@ -167,4 +167,4 @@ Mudanças de recipe também exigem geração limpa direta de cada caminho de pro
 
 ## Evidência de origem
 
-Perfil derivado de `research/V0.3_WEB_ADMIN_PILOT.md`, da validação reutilizável em `research/V0.5_WEB_ADMIN_STARTER_VALIDATION.md`, do hardening PostgreSQL/recipes em `research/V0.6_WEB_ADMIN_HARDENING.md` e da política universal de motion em `ui/MOTION_POLICY.md`.
+Perfil derivado de `research/V0.3_WEB_ADMIN_PILOT.md`, da validação reutilizável em `research/V0.5_WEB_ADMIN_STARTER_VALIDATION.md`, do hardening PostgreSQL/recipes em `research/V0.6_WEB_ADMIN_HARDENING.md`, da política universal de motion em `ui/MOTION_POLICY.md` e da auditoria final `research/V1.0_FINAL_AUDIT.md`.
