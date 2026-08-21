@@ -1,0 +1,5 @@
+id,name,department,hours,training_required
+e-002,  bruno souza  ,operations,6,yes
+e-001,ana lima,education,2,sim
+e-003,Caio Reis,finance,not-a-number,no
+e-004,Dora Luz,education,8,no

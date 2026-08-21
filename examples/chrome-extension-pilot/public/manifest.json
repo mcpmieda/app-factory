@@ -1,0 +1,13 @@
+{
+  "manifest_version": 3,
+  "name": "Focus Lens Pilot",
+  "version": "0.1.0",
+  "description": "Highlights actionable items on the controlled local pilot page.",
+  "content_scripts": [
+    {
+      "matches": ["http://127.0.0.1/*"],
+      "js": ["content.js"],
+      "run_at": "document_idle"
+    }
+  ]
+}

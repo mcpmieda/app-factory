@@ -45,7 +45,7 @@ A IA deve trabalhar para atingir o objetivo do usuário, não apenas obedecer li
 2. `core/ENTRYPOINT.md` — ativação automática por intenção e seleção de perfil.
 3. `skills/factory-router/SKILL.md` — roteador universal.
 4. `profiles/README.md` — perfis validados por classe de software.
-5. `profiles/web-admin/PROFILE.md` — primeiro perfil validado.
+5. `profiles/*/PROFILE.md` — defaults condicionais comprovados por família.
 6. `ui/UI_POLICY.md` — seleção e consistência de interface.
 7. `ui/MOTION_POLICY.md` — Living UI / Semantic Motion independente de framework.
 8. `APP_FACTORY_PLAN.md` — visão, fases e decisões.
@@ -104,6 +104,10 @@ O perfil herda `Motion Profile: ambient`, reduzindo para comportamento `subtle` 
 
 O perfil completo está em `profiles/web-admin/PROFILE.md`.
 
+### Perfis universais V0.9 (`validated`)
+
+`website`, `web-app`, `chrome-extension` e `automation` possuem um piloto completo e gates próprios. Os perfis registram contratos condicionais; Astro, Vite/React, Vite vanilla e Python foram adequados aos pilotos, mas não são stacks universais congeladas. Veja `research/V0.9_UNIVERSAL_VALIDATION.md`.
+
 ## Estrutura atual
 
 ```text
@@ -116,7 +120,11 @@ app-factory/
 ├── core/
 ├── skills/
 ├── profiles/
-│   └── web-admin/
+│   ├── web-admin/
+│   ├── website/
+│   ├── web-app/
+│   ├── chrome-extension/
+│   └── automation/
 ├── policies/
 ├── templates/
 ├── starters/
@@ -127,6 +135,11 @@ app-factory/
 ├── registry/
 ├── pilots/
 │   └── web-admin/
+├── examples/
+│   ├── website-pilot/
+│   ├── web-app-pilot/
+│   ├── chrome-extension-pilot/
+│   └── automation-pilot/
 ├── research/
 └── scripts/
 ```
@@ -157,6 +170,6 @@ app-factory/
 
 ## Estado
 
-Versão de trabalho: `0.7-living-ui`
+Versão de trabalho: `0.9-universal-validation`
 
-O perfil `web-admin` está em `v1-rc` após hardening de recipes/PostgreSQL/Auth. A V0.7 adiciona a política universal Living UI / Semantic Motion e torna o Motion Profile parte explícita dos projetos com interface.
+O perfil `web-admin` está em `v1-rc`; os quatro perfis universais V0.9 estão `validated`. Os pilotos distinguem conteúdo, jornada end-user, extensão MV3 e automação local sem herdar a stack administrativa por reflexo.
