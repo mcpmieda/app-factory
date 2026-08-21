@@ -91,6 +91,21 @@ class AutonomyEngineTests(unittest.TestCase):
         self.assertTrue(action["requires_human"])
         self.assertEqual(read_state(root)["human_needed"]["category"], "cost")
 
+    def test_invalid_event_order_is_rejected_without_state_corruption(self) -> None:
+        temp, root = self.make_repo()
+        self.addCleanup(temp.cleanup)
+        before = init_project(root, goal="Entregar com segurança")
+        history_size = len(before["history"])
+
+        with self.assertRaisesRegex(ValueError, "not allowed"):
+            record_event(root, "delivered", "não deveria aceitar")
+
+        after = read_state(root)
+        self.assertEqual(after["phase"], "planning")
+        self.assertEqual(after["status"], "active")
+        self.assertEqual(len(after["history"]), history_size)
+        self.assertNotIn("delivered", [item["event"] for item in after["history"]])
+
 
 if __name__ == "__main__":
     unittest.main()
