@@ -1,5 +1,26 @@
 # Changelog
 
+## 1.0.0-rc.1 — 2026-08-21
+
+Release candidate final da App Factory, sem tag ou publicação antecipada.
+
+### Validado
+
+- bootstrap do plugin Codex 0.149 em `CODEX_HOME` e checkout temporários, com 11 Skills idênticas entre origem e cache;
+- roteamento de um pedido comum para `web-admin`, escala M e risco médio sem palavra-chave especial;
+- novo sistema fictício de empréstimos criado pelo starter + recipe Drizzle, sem copiar pilotos;
+- empréstimo → reload → devolução, atrasados, busca, integridade transacional, desktop, mobile, teclado e reduced motion;
+- continuidade por segundo agente sem histórico e recuperação após regressão controlada;
+- composição dos gates existentes de Core/Skills/plugin, starter, Living UI, web-admin e quatro pilotos universais;
+- varredura de secrets, dados reais e artefatos pesados.
+
+### Evidência
+
+- `research/V1.0_FINAL_AUDIT.md`;
+- `audits/v1-final/equipment-loans/`;
+- `.github/workflows/validate-v1-release.yml`;
+- `scripts/validate_v1_{bootstrap,release}.py`.
+
 ## 0.9-universal-validation — 2026-08-21
 
 Validação da Factory fora do perfil `web-admin` com quatro slices completos.

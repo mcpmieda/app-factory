@@ -1,6 +1,6 @@
 {
   "name": "app-factory",
-  "version": "0.2.1-alpha",
+  "version": "1.0.0-rc.1",
   "description": "Portable AI software-development factory with automatic software-intent routing, planning, tool selection, architecture, UI, security and executable verification.",
   "author": {
     "name": "mcpmieda",

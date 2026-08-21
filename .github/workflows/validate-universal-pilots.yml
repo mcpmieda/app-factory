@@ -13,6 +13,7 @@ on:
       - "profiles/chrome-extension/**"
       - "profiles/automation/**"
       - "research/V0.9_UNIVERSAL_VALIDATION.md"
+      - "research/V1.0_FINAL_AUDIT.md"
   push:
     branches: [main]
     paths:
@@ -21,6 +22,7 @@ on:
       - "examples/web-app-pilot/**"
       - "examples/chrome-extension-pilot/**"
       - "examples/automation-pilot/**"
+      - "research/V1.0_FINAL_AUDIT.md"
 
 permissions:
   contents: read

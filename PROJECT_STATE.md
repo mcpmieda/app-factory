@@ -8,7 +8,7 @@ Executar a **auditoria final V1.0 end-to-end em ambiente limpo**, provando boots
 
 ## Estado
 
-- fase: `V1.0 — auditoria final end-to-end e release candidate`;
+- fase: `V1.0 release candidate — aguardando revisão final`;
 - baseline oficial: `main` após merge da V0.9 (`38421c037c04df1999701e56a7c8946e80bba486`);
 - V0.1 bootstrap: concluída e integrada;
 - V0.2 pesquisa: concluída e integrada;
@@ -53,7 +53,7 @@ Executar a **auditoria final V1.0 end-to-end em ambiente limpo**, provando boots
 
 ## Próxima ação
 
-Executar integralmente a Issue #25 no Codex. Ao concluir, devolver draft PR, checks, relatório `research/V1.0_FINAL_AUDIT.md`, evidência do segundo agente e resultado do teste de recuperação para revisão final do ChatGPT.
+Revisar o draft PR da Issue #25, seus checks, o relatório `research/V1.0_FINAL_AUDIT.md`, a evidência do segundo agente e o teste de recuperação. Não fazer merge, tag ou release antes dessa revisão.
 
 Se todos os critérios objetivos passarem e o relatório declarar `APP FACTORY V1.0 READY FOR RELEASE`, a próxima ação será revisar, integrar e publicar/taguear a V1.0. Não criar fase intermediária apenas por refinamento.
 

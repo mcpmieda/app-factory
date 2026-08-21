@@ -6,6 +6,7 @@ on:
       - "pilots/web-admin/**"
       - "research/V0.3_WEB_ADMIN_PILOT.md"
       - ".github/workflows/validate-web-admin-pilot.yml"
+      - "research/V1.0_FINAL_AUDIT.md"
   workflow_dispatch:
 
 permissions:
