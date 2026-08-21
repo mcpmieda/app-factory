@@ -2,6 +2,12 @@
 
 Este arquivo é o mapa de trabalho para qualquer agente que use ou modifique a App Factory. Ele deve permanecer curto; detalhes ficam nos módulos especializados.
 
+## Entrada universal
+
+Pedidos de criação, evolução, manutenção, correção, automação, integração ou continuação de software devem entrar por `skills/factory-router/SKILL.md`, mesmo quando o usuário não mencionar "App Factory".
+
+Leia `core/ENTRYPOINT.md` para o contrato de ativação automática.
+
 ## Antes de agir
 
 1. Entenda o objetivo real do usuário.
@@ -40,6 +46,8 @@ Não aplicar o mesmo ritual a todo trabalho. Projetos pequenos usam planejamento
 GitHub é a fonte técnica de verdade. Conversas ajudam a pensar, mas estado, decisões vigentes, código, testes e próximos passos devem ser recuperáveis do repositório.
 
 Ao retomar um projeto, leia primeiro `PROJECT_STATE.md` quando existir; depois siga os links para produto, arquitetura e decisões.
+
+Novos projetos devem receber o template `templates/project/AGENTS.md`, que aponta de volta para a App Factory sem duplicar todo o Core.
 
 ## Escopo
 
