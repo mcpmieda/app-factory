@@ -1,5 +1,32 @@
 # Changelog
 
+## 0.7-living-ui — 2026-08-21
+
+Política universal Living UI / Semantic Motion.
+
+### Criado
+
+- `ui/MOTION_POLICY.md` como contrato framework-agnostic de movimento;
+- Motion Profiles `none`, `subtle`, `ambient` e `expressive`;
+- `ambient` como default contextual da Factory;
+- categorias semânticas para ambiente, interação, dados, estado, atenção e navegação;
+- regras obrigatórias de `prefers-reduced-motion`, performance e adaptação automática de intensidade.
+
+### Integrado
+
+- `ui-builder` passa a aplicar Semantic Motion independente de HeroUI, shadcn, ReUI ou outro design system;
+- templates de produto/arquitetura passam a registrar Motion Profile;
+- perfil `web-admin` herda `ambient`, atenuando para `subtle` em telas densas/leitura prolongada;
+- starter `web-admin` registra o comportamento de motion sem adicionar biblioteca de animação obrigatória;
+- validador estrutural passa a exigir UI e Motion Policy.
+
+### Regras de atenção e dados
+
+- ações importantes podem receber halo/pulso discreto e temporário;
+- a animação de atenção deve parar/reduzir após cumprir sua função;
+- gráficos e indicadores podem animar entrada/mudança real, mas não devem reanimar sem mudança de dado;
+- motion nunca deve competir com leitura, foco, desempenho ou acessibilidade.
+
 ## 0.6-web-admin-hardening — 2026-08-21
 
 Hardening pré-V1 do perfil `web-admin`.

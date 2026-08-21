@@ -15,7 +15,7 @@ A App Factory não é um prompt gigante. Ela combina:
 - Skills especializadas carregadas conforme a tarefa;
 - profundidade proporcional por escala XS/S/M/L;
 - templates e starters componíveis;
-- políticas de UI, dependências e Git;
+- políticas de UI, **Living UI / Semantic Motion**, dependências e Git;
 - roteamento entre ChatGPT, Codex e outros agentes;
 - verificações automáticas e definição objetiva de pronto;
 - adaptadores finos por agente;
@@ -33,6 +33,8 @@ A Factory deve reconhecer a intenção, entender o produto, classificar escala/r
 
 Para o exemplo de patrimônio, o roteador pode reconhecer o perfil `web-admin` e usar seus defaults comprovados, ativando autenticação, banco ou ReUI somente se o produto realmente precisar.
 
+Interfaces recebem também um **Motion Profile** independente do design system. O default contextual é `ambient`: movimento vivo e semântico quando ajuda, atenuado automaticamente em leitura longa, telas densas, acessibilidade ou desempenho limitado.
+
 ## Princípio central
 
 A IA deve trabalhar para atingir o objetivo do usuário, não apenas obedecer literalmente ao pedido. Deve fazer sozinha tudo que puder com segurança, reduzir cliques e conhecimento técnico exigido do usuário, recomendar caminhos melhores quando existirem e pedir intervenção humana somente quando houver decisão de negócio, preferência subjetiva, autorização de risco ou dado realmente indisponível.
@@ -44,15 +46,32 @@ A IA deve trabalhar para atingir o objetivo do usuário, não apenas obedecer li
 3. `skills/factory-router/SKILL.md` — roteador universal.
 4. `profiles/README.md` — perfis validados por classe de software.
 5. `profiles/web-admin/PROFILE.md` — primeiro perfil validado.
-6. `APP_FACTORY_PLAN.md` — visão, fases e decisões.
-7. `core/PRINCIPLES.md` — princípios universais.
-8. `core/HUMAN_INTERACTION.md` — o que a IA faz sozinha e o que depende do usuário.
-9. `core/PROJECT_SCALE.md` — profundidade XS/S/M/L.
-10. `core/TASK_ROUTER.md` — quando usar ChatGPT, Codex ou outro agente.
-11. `core/WORKFLOW.md` — ciclo de projeto novo e manutenção.
-12. `core/DEFINITION_OF_DONE.md` — como provar que terminou.
-13. `PORTABILITY.md` — continuidade entre agentes.
-14. `docs/CODEX_PLUGIN.md` — adaptador Codex validado em piloto.
+6. `ui/UI_POLICY.md` — seleção e consistência de interface.
+7. `ui/MOTION_POLICY.md` — Living UI / Semantic Motion independente de framework.
+8. `APP_FACTORY_PLAN.md` — visão, fases e decisões.
+9. `core/PRINCIPLES.md` — princípios universais.
+10. `core/HUMAN_INTERACTION.md` — o que a IA faz sozinha e o que depende do usuário.
+11. `core/PROJECT_SCALE.md` — profundidade XS/S/M/L.
+12. `core/TASK_ROUTER.md` — quando usar ChatGPT, Codex ou outro agente.
+13. `core/WORKFLOW.md` — ciclo de projeto novo e manutenção.
+14. `core/DEFINITION_OF_DONE.md` — como provar que terminou.
+15. `PORTABILITY.md` — continuidade entre agentes.
+16. `docs/CODEX_PLUGIN.md` — adaptador Codex validado em piloto.
+
+## Living UI / Semantic Motion
+
+O design system e o movimento são decisões separadas.
+
+Um projeto pode usar HeroUI, shadcn, ReUI, componentes próprios ou outro kit e ainda seguir a mesma linguagem de movimento da Factory.
+
+Motion Profiles:
+
+- `none` — sem movimento não essencial;
+- `subtle` — microinterações/transições discretas;
+- `ambient` — **default contextual**: microinterações, feedback semântico e atmosfera viva onde apropriado;
+- `expressive` — motion mais presente quando faz parte da identidade/experiência.
+
+A política cobre seis funções: ambiente, interação, dados, estado, atenção e navegação. `prefers-reduced-motion` é obrigatório para movimento não essencial. Ações importantes podem receber atenção temporária; gráficos podem animar mudanças reais; animação que não ajuda a compreender ou usar a interface deve ser removida.
 
 ## Perfis
 
@@ -81,6 +100,8 @@ Módulos condicionais comprovados:
 - PostgreSQL como caminho de produção validado por recipe, migrations e CI efêmero;
 - Biome opcional/complementar.
 
+O perfil herda `Motion Profile: ambient`, reduzindo para comportamento `subtle` em tabelas e telas muito densas quando necessário.
+
 O perfil completo está em `profiles/web-admin/PROFILE.md`.
 
 ## Estrutura atual
@@ -101,6 +122,8 @@ app-factory/
 ├── starters/
 │   └── web-admin/
 ├── ui/
+│   ├── UI_POLICY.md
+│   └── MOTION_POLICY.md
 ├── registry/
 ├── pilots/
 │   └── web-admin/
@@ -122,6 +145,8 @@ app-factory/
 - A profundidade do processo cresce com escala e risco.
 - No perfil `web-admin`, shadcn é a base e ReUI é seletivo por componente.
 - HeroUI continua perfil visual alternativo, não mistura automática.
+- Living UI / Semantic Motion é transversal e não depende do design system.
+- `ambient` é o Motion Profile default contextual, com atenuação automática quando o contexto pede sobriedade, foco, desempenho ou acessibilidade.
 - Pesquisar e reutilizar antes de construir do zero.
 - Escopo fechado significa fatia funcional verificável, não microtarefas.
 - Baseline/diff/rollback continuam centrais para manutenção de sistemas existentes.
@@ -132,6 +157,6 @@ app-factory/
 
 ## Estado
 
-Versão de trabalho: `0.6-web-admin-hardening`
+Versão de trabalho: `0.7-living-ui`
 
-O perfil `web-admin` possui starter real, gerador e recipes condicionais testados diretamente. A V0.6 adiciona PostgreSQL/Auth em banco real efêmero, contrato executável de schema e smoke de produção; o perfil é candidato `v1-rc`, ainda não V1 estável nem deploy público realizado.
+O perfil `web-admin` está em `v1-rc` após hardening de recipes/PostgreSQL/Auth. A V0.7 adiciona a política universal Living UI / Semantic Motion e torna o Motion Profile parte explícita dos projetos com interface.

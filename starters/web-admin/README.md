@@ -1,4 +1,4 @@
-# web-admin starter — V0.6
+# web-admin starter — V0.7
 
 Real, clean and composable starter derived from `profiles/web-admin/PROFILE.md`. The V0.3 pilot remains evidence; it was not copied wholesale into this template.
 
@@ -24,8 +24,9 @@ node scripts/create-web-admin.mjs <destination> <name> \
 - excludes dependencies, caches, `.env`, databases, coverage and browser artifacts;
 - personalizes package/project metadata;
 - creates `AGENTS.md`, `PROJECT_STATE.md`, `PRODUCT.md`, `ARCHITECTURE.md` and `.app-factory.json`;
-- records profile, baseline and applied recipes;
-- normalizes recipe lockfiles with npm 10.9.9.
+- records profile, **Motion Profile**, baseline and applied recipes;
+- defaults new web-admin projects to `motionProfile: ambient` according to `ui/MOTION_POLICY.md`;
+- normalizes recipe lockfiles with npm 10.9.9;
 - rejects unknown recipes, non-empty destinations and conflicting database providers before writing.
 
 ## Clean template
@@ -34,12 +35,15 @@ node scripts/create-web-admin.mjs <destination> <name> \
 
 - TypeScript, Next.js App Router and React;
 - Tailwind CSS and shadcn/ui components;
+- Living UI / Semantic Motion policy reference with `ambient` contextual default;
 - Zod;
 - Vitest and Playwright;
 - ESLint official Next configuration;
 - Prettier only for the required deterministic format gate.
 
-It does **not** contain Better Auth, Drizzle/database provider, ReUI, Biome, form/state/cache frameworks, observability, analytics or monorepo tooling.
+It does **not** contain Better Auth, Drizzle/database provider, ReUI, Biome, form/state/cache frameworks, observability, analytics, monorepo tooling or a mandatory motion library.
+
+Motion is a behavior contract, not another UI dependency. Use native design-system motion or CSS first; add a specialized motion library only when the product actually needs it. Dense admin views may attenuate `ambient` to `subtle`, and non-essential motion must respect `prefers-reduced-motion`.
 
 ## Recipes
 
@@ -64,4 +68,6 @@ node scripts/create-web-admin.mjs examples/asset-admin "Patrimônio Escolar" \
 
 The example then implements its own asset domain. ReUI was not activated because a modest responsive table/card list with server-side filters met the concrete requirement.
 
-Full evidence: `research/V0.5_WEB_ADMIN_STARTER_VALIDATION.md`.
+Full starter evidence: `research/V0.5_WEB_ADMIN_STARTER_VALIDATION.md`.
+PostgreSQL/Auth hardening: `research/V0.6_WEB_ADMIN_HARDENING.md`.
+Motion policy: `ui/MOTION_POLICY.md`.

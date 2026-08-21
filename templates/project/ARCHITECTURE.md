@@ -10,9 +10,13 @@
 - autenticação:
 - deploy:
 - design system:
+- Motion Profile: `ambient` por padrão (`none`, `subtle`, `ambient`, `expressive`):
+- motion implementation: recursos nativos do design system / CSS / biblioteca especializada somente se necessário:
 - testes:
 
 Para cada escolha importante, registrar motivo curto e evitar tecnologia sem necessidade.
+
+Interfaces devem seguir `ui/MOTION_POLICY.md`: motion é independente do design system, `prefers-reduced-motion` é obrigatório para movimento não essencial e telas densas/leitura prolongada podem atenuar `ambient` para comportamento `subtle`.
 
 ## Componentes
 
@@ -43,6 +47,11 @@ Separar valores variáveis da lógica. Nunca registrar segredos.
 - dados sensíveis:
 - secrets:
 - privilégio mínimo:
+
+## Acessibilidade e movimento
+- reduced motion:
+- telas/fluxos onde `ambient` deve ser atenuado:
+- sinais de atenção que precisam encerrar/reduzir após interação:
 
 ## Observabilidade
 Definir apenas o necessário para diagnosticar falhas e comportamento.

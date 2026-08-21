@@ -12,8 +12,9 @@ This project follows **App Factory** (`mcpmieda/app-factory`).
 6. Use the right environment: planning/research/review may stay in ChatGPT; repo execution, terminal, dependencies, build, tests, browser, debugging and migrations normally belong in Codex or an equivalent execution agent.
 7. Do not transfer routine technical work to the user when an agent can safely perform it.
 8. Reuse mature components/libraries/templates before rebuilding equivalents.
-9. Verify before declaring completion.
-10. Keep state recoverable from GitHub so another agent can continue without the previous chat.
+9. For projects with UI, preserve the selected design system and follow App Factory `ui/UI_POLICY.md` + `ui/MOTION_POLICY.md`; record the project Motion Profile instead of inventing ad-hoc animation rules.
+10. Verify before declaring completion.
+11. Keep state recoverable from GitHub so another agent can continue without the previous chat.
 
 ## Project-specific rules
 
@@ -23,4 +24,4 @@ Add only rules that are specific to this project below. Do not duplicate the ent
 
 ## Factory fallback
 
-If the App Factory plugin is unavailable but the agent has GitHub access, consult `mcpmieda/app-factory` starting from `AGENTS.md` and `core/ENTRYPOINT.md`. Do not require the user to restate the Factory rules manually.
+If the App Factory plugin is unavailable but the agent has GitHub access, consult `mcpmieda/app-factory` starting from `AGENTS.md` and `core/ENTRYPOINT.md`. For UI work also consult `ui/UI_POLICY.md` and `ui/MOTION_POLICY.md`. Do not require the user to restate the Factory rules manually.

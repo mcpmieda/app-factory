@@ -2,7 +2,7 @@
 
 Status: `v1-rc`
 
-Este perfil consolida somente decisões comprovadas pelo piloto V0.3. Ele não é uma stack universal para todo software.
+Este perfil consolida somente decisões comprovadas pelo piloto V0.3 e pelos hardenings posteriores. Ele não é uma stack universal para todo software.
 
 ## Quando usar
 
@@ -34,7 +34,7 @@ Regras:
 
 - validar sessão no servidor para operações protegidas;
 - não confiar apenas em proteção visual/cliente;
-- provider e estratégia de sessão devem considerar o ambiente real.
+- provider e estratégia de sessão devem considerar o ambiente real;
 - o baseline testado do recipe fixa `better-auth` e a CLI correspondente `auth` em 1.7.1;
 - executar o check de contrato do schema antes de revisar upgrade e criar migration nova em vez de reescrever histórico aplicado.
 
@@ -81,10 +81,28 @@ Sentry/OpenTelemetry e similares entram conforme criticidade, produção e neces
 
 ## UI
 
-- shadcn é a fundação;
+- shadcn é a fundação visual padrão deste perfil;
 - ReUI é uma fonte de componentes avançados, não um design system concorrente obrigatório;
-- HeroUI é perfil alternativo para produtos em que seu sistema visual seja claramente mais adequado;
-- não misturar HeroUI neste perfil apenas por estética.
+- HeroUI é perfil visual alternativo para produtos em que seu sistema visual seja claramente mais adequado;
+- não misturar HeroUI neste perfil apenas por estética ou para obter animações;
+- toda interface herda `ui/MOTION_POLICY.md`.
+
+### Living UI / Semantic Motion
+
+Motion Profile padrão: **`ambient` contextual**.
+
+Em `web-admin`, isso não significa manter partículas, auroras ou fundos animados em tabelas densas. Aplicar:
+
+- microinterações em botões, cards, campos, menus e ações;
+- feedback animado de loading/saving/success/error quando útil;
+- gráficos e indicadores com transição apenas para mudanças reais;
+- ações que exigem atenção com halo/pulso discreto e temporário;
+- navegação/modais/painéis com transições curtas e previsíveis;
+- atmosfera ambiente em login, espera, empty states, cabeçalhos e áreas com espaço visual quando não competir com dados.
+
+Atenuar automaticamente para comportamento `subtle` em tabelas, leitura prolongada, dashboards muito densos ou situações de desempenho/concentração.
+
+`prefers-reduced-motion` é obrigatório para movimento não essencial.
 
 ## Arquitetura padrão
 
@@ -127,7 +145,8 @@ Quando os scripts existirem:
 8. auditoria de dependências proporcional ao risco;
 9. Playwright do fluxo crítico;
 10. desktop e viewport móvel;
-11. console sem erro relevante.
+11. console sem erro relevante;
+12. motion coerente com o perfil e `prefers-reduced-motion` quando UI relevante for alterada.
 
 Mudanças de recipe também exigem geração limpa direta de cada caminho de provider/dependência. PostgreSQL/Auth deve exercitar serviço PostgreSQL efêmero real, login/sessão, migration/query e smoke de produção com `next start`.
 
@@ -148,4 +167,4 @@ Mudanças de recipe também exigem geração limpa direta de cada caminho de pro
 
 ## Evidência de origem
 
-Perfil derivado de `research/V0.3_WEB_ADMIN_PILOT.md`, da validação reutilizável em `research/V0.5_WEB_ADMIN_STARTER_VALIDATION.md` e do hardening PostgreSQL/recipes em `research/V0.6_WEB_ADMIN_HARDENING.md`.
+Perfil derivado de `research/V0.3_WEB_ADMIN_PILOT.md`, da validação reutilizável em `research/V0.5_WEB_ADMIN_STARTER_VALIDATION.md`, do hardening PostgreSQL/recipes em `research/V0.6_WEB_ADMIN_HARDENING.md` e da política universal de motion em `ui/MOTION_POLICY.md`.
