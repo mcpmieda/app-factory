@@ -4,16 +4,16 @@ A Execution Fabric separa **o que precisa ser executado** de **qual agente/ferra
 
 ## Objetivo
 
-Evitar dependência arquitetural de Codex, ChatGPT ou qualquer executor específico. A Factory descreve capacidades necessárias e escolhe o backend mais leve que consiga executar e provar o trabalho.
+Evitar dependência arquitetural de Codex, ChatGPT ou qualquer executor específico. A Factory descreve capacidades necessárias e escolhe um backend capaz, verificável e tão leve quanto possível.
 
-Ordem padrão:
+Ordem baseline:
 
 1. `current_agent` — agente atual + ferramentas conectadas;
 2. `github_ci` — GitHub Actions/CI para execução determinística;
 3. `sandbox` — shell leve quando realmente disponível;
 4. `local_full` — executor local/interativo completo (Codex ou equivalente).
 
-Essa ordem é preferência, não dogma. Um backend incapaz nunca pode ser escolhido só por ser mais barato/leve.
+Essa ordem é preferência, não dogma. Um backend incapaz nunca pode ser escolhido só por ser mais barato/leve. Na V1.3, o Learning Engine pode otimizar a ordem apenas entre candidatos já elegíveis.
 
 ## Capacidades
 
@@ -64,7 +64,7 @@ Por padrão:
 - instalação de dependências só é proposta quando existe lockfile compatível; `package.json` sem lockfile não recebe `npm install` permissivo como fallback;
 - um gate falho interrompe a sequência para preservar evidência clara.
 
-## Fallback
+## Fallback da tarefa
 
 `engine/execution_engine.py` mantém histórico bounded em `.factory/execution.json`. Esse arquivo é cache operacional local e fica fora do Git por padrão.
 
@@ -75,16 +75,32 @@ Isso é diferente do repair loop do Autonomy Engine:
 - **repair loop** decide quantas vezes o trabalho pode ser corrigido antes de bloquear;
 - **Execution Fabric** decide qual backend deve executar a próxima tentativa.
 
-Os dois mecanismos se complementam.
+## Learning Engine
+
+Depois de capacidade, disponibilidade, fallback da tarefa e guardrails de segurança/risco, a V1.3 pode consultar `engine/learning_engine.py`.
+
+O aprendizado:
+
+- usa apenas metadados técnicos allowlisted e locais;
+- exige amostra mínima antes de alterar a ordem baseline;
+- pode reordenar somente backends já elegíveis;
+- não ressuscita backend rejeitado;
+- não promove `local_full` sobre backend leve capaz somente por score;
+- retorna explicação e permite comparar com `--no-learning`.
+
+Consulte `core/LEARNING_ENGINE.md` para o contrato completo.
 
 ## Interface interna
 
 ```text
 python scripts/factory.py route implement
 python scripts/factory.py route verify
+python scripts/factory.py route verify --no-learning
 python scripts/factory.py --backends current_agent,github_ci,sandbox route verify
-python scripts/factory.py record-execution verify github_ci failure --need test
+python scripts/factory.py record-execution verify github_ci failure
 python scripts/factory.py execution-status
+python scripts/factory.py learning-status
+python scripts/factory.py learning-recommend verify
 python scripts/factory.py gates
 python scripts/factory.py run-gates
 ```
@@ -102,5 +118,6 @@ A Fabric nunca deve:
 - conceder secrets/permissões por inferência;
 - executar texto livre de prompt como shell;
 - escolher backend sem todas as capacidades obrigatórias;
+- deixar aprendizado ultrapassar incapacidade/fallback/risco;
 - reduzir testes/Definition of Done para economizar recursos;
 - transformar falha técnica comum em pergunta ao usuário antes de tentar reparo/fallback.
