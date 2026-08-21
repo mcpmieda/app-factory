@@ -31,7 +31,7 @@ Validar a App Factory em uma aplicação web administrativa real antes de promov
 
 ## Trabalho atual
 
-- bloco: Issue #4 — piloto `web-admin` implementado na branch `pilot/web-admin-v0.3`;
+- bloco: Issue #4 — piloto `web-admin` implementado na branch `pilot/web-admin-v0.3` e aberto no draft PR #6;
 - ambiente recomendado: Codex;
 - motivo: exige scaffold real, dependências, banco, autenticação, build, testes e navegador;
 - regra: construir o piloto de forma isolada e não alterar o Core para acomodar resultados locais sem evidência.
