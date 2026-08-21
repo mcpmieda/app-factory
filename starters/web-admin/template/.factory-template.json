@@ -1,6 +1,7 @@
 {
   "profile": "web-admin",
-  "factoryBaseline": "v0.6",
+  "motionProfile": "ambient",
+  "factoryBaseline": "v0.7",
   "optionalModules": [
     "auth-better-auth",
     "database-drizzle",
