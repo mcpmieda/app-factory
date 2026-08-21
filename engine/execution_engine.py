@@ -230,6 +230,13 @@ def sanitize_summary(summary: str | None) -> str | None:
     return compact[:500] or None
 
 
+def sanitize_task_key(task_key: str | None) -> str | None:
+    if task_key is None:
+        return None
+    compact = " ".join(str(task_key).split())
+    return compact[:200] or None
+
+
 def record_execution_attempt(
     root: Path | str,
     *,
@@ -239,6 +246,7 @@ def record_execution_attempt(
     outcome: str,
     summary: str | None = None,
     duration_ms: int | None = None,
+    task_key: str | None = None,
 ) -> dict[str, Any]:
     if outcome not in {"success", "failure", "blocked", "cancelled"}:
         raise ValueError("outcome must be success, failure, blocked or cancelled")
@@ -248,6 +256,7 @@ def record_execution_attempt(
     capabilities = validate_capabilities(required_capabilities)
     attempt = {
         "at": utc_now(),
+        "task_key": sanitize_task_key(task_key),
         "action": action,
         "backend": backend_id,
         "required_capabilities": sorted(capabilities),
@@ -270,22 +279,24 @@ def failed_backends_for_action(
     action: str,
     *,
     threshold: int = DEFAULT_FAILURE_THRESHOLD,
+    task_key: str | None = None,
 ) -> set[str]:
-    """Return backends whose most recent consecutive failures reach threshold."""
+    """Return backends whose recent consecutive failures reach threshold for this task."""
     threshold = max(1, int(threshold))
+    task_key = sanitize_task_key(task_key)
     attempts = read_execution_state(root).get("attempts", [])
     counts: dict[str, int] = {}
     closed: set[str] = set()
     for item in reversed(attempts):
         if not isinstance(item, dict) or item.get("action") != action:
             continue
+        if task_key is not None and item.get("task_key") != task_key:
+            continue
         backend = item.get("backend")
         if not isinstance(backend, str) or backend in closed:
             continue
         outcome = item.get("outcome")
         if outcome == "success":
-            # A success ends the historical window for this backend, but failures
-            # already counted while scanning backward happened *after* that success.
             closed.add(backend)
             continue
         if outcome == "failure":
@@ -299,6 +310,7 @@ def route_action(
     *,
     available_backends: Iterable[str] = ("current_agent", "github_ci"),
     failure_threshold: int = DEFAULT_FAILURE_THRESHOLD,
+    task_key: str | None = None,
     headless_browser: bool = False,
     interactive_shell: bool = False,
     interactive_browser: bool = False,
@@ -313,7 +325,7 @@ def route_action(
         live_migration=live_migration,
         extra_capabilities=extra_capabilities,
     )
-    failed = failed_backends_for_action(root, action, threshold=failure_threshold)
+    failed = failed_backends_for_action(root, action, threshold=failure_threshold, task_key=task_key)
     return route_execution(
         request,
         available_backends=available_backends,
