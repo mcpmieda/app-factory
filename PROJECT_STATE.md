@@ -4,55 +4,66 @@
 
 ## Objetivo atual
 
-Manter a **App Factory V1.1 estável** como baseline recuperável e mais autônomo para criação/evolução de software, reduzindo releitura de repositórios, handoffs manuais e dependência de um executor específico sem reduzir verificabilidade.
+Manter a **App Factory V1.2 estável** como baseline recuperável e autônomo para criação/evolução de software, escolhendo o executor por capacidade e usando o agente atual + GitHub/CI antes de qualquer executor local completo sempre que essa rota conseguir provar o trabalho.
 
 ## Estado
 
-- fase: `V1.1 — estável`;
-- versão: `1.1.0`;
-- baseline anterior preservada: tag/release `v1.0.0`;
-- Issue #32 / Autonomous Context Engine: concluída na release V1.1;
-- Context Engine: incremental, stdlib, SHA-256, delta `added/changed/removed`, mapa de stack/símbolos/imports/dependências locais e exclusão de segredos/build/dependencies/binários;
-- Autonomy Engine: `init/status/next/resume/record`, fases e transições explícitas, repair loop default 3 e intervenção humana categorizada;
-- execução: current-agent + GitHub/CI primeiro; Codex/local passa a ser fallback de capacidade real, não regra automática;
+- fase: `V1.2 — estável`;
+- versão: `1.2.0`;
+- baseline publicada anterior preservada: tag/release `v1.0.0`;
+- V1.1 / Issue #32: Context Engine + Autonomy Engine concluídos;
+- V1.2 / Issue #36: Execution Fabric concluída;
+- Context Engine: incremental, stdlib, SHA-256, delta `added/changed/removed`, stack/símbolos/imports/dependências locais e exclusão de segredos/build/dependencies/binários;
+- Autonomy Engine: `init/status/next/resume/record`, transições explícitas, repair loop default 3 e intervenção humana categorizada;
+- Execution Fabric: roteamento por capacidades, backend atual/CI/sandbox/local, histórico bounded de tentativas e fallback previsível;
+- CI Executor: gates declarados/allowlisted, sem comandos de prompt, `shell=False`, sem secrets por padrão;
+- execução: `current_agent → github_ci → sandbox → local_full`, respeitando capacidades e disponibilidade reais;
 - perfil `web-admin`: `v1`;
 - perfis `website`, `web-app`, `chrome-extension` e `automation`: `validated`;
-- plugin Codex: `1.1.0`, com 13 Skills verificadas sem duplicação;
-- CI: gates V1.0 preservados + `Validate V1.1 Autonomous Context` + composição V1 release line.
+- plugin Codex: `1.2.0`, com 14 Skills verificadas sem duplicação;
+- CI: gates V1 anteriores preservados + `Validate V1.2 Execution Fabric`.
 
 ## Decisões vigentes
 
 - intenção de software ativa a Factory automaticamente;
 - AI serve ao objetivo, não ao texto literal do prompt;
-- `resume`/Context Engine devem recuperar contexto antes de reconstruir estado a partir de conversa;
-- `.factory/context/` é cache regenerável e não fonte de verdade;
-- `.factory/state.json` é estado compacto de continuidade e pode ser versionado em handoffs importantes;
-- o agente calcula e executa o próximo passo técnico; não pede ao usuário para conduzir fases rotineiras;
-- eventos fora da fase permitida são rejeitados antes de alterar o estado;
-- falha técnica entra em reparo limitado; ao estagnar, mudar estratégia/executor antes de envolver o usuário;
-- intervenção humana é reservada a produto/regra de negócio, preferência subjetiva, custo, risco alto, credencial/dado indisponível e decisão legal/organizacional;
-- current-agent + GitHub/CI deve ser tentado antes de Codex quando fornecer prova suficiente;
-- Codex/local continua correto quando browser/runtime/debug/migration interativos ou outra capacidade local forem realmente necessários;
-- reuse-first e maior fatia segura continuam regras centrais;
-- perfis são defaults condicionais, não stacks universais;
-- stack `web-admin` não contamina outros tipos por reflexo;
-- Living UI / Semantic Motion é transversal quando existe UI;
-- Motion Profile default contextual: `ambient`;
-- `prefers-reduced-motion` é obrigatório para movimento não essencial;
-- instalação limpa, testes executáveis, CI reproduzível, recuperação e continuidade via GitHub são gates permanentes.
+- `resume`/Context Engine recuperam contexto antes de depender de memória de conversa;
+- `.factory/context/` é cache regenerável, não fonte de verdade;
+- `.factory/state.json` mantém continuidade do Autonomy Engine;
+- `.factory/execution.json` mantém histórico bounded de execução, sem logs brutos;
+- o agente calcula a próxima ação e o backend; o usuário não conduz fases técnicas rotineiras;
+- backend é escolhido por capacidade, não por marca;
+- `current_agent` é preferido quando consegue implementar/revisar diretamente;
+- `github_ci` é executor real para comandos determinísticos, build, testes, headless browser e serviços efêmeros;
+- `sandbox`/`local_full` só entram quando declarados disponíveis e necessários;
+- Codex é um possível `local_full`, não dependência arquitetural;
+- prompts nunca viram shell diretamente;
+- eventos fora de fase são rejeitados antes de alterar estado;
+- falha técnica entra em repair/fallback limitado; não vira pergunta ao usuário por reflexo;
+- intervenção humana continua reservada a produto/regra de negócio, preferência subjetiva, custo, risco alto, credencial/dado indisponível e decisão legal/organizacional;
+- reuse-first, baseline/diff/rollback, instalação limpa, testes executáveis e CI reproduzível continuam gates permanentes;
+- Living UI / Semantic Motion permanece transversal quando existe UI, com `ambient` contextual e `prefers-reduced-motion` obrigatório.
 
-## Evidência V1.1
+## Evidência V1.2
+
+- `core/EXECUTION_FABRIC.md`;
+- `engine/execution_engine.py`;
+- `engine/ci_executor.py`;
+- `skills/execution-router/SKILL.md`;
+- `scripts/factory.py`;
+- `scripts/validate_v1_2.py`;
+- `tests/v1_2/`;
+- `.github/workflows/validate-v1-2-execution.yml`.
+
+A validação V1.2 comprova current-agent para planejamento/implementação quando suficiente, GitHub CI para verificação determinística/headless, recusa de backend incapaz, ausência de backend local implícito, fallback após falhas repetidas e descoberta de gates sem executar strings arbitrárias vindas de prompt.
+
+## Evidência V1.1 preservada
 
 - `research/V1.1_AUTONOMOUS_CONTEXT_VALIDATION.md`;
 - `engine/context_engine.py`;
 - `engine/autonomy_engine.py`;
-- `scripts/factory.py`;
-- `scripts/validate_v1_1.py`;
 - `tests/v1_1/`;
-- `.github/workflows/validate-v1-1-autonomy.yml`;
-- `.github/workflows/validate-v1-release.yml`.
-
-O gate dedicado comprovou 13 Skills estruturalmente válidas, máquina de estados com transições protegidas, repair loop limitado, retomada sem histórico, detecção de mudança externa e cache incremental. No repositório real, a segunda passagem reaproveitou os metadados dos 505 arquivos mapeados e reprocessou 0 arquivos.
+- `.github/workflows/validate-v1-1-autonomy.yml`.
 
 ## Evidência V1.0 preservada
 
@@ -64,7 +75,7 @@ O gate dedicado comprovou 13 Skills estruturalmente válidas, máquina de estado
 
 ## Próxima ação
 
-Usar V1.1 como baseline corrente. Em projeto existente, começar por `resume`; deixar a Factory recuperar contexto, calcular a próxima ação e continuar até conclusão/bloqueio real.
+Usar V1.2 como baseline corrente e implementar o Learning Engine em evolução separada, para que aprendizado use dados gerados pela Execution Fabric sem alterar regras de segurança/capacidade.
 
 Escopos ainda não validados — como mobile nativo, desktop nativo, jogos e cloud complexa — continuam exigindo piloto/evidência próprios antes de virarem perfis estáveis.
 
@@ -73,10 +84,10 @@ Escopos ainda não validados — como mobile nativo, desktop nativo, jogos e clo
 Outro agente deve começar por:
 
 1. `AGENTS.md`;
-2. `python scripts/factory.py --root <projeto> resume` quando o runtime estiver disponível no projeto/checkout;
+2. `python scripts/factory.py --root <projeto> resume` quando o runtime estiver disponível;
 3. este `PROJECT_STATE.md` quando estiver modificando a própria Factory;
 4. `core/ENTRYPOINT.md`;
-5. `core/CONTEXT_ENGINE.md` e `core/AUTONOMY_ENGINE.md`;
-6. `skills/factory-router/SKILL.md`;
+5. `core/CONTEXT_ENGINE.md`, `core/AUTONOMY_ENGINE.md` e `core/EXECUTION_FABRIC.md`;
+6. `skills/factory-router/SKILL.md` e `skills/execution-router/SKILL.md`;
 7. o perfil indicado pelo produto;
 8. `ui/UI_POLICY.md` e `ui/MOTION_POLICY.md` quando houver interface.

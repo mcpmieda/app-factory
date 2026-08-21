@@ -16,7 +16,7 @@ Leia `core/ENTRYPOINT.md` para o contrato de ativação automática.
 4. Em repositório existente, use `core/CONTEXT_ENGINE.md`/`context-engine` para recuperar mapa incremental e arquivos relevantes.
 5. Use `core/AUTONOMY_ENGINE.md`/`autonomy-engine` para recuperar ou inicializar estado e calcular a próxima ação.
 6. Classifique a profundidade necessária em `core/PROJECT_SCALE.md`.
-7. Use `core/TASK_ROUTER.md` para escolher a capacidade/executor adequado, priorizando current-agent + GitHub/CI.
+7. Use `core/EXECUTION_FABRIC.md` + `execution-router` para traduzir a ação em capacidades e escolher o backend mais leve capaz; `core/TASK_ROUTER.md` contém a heurística resumida.
 8. Aplique `core/RISK_MODEL.md`.
 9. Consulte `core/WORKFLOW.md` para projeto novo ou manutenção.
 10. Carregue somente as Skills relevantes.
@@ -36,7 +36,7 @@ Prefira:
 - contexto incremental em vez de releitura integral;
 - grandes blocos funcionais completos;
 - decisões técnicas rotineiras autônomas;
-- current-agent + GitHub/CI antes de handoff;
+- `current_agent` + GitHub/CI antes de handoff;
 - explicações simples para decisões relevantes.
 
 Consulte o usuário quando a decisão envolver objetivo de produto, preferência subjetiva, gasto, risco destrutivo, credencial/dado indisponível ou decisão legal/organizacional.
@@ -49,7 +49,7 @@ Não aplicar o mesmo ritual a todo trabalho. Projetos pequenos usam planejamento
 
 GitHub é a fonte técnica de verdade. Conversas ajudam a pensar, mas estado, decisões vigentes, código, testes e próximos passos devem ser recuperáveis do repositório.
 
-Ao retomar um projeto, prefira `resume`: contexto incremental + `.factory/state.json` quando existente + `PROJECT_STATE.md` como estado humano durável. O cache `.factory/context/` pode ser regenerado e não substitui arquivos reais.
+Ao retomar um projeto, prefira `resume`: contexto incremental + `.factory/state.json` quando existente + `PROJECT_STATE.md` como estado humano durável. `.factory/execution.json` mantém apenas histórico bounded de tentativas de backend. O cache `.factory/context/` pode ser regenerado e não substitui arquivos reais.
 
 Novos projetos devem receber o template `templates/project/AGENTS.md`, que aponta de volta para a App Factory sem duplicar todo o Core.
 
@@ -59,7 +59,7 @@ Escopo fechado não significa tarefa minúscula. Prefira fatias funcionais compl
 
 ## Validação
 
-Nunca declare uma mudança concluída apenas porque o código foi escrito. Use `core/DEFINITION_OF_DONE.md` e a Skill `verification`. Falhas entram em repair loop limitado antes de escalada.
+Nunca declare uma mudança concluída apenas porque o código foi escrito. Use `core/DEFINITION_OF_DONE.md` e a Skill `verification`. Falhas entram em repair loop limitado; a Execution Fabric pode trocar o backend da tentativa seguinte antes de envolver o usuário.
 
 ## Portabilidade
 

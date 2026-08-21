@@ -1,5 +1,49 @@
 # Changelog
 
+## 1.2.0 — 2026-08-21
+
+Evolução da linha V1 que transforma a escolha de executor em uma camada executável por capacidades e consolida GitHub Actions/CI como backend real antes de qualquer dependência automática de executor local.
+
+### Adicionado
+
+- `engine/execution_engine.py` com capacidades explícitas e backends `current_agent`, `github_ci`, `sandbox` e `local_full`;
+- `engine/ci_executor.py` para descoberta/execução de gates declarados do repositório por allowlist, com `shell=False` e sem comandos vindos de prompt;
+- histórico bounded `.factory/execution.json` com resultado, backend, capacidades e duração, sem logs brutos;
+- fallback determinístico após falhas repetidas do mesmo backend/ação;
+- Skill `execution-router`, totalizando 14 Skills portáteis;
+- comandos `route`, `execution-status`, `record-execution`, `gates` e `run-gates` na CLI;
+- decisão de execução integrada às respostas de `next`, `resume` e `record`;
+- workflow `Validate V1.2 Execution Fabric` e testes unitários/integração próprios.
+
+### Alterado
+
+- `current_agent` passa a ser formalmente o primeiro backend quando possui todas as capacidades necessárias;
+- GitHub Actions/CI passa a ser backend preferencial para teste/build/headless e outras provas determinísticas;
+- Codex deixa de existir como dependência arquitetural: pode ser um `local_full` quando capacidade interativa/local for realmente exigida;
+- starter `web-admin`, plugin e documentação operacional passam a registrar baseline `v1.2.0`.
+
+### Validado
+
+- backend sem capacidade obrigatória nunca é selecionado;
+- planejamento/implementação permanecem no agente atual quando suas ferramentas são suficientes;
+- verificação determinística e headless são roteadas para `github_ci`;
+- browser interativo/live migration não recebem backend local implícito;
+- fallback após duas falhas do CI escolhe o próximo backend capaz disponível;
+- sucesso posterior remove a escalada daquele backend;
+- gates maliciosos/não allowlisted do `package.json` não são descobertos nem executados;
+- validador Python conhecido executa sem shell;
+- gates V1.1 e toda a linha V1 permanecem como regressão.
+
+### Evidência
+
+- `core/EXECUTION_FABRIC.md`;
+- `engine/execution_engine.py`;
+- `engine/ci_executor.py`;
+- `skills/execution-router/SKILL.md`;
+- `scripts/validate_v1_2.py`;
+- `tests/v1_2/`;
+- `.github/workflows/validate-v1-2-execution.yml`.
+
 ## 1.1.0 — 2026-08-21
 
 Primeira evolução estável da linha V1, focada em autonomia, recuperação de contexto e menor dependência de executor específico.

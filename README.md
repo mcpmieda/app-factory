@@ -11,15 +11,16 @@ A App Factory não é um prompt gigante. Ela combina:
 - entrada universal por intenção de software;
 - **Context Engine incremental** para recuperar repositórios sem releitura integral desnecessária;
 - **Autonomy Engine** para calcular e registrar o próximo passo técnico;
+- **Execution Fabric** para escolher o executor por capacidade, não por marca;
+- GitHub Actions/CI como backend real de execução determinística;
 - seleção automática de perfil validado quando aplicável;
 - `AGENTS.md` como mapa operacional;
 - Core curto e modular;
-- 13 Skills especializadas carregadas conforme a tarefa;
+- 14 Skills especializadas carregadas conforme a tarefa;
 - profundidade proporcional por escala XS/S/M/L;
 - templates e starters componíveis;
 - políticas de UI, **Living UI / Semantic Motion**, dependências e Git;
-- roteamento por capacidade, priorizando agente atual + GitHub/CI antes de handoff local;
-- verificações automáticas, repair loop limitado e definição objetiva de pronto;
+- repair loop limitado, fallback de executor e definição objetiva de pronto;
 - adaptadores finos por agente;
 - GitHub como fonte de verdade para continuidade.
 
@@ -31,24 +32,25 @@ O usuário pode começar somente com o resultado, por exemplo:
 
 Ele não precisa dizer "use a App Factory", escolher framework, descobrir Skills, selecionar perfil, escolher ChatGPT/Codex ou pedir manualmente cada próxima fase.
 
-A Factory deve reconhecer a intenção, recuperar contexto quando houver projeto existente, entender o produto, classificar escala/risco, selecionar perfil validado, decidir a próxima ação e executar as escolhas técnicas rotineiras por evidência.
+A Factory deve reconhecer a intenção, recuperar contexto quando houver projeto existente, entender o produto, classificar escala/risco, selecionar perfil validado, decidir a próxima ação, escolher o backend mais leve capaz e continuar por evidência.
 
-Em um projeto existente, a experiência desejada é:
+Em um projeto existente:
 
 ```text
 pedido do usuário
 → resume/context
 → next
+→ route executor
 → implementar
-→ verificar
-→ reparar se necessário
+→ CI/verificar
+→ reparar/fallback se necessário
 → revisar
 → entregar
 ```
 
 O usuário só volta ao loop quando existir uma decisão genuinamente humana, dado/credencial indisponível, custo ou risco relevante.
 
-## V1.1 — autonomia executável
+## V1.1 — contexto e autonomia
 
 ### Context Engine
 
@@ -57,7 +59,7 @@ O usuário só volta ao loop quando existir uma decisão genuinamente humana, da
 - SHA-256 por arquivo e fingerprint global;
 - cache incremental de metadados;
 - delta `added / changed / removed`;
-- stack, manifests, linguagens, símbolos e imports úteis à navegação;
+- stack, manifests, linguagens, símbolos, imports e dependências locais úteis à navegação;
 - exclusão padrão de `.env*`, chaves/credenciais, dependências, builds, caches, binários e arquivos grandes.
 
 O mapa é cache de navegação. Arquivos reais e GitHub continuam sendo a autoridade.
@@ -68,18 +70,47 @@ O mapa é cache de navegação. Arquivos reais e GitHub continuam sendo a autori
 
 `context → planning → implementation → verification → repair → review → delivery → done`
 
-O repair loop tem limite padrão de 3 tentativas. Ao estagnar, a Factory deve mudar estratégia/executor antes de envolver o usuário. Eventos fora da fase permitida são recusados antes de alterar o estado.
+O repair loop tem limite padrão de 3 tentativas. Eventos fora da fase permitida são recusados antes de alterar o estado e mudanças externas precisam ser reconciliadas antes da retomada.
 
-### Roteamento atual
+## V1.2 — Execution Fabric
 
-A V1.1 deixou de usar a regra simplista "precisa de testes/build = Codex". A ordem agora é:
+`engine/execution_engine.py` transforma cada ação em capacidades necessárias e escolhe entre backends disponíveis.
 
-1. agente atual + ferramentas disponíveis;
-2. GitHub + CI para prova reproduzível;
-3. executor leve/sandbox quando disponível;
-4. Codex/local quando browser/runtime/debug/migration interativos ou outra capacidade local realmente exigirem.
+Ordem padrão:
 
-Definition of Done não é reduzida para economizar executor.
+1. `current_agent` — agente atual + GitHub/conectores;
+2. `github_ci` — GitHub Actions para execução determinística e reproduzível;
+3. `sandbox` — executor leve quando realmente disponível;
+4. `local_full` — executor local/interativo completo, como Codex ou equivalente.
+
+A ordem não substitui capacidade: um backend incapaz nunca é selecionado só por ser mais leve.
+
+### ChatGPT/current-agent first
+
+Múltiplos arquivos, build ou existência de testes não causam handoff automático. Se o agente atual consegue editar pelo GitHub e o CI consegue provar o resultado, o ciclo continua no mesmo agente:
+
+`editar → CI → diagnosticar → corrigir → CI → revisar → entregar`.
+
+### GitHub Actions como executor
+
+`engine/ci_executor.py` descobre gates reprodutíveis do repositório por allowlist. Ele não transforma texto de prompt em shell.
+
+Pode representar:
+
+- format/lint/typecheck;
+- testes unitários/integrados;
+- build;
+- Playwright headless;
+- serviços efêmeros de teste;
+- validadores conhecidos.
+
+O executor usa argumentos estruturados, `shell=False` e não requer secrets por padrão.
+
+### Fallback
+
+`.factory/execution.json` guarda somente metadados bounded das tentativas, sem logs brutos. Depois do limite de falhas de um backend para uma ação, a Factory pode rejeitá-lo temporariamente e tentar o próximo backend capaz.
+
+Codex/local deixa de ser centro da arquitetura. Continua válido quando existir necessidade concreta de browser/shell interativo, serviço local, migration real ou outra capacidade ausente nos backends anteriores.
 
 ## Comandos internos
 
@@ -92,6 +123,9 @@ python scripts/factory.py --root <projeto> status
 python scripts/factory.py --root <projeto> next
 python scripts/factory.py --root <projeto> resume
 python scripts/factory.py --root <projeto> record <evento>
+python scripts/factory.py --root <projeto> route verify
+python scripts/factory.py --root <projeto> execution-status
+python scripts/factory.py --root <projeto> gates
 ```
 
 ## Princípio central
@@ -115,14 +149,15 @@ Para navegar no núcleo:
 2. `core/ENTRYPOINT.md` — ativação automática por intenção.
 3. `core/CONTEXT_ENGINE.md` — recuperação incremental de repositório.
 4. `core/AUTONOMY_ENGINE.md` — estado e próxima ação.
-5. `skills/factory-router/SKILL.md` — roteador universal.
-6. `core/TASK_ROUTER.md` — roteamento por capacidade/executor.
-7. `profiles/README.md` e `profiles/*/PROFILE.md` — defaults condicionais comprovados.
-8. `ui/UI_POLICY.md` e `ui/MOTION_POLICY.md` — interface e Living UI.
-9. `core/HUMAN_INTERACTION.md` — limites da intervenção humana.
-10. `core/DEFINITION_OF_DONE.md` — prova de conclusão.
-11. `PORTABILITY.md` — continuidade entre agentes.
-12. `docs/CODEX_PLUGIN.md` — adaptador Codex.
+5. `core/EXECUTION_FABRIC.md` — seleção/uso de backends.
+6. `skills/factory-router/SKILL.md` e `skills/execution-router/SKILL.md` — roteamento universal e de execução.
+7. `core/TASK_ROUTER.md` — heurísticas de capacidade/executor.
+8. `profiles/README.md` e `profiles/*/PROFILE.md` — defaults condicionais comprovados.
+9. `ui/UI_POLICY.md` e `ui/MOTION_POLICY.md` — interface e Living UI.
+10. `core/HUMAN_INTERACTION.md` — limites da intervenção humana.
+11. `core/DEFINITION_OF_DONE.md` — prova de conclusão.
+12. `PORTABILITY.md` — continuidade entre agentes.
+13. `docs/CODEX_PLUGIN.md` — adaptador Codex.
 
 ## Living UI / Semantic Motion
 
@@ -176,10 +211,13 @@ app-factory/
 ├── PROJECT_STATE.md
 ├── core/
 │   ├── CONTEXT_ENGINE.md
-│   └── AUTONOMY_ENGINE.md
+│   ├── AUTONOMY_ENGINE.md
+│   └── EXECUTION_FABRIC.md
 ├── engine/
 │   ├── context_engine.py
-│   └── autonomy_engine.py
+│   ├── autonomy_engine.py
+│   ├── execution_engine.py
+│   └── ci_executor.py
 ├── skills/
 ├── profiles/
 ├── templates/
@@ -192,7 +230,8 @@ app-factory/
 ├── research/
 └── scripts/
     ├── factory.py
-    └── validate_v1_1.py
+    ├── validate_v1_1.py
+    └── validate_v1_2.py
 ```
 
 ## Decisões consolidadas
@@ -201,13 +240,15 @@ app-factory/
 - GitHub é a fonte técnica de verdade;
 - Context Engine reduz releitura, mas não substitui arquivos reais;
 - Autonomy Engine decide continuidade técnica sem o usuário conduzir fases;
+- Execution Fabric escolhe por capacidade e disponibilidade;
 - current-agent + GitHub/CI vem antes de handoff quando fornece prova suficiente;
-- Codex/local é executor de capacidade, não centro obrigatório da arquitetura;
-- falhas entram em repair loop limitado;
+- CI é um executor, não apenas uma etapa passiva;
+- prompt não vira shell;
+- Codex/local é fallback de capacidade, não centro obrigatório;
+- falhas entram em repair loop e fallback limitados;
 - perfil não é dogma: requisitos locais têm precedência;
 - Living UI / Semantic Motion é transversal e independente do design system;
 - pesquisar e reutilizar antes de construir do zero;
-- escopo fechado significa fatia funcional verificável, não microtarefas;
 - baseline/diff/rollback continuam centrais para manutenção;
 - regras fortes devem virar testes, scripts ou CI quando isso reduzir risco;
 - núcleo e estado operacional permanecem portáveis entre agentes;
@@ -215,6 +256,6 @@ app-factory/
 
 ## Estado
 
-Versão estável: **`1.1.0` — App Factory V1.1**.
+Versão estável: **`1.2.0` — App Factory V1.2**.
 
-A V1.1 preserva toda a evidência da V1.0 e adiciona Context Engine + Autonomy Engine. O gate dedicado comprovou máquina de estados, retomada sem conversa anterior, mudança externa de contexto, limite de reparo e cache incremental. No próprio repositório da Factory, a segunda passagem reutilizou os metadados dos **505 arquivos mapeados** e reprocessou **0**.
+A V1.2 preserva Context/Autonomy da V1.1 e toda a evidência da V1.0, acrescentando seleção executável por capacidades, current-agent first, GitHub CI como backend e fallback previsível sem dependência automática do Codex.
