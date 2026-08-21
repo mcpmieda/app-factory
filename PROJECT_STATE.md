@@ -1,0 +1,51 @@
+# PROJECT_STATE
+
+> Estado vigente da App Factory. Não usar como diário.
+
+## Objetivo atual
+
+Validar a App Factory em uma aplicação web administrativa real antes de promover tecnologias e padrões a defaults da V1.
+
+## Estado
+
+- fase: `V0.3 — piloto web-admin`;
+- baseline oficial: `main` após merge do PR #2 (`d917a891b364502d01b3644431f4b5df1d4d588c`);
+- V0.1 bootstrap: concluída;
+- V0.2 pesquisa: concluída e integrada;
+- Issue #3 / Codex Plugin: concluída e revisada;
+- adaptador Codex: validado em piloto real;
+- 10 Skills: validadas e descobertas pelo Codex;
+- CI: valida estrutura, Agent Skills e Codex Plugin.
+
+## Decisões vigentes
+
+- Core permanece neutro e portátil;
+- Codex usa adaptador/plugin fino sem duplicar Skills;
+- processo varia por escala XS/S/M/L;
+- `shadcn + ReUI` é candidato preferencial do perfil admin;
+- HeroUI é perfil alternativo;
+- Better Auth + Drizzle + Zod ainda são candidatos, não defaults universais;
+- Playwright é forte candidato E2E;
+- Spec Kit deve ser usado proporcionalmente à escala;
+- starters devem ser componíveis, sem serviços opcionais impostos.
+
+## Trabalho atual
+
+- bloco: Issue #4 — piloto `web-admin`;
+- ambiente recomendado: Codex;
+- motivo: exige scaffold real, dependências, banco, autenticação, build, testes e navegador;
+- regra: construir o piloto de forma isolada e não alterar o Core para acomodar resultados locais sem evidência.
+
+## Próxima ação
+
+Executar a Issue #4 no Codex usando o baseline atual do `main`, registrar PR/commit, testes e relatório versionado para revisão pelo ChatGPT.
+
+## Handoff
+
+Outro agente deve começar por:
+
+1. `AGENTS.md`;
+2. este `PROJECT_STATE.md`;
+3. Issue #4;
+4. `research/V0.2_AUDIT_FINDINGS.md`;
+5. `starters/web-admin/README.md`.
