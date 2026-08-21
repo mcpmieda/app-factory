@@ -4,9 +4,17 @@ on:
   pull_request:
     paths:
       - ".github/workflows/validate-v1-release.yml"
+      - ".github/workflows/validate-v1-1-autonomy.yml"
       - "scripts/validate_v1_*.py"
+      - "scripts/validate_factory.py"
+      - "scripts/factory.py"
+      - "engine/**"
+      - "skills/**"
+      - "core/**"
+      - "templates/project/AGENTS.md"
       - "audits/v1-final/equipment-loans/**"
       - "research/V1.0_FINAL_AUDIT.md"
+      - "research/V1.1_AUTONOMOUS_CONTEXT_VALIDATION.md"
       - "research/evidence/v1-final-*"
       - ".codex-plugin/plugin.json"
       - ".agents/plugins/marketplace.json"
@@ -40,6 +48,7 @@ jobs:
           python scripts/validate_factory.py
           python scripts/validate_skills.py
           python scripts/validate_plugin.py
+          python scripts/validate_v1_1.py
       - name: Install plugin in isolated Codex home
         run: python scripts/validate_v1_bootstrap.py
       - name: Validate V1 composition and repository hygiene
