@@ -1,5 +1,24 @@
 # Changelog
 
+## 0.8-living-ui-validation — 2026-08-21
+
+Validação executável de Living UI / Semantic Motion em uma interface administrativa gerada.
+
+### Validado
+
+- app fictício `Pulse Desk` gerado do baseline V0.7 sem auth, banco ou biblioteca de motion adicional;
+- categorias ambient, interaction, data, state, attention e navigation em fluxo funcional;
+- atenção encerra após foco/abertura e dados não reanimam sem mudança real;
+- Playwright desktop, mobile e reduced motion, com gate estrito de console e overflow;
+- evidências visuais e relatório em `research/V0.8_LIVING_UI_VALIDATION.md`.
+
+### Promovido
+
+- `AmbientSurface` e `AttentionPulse` como primitives opt-in do starter;
+- tokens mínimos de duração/easing e fallback de `prefers-reduced-motion`;
+- baseline textual do template alinhado ao manifesto V0.7;
+- workflow dedicado de Living UI.
+
 ## 0.7-living-ui — 2026-08-21
 
 Política universal Living UI / Semantic Motion.

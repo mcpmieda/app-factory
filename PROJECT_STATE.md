@@ -4,11 +4,11 @@
 
 ## Objetivo atual
 
-Validar **Living UI / Semantic Motion** em uma interface real gerada pela Factory, provando no navegador que o padrão `ambient` é vivo, funcional, acessível e independente do design system.
+Revisar a implementação da **V0.8 Living UI / Semantic Motion**, já comprovada em interface gerada, antes de decidir o merge.
 
 ## Estado
 
-- fase: `V0.8 — validação executável de Living UI`;
+- fase: `V0.8 — implementada, aguardando revisão do draft PR`;
 - baseline oficial: `main` após merge da V0.7 (`f739111e450bd29d57fac9460e32f1c40d404966`);
 - V0.1 bootstrap: concluída;
 - V0.2 pesquisa: concluída e integrada;
@@ -21,8 +21,9 @@ Validar **Living UI / Semantic Motion** em uma interface real gerada pela Factor
 - V0.7 Living UI / Semantic Motion: concluída, CI aprovada e integrada;
 - perfil `web-admin`: `v1-rc`;
 - Issues #4, #8, #10, #12 e #15: concluídas;
-- Issue #19: aberta e liberada para Codex;
-- CI: valida Core/Skills/plugin, starter base, recipes SQLite, PostgreSQL/Auth em Postgres real efêmero e `asset-admin` desktop/mobile.
+- Issue #19: implementação concluída na branch `codex/issue-19-living-ui-validation`, sem merge;
+- `examples/living-ui-admin`: app Pulse Desk gerado pelo baseline V0.7 e validado em desktop/mobile/reduced motion;
+- CI: mantém Core/Skills/plugin, starter/recipes/asset-admin e adiciona gate dedicado Living UI.
 
 ## Decisões vigentes
 
@@ -40,6 +41,8 @@ Validar **Living UI / Semantic Motion** em uma interface real gerada pela Factor
 - leitura longa, densidade, concentração e performance podem atenuar `ambient` para comportamento `subtle`;
 - atenção deve parar/reduzir após cumprir a função;
 - dados/gráficos só devem reanimar quando houver mudança real;
+- `AmbientSurface` e `AttentionPulse` são os únicos primitives promovidos pela V0.8;
+- motion de dado específico do produto não deve virar abstração genérica sem contrato de mudança real;
 - projeto gerado pelo starter V0.7 registra `motionProfile: ambient` em `.app-factory.json`;
 - motion não autoriza misturar design systems ou instalar biblioteca nova sem necessidade;
 - Better Auth/Drizzle permanecem módulos condicionais do `web-admin`;
@@ -48,15 +51,15 @@ Validar **Living UI / Semantic Motion** em uma interface real gerada pela Factor
 
 ## Trabalho atual
 
-- bloco: Issue #19 — validar Living UI em interface real gerada;
-- ambiente recomendado: Codex;
-- motivo: exige app gerado, CSS/componentes reais, navegador, Playwright desktop/mobile e emulação de reduced motion;
-- objetivo: comprovar as seis categorias semânticas e promover apenas primitives que reduzam trabalho futuro;
-- regra: não instalar biblioteca de motion por checklist e não fazer merge automático.
+- bloco concluído: Issue #19 — validar Living UI em interface real gerada;
+- evidência: `research/V0.8_LIVING_UI_VALIDATION.md` e três screenshots úteis;
+- checks locais: instalação limpa, format, lint, typecheck, testes, build, audit, Playwright desktop/mobile/reduced motion e inspeção visual;
+- promoção: dois wrappers pequenos + tokens/reduced-motion no starter;
+- regra vigente: revisar o draft PR e CI; não fazer merge automático.
 
 ## Próxima ação
 
-Executar integralmente a Issue #19 no Codex. Ao concluir, devolver draft PR, CI e evidências para revisão do ChatGPT.
+Revisar o draft PR da Issue #19, os checks remotos e as evidências; merge permanece decisão humana separada.
 
 ## Handoff
 
@@ -64,8 +67,8 @@ Outro agente deve começar por:
 
 1. `AGENTS.md`;
 2. este `PROJECT_STATE.md`;
-3. Issue #19;
-4. `ui/MOTION_POLICY.md`;
-5. `ui/UI_POLICY.md`;
-6. `skills/ui-builder/SKILL.md`;
+3. o draft PR da Issue #19;
+4. `research/V0.8_LIVING_UI_VALIDATION.md`;
+5. `examples/living-ui-admin/`;
+6. `ui/MOTION_POLICY.md`;
 7. `profiles/web-admin/PROFILE.md`.

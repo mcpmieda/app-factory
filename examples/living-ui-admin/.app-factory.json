@@ -1,0 +1,8 @@
+{
+  "profile": "web-admin",
+  "motionProfile": "ambient",
+  "factoryBaseline": "v0.7",
+  "generatedAt": "2026-08-21T15:12:37.586Z",
+  "source": "starters/web-admin/template",
+  "recipes": []
+}

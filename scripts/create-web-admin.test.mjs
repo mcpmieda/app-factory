@@ -48,9 +48,30 @@ test("generator resolves recipe providers, motion baseline, order and failures s
     assert.equal(baseManifest.profile, "web-admin");
     assert.equal(baseManifest.factoryBaseline, "v0.7");
     assert.equal(baseManifest.motionProfile, "ambient");
+    const baseProjectState = await readFile(
+      join(base, "PROJECT_STATE.md"),
+      "utf8",
+    );
+    assert.match(baseProjectState, /Patrimônio Escolar/);
+    assert.match(baseProjectState, /Factory baseline: `v0\.7`/);
+    assert.match(baseProjectState, /Motion Profile: `ambient` contextual/);
     assert.match(
-      await readFile(join(base, "PROJECT_STATE.md"), "utf8"),
-      /Patrimônio Escolar/,
+      await readFile(
+        join(base, "src", "components", "motion", "ambient-surface.tsx"),
+        "utf8",
+      ),
+      /data-motion-surface/,
+    );
+    assert.match(
+      await readFile(
+        join(base, "src", "components", "motion", "attention-pulse.tsx"),
+        "utf8",
+      ),
+      /data-attention-active/,
+    );
+    assert.match(
+      await readFile(join(base, "src", "app", "globals.css"), "utf8"),
+      /prefers-reduced-motion: reduce/,
     );
 
     const databaseOnly = join(temporaryRoot, "database-only");

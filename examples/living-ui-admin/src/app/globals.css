@@ -46,9 +46,6 @@
 }
 
 :root {
-  --motion-duration-ambient: 18s;
-  --motion-duration-attention: 2.4s;
-  --motion-ease-standard: cubic-bezier(0.2, 0.8, 0.2, 1);
   --background: oklch(1 0 0);
   --foreground: oklch(0.145 0 0);
   --card: oklch(1 0 0);
@@ -139,6 +136,18 @@
   }
 }
 
+@keyframes ambient-breathe {
+  0%,
+  100% {
+    opacity: 0.38;
+    transform: scale(0.96);
+  }
+  50% {
+    opacity: 0.7;
+    transform: scale(1.06);
+  }
+}
+
 @keyframes attention-halo {
   0% {
     opacity: 0.45;
@@ -148,6 +157,63 @@
   100% {
     opacity: 0;
     transform: scale(1.035);
+  }
+}
+
+@keyframes metric-arrive {
+  from {
+    opacity: 0.55;
+    transform: translateY(0.2rem);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes state-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes overlay-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes overlay-out {
+  from {
+    opacity: 1;
+  }
+  to {
+    opacity: 0;
+  }
+}
+
+@keyframes drawer-in {
+  from {
+    opacity: 0.75;
+    transform: translateX(2rem);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes drawer-out {
+  from {
+    opacity: 1;
+    transform: translateX(0);
+  }
+  to {
+    opacity: 0.75;
+    transform: translateX(2rem);
   }
 }
 
@@ -162,20 +228,77 @@
   z-index: 1;
 }
 
-.ambient-surface::before {
-  animation: ambient-drift var(--motion-duration-ambient)
-    var(--motion-ease-standard) infinite;
-  background: color-mix(in oklch, var(--primary) 14%, transparent);
+.ambient-surface::before,
+.ambient-surface::after {
   border-radius: 999px;
   content: "";
-  filter: blur(64px);
-  height: 16rem;
-  left: 4%;
   pointer-events: none;
   position: absolute;
-  top: -7rem;
-  width: 24rem;
   z-index: 0;
+}
+
+.ambient-surface[data-motion-surface="hero"] {
+  background:
+    radial-gradient(circle at 13% 20%, rgb(34 211 238 / 16%), transparent 28%),
+    radial-gradient(circle at 83% 14%, rgb(167 139 250 / 14%), transparent 30%),
+    linear-gradient(145deg, rgb(2 6 23), rgb(9 18 38) 55%, rgb(4 18 27));
+}
+
+.ambient-surface[data-motion-surface="hero"]::before {
+  animation: ambient-drift 18s ease-in-out infinite;
+  background: rgb(34 211 238 / 10%);
+  filter: blur(70px);
+  height: 18rem;
+  left: 2%;
+  top: -8rem;
+  width: 28rem;
+}
+
+.ambient-surface[data-motion-surface="hero"]::after {
+  animation: ambient-breathe 14s ease-in-out infinite;
+  background: rgb(167 139 250 / 12%);
+  filter: blur(64px);
+  height: 20rem;
+  right: 4%;
+  top: -10rem;
+  width: 20rem;
+}
+
+.ambient-surface[data-motion-surface="empty"] {
+  background:
+    radial-gradient(circle at 50% 30%, rgb(34 211 238 / 10%), transparent 44%),
+    rgb(15 23 42 / 76%);
+}
+
+.ambient-surface[data-motion-surface="empty"]::before {
+  animation: ambient-breathe 12s ease-in-out infinite;
+  background: rgb(34 211 238 / 12%);
+  filter: blur(36px);
+  height: 8rem;
+  left: calc(50% - 5rem);
+  top: 0;
+  width: 10rem;
+}
+
+.motion-card,
+.motion-control {
+  transition-duration: 180ms;
+  transition-property:
+    transform, box-shadow, background-color, border-color, color;
+  transition-timing-function: cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+.motion-card:hover {
+  box-shadow: 0 18px 44px rgb(2 6 23 / 28%);
+  transform: translateY(-2px);
+}
+
+.motion-control:hover:not(:disabled) {
+  transform: translateY(-1px);
+}
+
+.motion-control:active:not(:disabled) {
+  transform: translateY(1px) scale(0.99);
 }
 
 .attention-pulse {
@@ -183,7 +306,7 @@
 }
 
 .attention-pulse::before {
-  border: 1px solid color-mix(in oklch, var(--primary) 55%, transparent);
+  border: 1px solid rgb(252 211 77 / 55%);
   border-radius: inherit;
   content: "";
   inset: -0.2rem;
@@ -192,7 +315,7 @@
 }
 
 .attention-pulse[data-attention-active="true"]::before {
-  animation: attention-halo var(--motion-duration-attention) ease-out infinite;
+  animation: attention-halo 2.4s ease-out infinite;
 }
 
 .attention-pulse[data-attention-active="false"]::before {
@@ -200,10 +323,57 @@
   opacity: 0;
 }
 
+.metric-fill {
+  transition: width 680ms cubic-bezier(0.2, 0.8, 0.2, 1);
+  width: var(--metric-value);
+}
+
+.metric-value {
+  animation: metric-arrive 420ms ease-out both;
+  display: inline-block;
+}
+
+.state-spinner {
+  animation: state-spin 800ms linear infinite;
+}
+
+.motion-dialog-overlay[data-state="open"] {
+  animation: overlay-in 160ms ease-out both;
+}
+
+.motion-dialog-overlay[data-state="closed"] {
+  animation: overlay-out 120ms ease-in both;
+}
+
+.motion-drawer[data-state="open"] {
+  animation: drawer-in 220ms cubic-bezier(0.2, 0.8, 0.2, 1) both;
+}
+
+.motion-drawer[data-state="closed"] {
+  animation: drawer-out 160ms ease-in both;
+}
+
 @media (prefers-reduced-motion: reduce) {
   .ambient-surface::before,
-  .attention-pulse::before {
+  .ambient-surface::after,
+  .attention-pulse::before,
+  .metric-value,
+  .motion-dialog-overlay,
+  .motion-drawer,
+  .state-spinner {
     animation: none !important;
     transform: none !important;
+  }
+
+  .metric-fill,
+  .motion-card,
+  .motion-control {
+    transition-duration: 0.01ms !important;
+  }
+
+  .motion-card:hover,
+  .motion-control:hover:not(:disabled),
+  .motion-control:active:not(:disabled) {
+    transform: none;
   }
 }
