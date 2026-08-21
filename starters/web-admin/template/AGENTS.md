@@ -9,11 +9,13 @@ This project follows **App Factory** (`mcpmieda/app-factory`) and uses the valid
 3. Read `PRODUCT.md` and `ARCHITECTURE.md` for product or structural changes.
 4. Activate optional recipes only when the product requires them.
 5. Preserve shadcn/ui as the visual foundation; use ReUI only for a justified advanced component.
-6. Verify format, lint, typecheck, tests, build and critical browser behavior before completion.
+6. For UI work, follow `ui/UI_POLICY.md` and `ui/MOTION_POLICY.md` from App Factory. Default Motion Profile is `ambient` contextual; attenuate dense admin views and respect `prefers-reduced-motion`.
+7. Do not add another design system or motion library only to obtain an effect when the current stack/CSS can provide it cleanly.
+8. Verify format, lint, typecheck, tests, build, critical browser behavior and relevant motion/reduced-motion behavior before completion.
 
 ## Factory fallback
 
-If the plugin is unavailable, consult `mcpmieda/app-factory` starting at `AGENTS.md`, `core/ENTRYPOINT.md` and `profiles/web-admin/PROFILE.md`.
+If the plugin is unavailable, consult `mcpmieda/app-factory` starting at `AGENTS.md`, `core/ENTRYPOINT.md`, `profiles/web-admin/PROFILE.md`, `ui/UI_POLICY.md` and `ui/MOTION_POLICY.md`.
 
 <!-- BEGIN:nextjs-agent-rules -->
 
