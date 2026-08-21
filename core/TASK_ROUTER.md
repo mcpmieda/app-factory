@@ -2,16 +2,27 @@
 
 A Factory escolhe o executor pela **capacidade necessária para provar o trabalho**, não pela palavra "código" nem por preferência de fornecedor.
 
-A política conceitual deste arquivo é executada por `engine/execution_engine.py` e detalhada em `core/EXECUTION_FABRIC.md`.
+A política conceitual deste arquivo é executada por `engine/execution_engine.py` e detalhada em `core/EXECUTION_FABRIC.md`. Quando há histórico local suficiente, `core/LEARNING_ENGINE.md` pode otimizar a ordem **somente entre candidatos que já passaram por todos os filtros obrigatórios**.
 
-## Ordem padrão
+## Ordem de autoridade
+
+1. capacidades obrigatórias;
+2. disponibilidade e permissões;
+3. bloqueios/failure threshold da tarefa atual;
+4. segurança, risco e Definition of Done;
+5. evidência aprendida local, quando suficiente;
+6. ordem baseline entre candidatos restantes.
+
+Aprendizado nunca cria capacidade, concede permissão, reduz verificação ou ressuscita backend rejeitado.
+
+## Ordem baseline
 
 1. **`current_agent`** — agente atual + ferramentas diretas de raciocínio, arquivos, GitHub e conectores;
 2. **`github_ci`** — GitHub Actions/CI para comandos determinísticos, testes, build e prova reproduzível;
 3. **`sandbox`** — executor leve quando realmente disponível;
 4. **`local_full`** — executor local/interativo completo, como Codex ou equivalente.
 
-A ordem só vale entre backends capazes. Um backend sem alguma capacidade obrigatória é rejeitado.
+A ordem só vale entre backends capazes. Com dados suficientes, o Learning Engine pode reordenar backends leves elegíveis; `local_full` não é promovido sobre um backend leve capaz somente por score histórico.
 
 ## Capacidades antes de marcas
 
@@ -49,11 +60,21 @@ Use `github_ci` quando a prova for determinística e não interativa, por exempl
 
 `engine/ci_executor.py` só descobre gates de uma allowlist de IDs do próprio repositório. Texto livre de prompt não vira shell.
 
-## Fallback
+## Fallback da tarefa atual
 
-`.factory/execution.json` mantém histórico bounded de tentativas. Após o limite de falhas do mesmo backend para a mesma ação, a próxima decisão pode rejeitá-lo e escolher o próximo backend capaz.
+`.factory/execution.json` mantém histórico bounded e local de tentativas. O failure threshold é escopado pela tarefa autônoma atual, para que falhas antigas não contaminem tarefas novas.
+
+Após o limite de falhas do mesmo backend para a mesma ação/tarefa, a próxima decisão rejeita esse backend e tenta o próximo capaz. O Learning Engine recebe apenas os candidatos que sobreviveram a esse filtro.
 
 O repair loop do Autonomy Engine continua definindo quantas tentativas técnicas são permitidas; a Execution Fabric define **onde** a próxima tentativa ocorre.
+
+## Aprendizado local
+
+`.factory/learning.json` usa apenas metadados allowlisted de execução e fica fora do Git por padrão.
+
+Quando a amostra mínima não foi atingida, preservar a ordem baseline. Quando há evidência suficiente, o Learning Engine pode preferir outro backend leve já elegível com base em confiabilidade e, em empate de confiança alta, duração mediana materialmente melhor.
+
+Consulte `core/LEARNING_ENGINE.md` para privacidade, confiança e explicabilidade.
 
 ## Quando `local_full` é correto
 
