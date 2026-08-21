@@ -1,4 +1,4 @@
-name: Validate V1 Release Candidate
+name: Validate V1 Release
 
 on:
   pull_request:
@@ -14,6 +14,8 @@ on:
       - "README.md"
       - "CHANGELOG.md"
       - "PROJECT_STATE.md"
+      - "profiles/web-admin/PROFILE.md"
+      - "starters/web-admin/template/**"
   workflow_dispatch:
 
 permissions:
