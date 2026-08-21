@@ -25,11 +25,13 @@ def review_diff(root: Path | str, *, base_ref: str = "main") -> dict[str, Any]:
     root = Path(root).resolve()
     try:
         merge_base = _run_git(root, "merge-base", "HEAD", base_ref)
+        # Compare the base directly with the current working tree so the review
+        # packet covers committed, staged and unstaged changes together.
         changed = _run_git(
             root,
             "diff",
             "--name-only",
-            f"{merge_base}..HEAD",
+            merge_base,
             "--",
             ".",
             ":(exclude)specs/review-evidence.json",
@@ -40,7 +42,7 @@ def review_diff(root: Path | str, *, base_ref: str = "main") -> dict[str, Any]:
             "diff",
             "--no-ext-diff",
             "--unified=3",
-            f"{merge_base}..HEAD",
+            merge_base,
             "--",
             ".",
             ":(exclude)specs/review-evidence.json",
