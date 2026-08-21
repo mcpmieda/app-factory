@@ -9,7 +9,7 @@ Revisar a implementação da **V0.8 Living UI / Semantic Motion**, já comprovad
 ## Estado
 
 - fase: `V0.8 — implementada, aguardando revisão do draft PR`;
-- baseline oficial: `main` após merge da V0.7 (`f739111e450bd29d57fac9460e32f1c40d404966`);
+- baseline oficial: `main` no início da Issue #19 (`2730c2a2e8915abbebf5c3e00133b416f5229354`);
 - V0.1 bootstrap: concluída;
 - V0.2 pesquisa: concluída e integrada;
 - V0.2.1 entry router: concluído e integrado;
