@@ -83,7 +83,8 @@ def package_manager(root: Path) -> str | None:
 def install_argv(root: Path) -> tuple[str, ...] | None:
     manager = package_manager(root)
     if manager == "npm":
-        return ("npm", "ci") if (root / "package-lock.json").is_file() else ("npm", "install")
+        # A package.json without a lockfile is not a reproducible CI install contract.
+        return ("npm", "ci") if (root / "package-lock.json").is_file() else None
     if manager == "pnpm":
         return ("pnpm", "install", "--frozen-lockfile")
     if manager == "yarn":
@@ -136,12 +137,15 @@ def discover_declared_gates(root: Path | str) -> list[Gate]:
 
 def build_ci_plan(root: Path | str) -> dict[str, Any]:
     root = Path(root).resolve()
+    manager = package_manager(root)
     install = install_argv(root)
     gates = discover_declared_gates(root)
+    package_present = (root / "package.json").is_file()
     return {
         "schema_version": 1,
-        "package_manager": package_manager(root),
+        "package_manager": manager,
         "install_argv": list(install) if install else None,
+        "reproducible_install": bool(install) if package_present else None,
         "gates": [gate.to_dict() for gate in gates],
         "security": {
             "shell": False,
@@ -153,8 +157,7 @@ def build_ci_plan(root: Path | str) -> dict[str, Any]:
 
 
 def tail(text: str, limit: int = 4000) -> str:
-    compact = text[-limit:]
-    return compact
+    return text[-limit:]
 
 
 def run_declared_gates(
