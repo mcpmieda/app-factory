@@ -1,0 +1,87 @@
+name: Validate Web Admin Starter
+
+on:
+  pull_request:
+    paths:
+      - ".github/workflows/validate-web-admin-starter.yml"
+      - "scripts/create-web-admin.mjs"
+      - "scripts/create-web-admin.test.mjs"
+      - "starters/web-admin/**"
+      - "examples/asset-admin/**"
+  push:
+    branches: [main]
+    paths:
+      - ".github/workflows/validate-web-admin-starter.yml"
+      - "scripts/create-web-admin.mjs"
+      - "scripts/create-web-admin.test.mjs"
+      - "starters/web-admin/**"
+      - "examples/asset-admin/**"
+
+permissions:
+  contents: read
+
+jobs:
+  generated-starter:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: starters/web-admin/template/package-lock.json
+      - name: Use pinned npm version
+        run: npm install --global npm@10.9.9 && npm --version
+      - name: Test generator safety and personalization
+        run: node --test scripts/create-web-admin.test.mjs
+      - name: Generate a clean temporary project
+        run: node scripts/create-web-admin.mjs "$RUNNER_TEMP/generated-web-admin" "CI Generated Admin"
+      - name: Install generated project dependencies
+        working-directory: ${{ runner.temp }}/generated-web-admin
+        run: npm ci
+      - name: Check generated project without prior build artifacts
+        working-directory: ${{ runner.temp }}/generated-web-admin
+        run: |
+          npm run format:check
+          npm run lint
+          npm run typecheck
+          npm run test:coverage
+          npm run build
+          npm audit --audit-level=high
+
+  asset-admin:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    defaults:
+      run:
+        working-directory: examples/asset-admin
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: examples/asset-admin/package-lock.json
+      - name: Use pinned npm version
+        run: npm install --global npm@10.9.9 && npm --version
+      - name: Install dependencies
+        run: npm ci
+      - name: Setup migrations and fictitious seed
+        run: npm run setup
+      - name: Format check
+        run: npm run format:check
+      - name: Lint
+        run: npm run lint
+      - name: Typecheck without prior build artifacts
+        run: npm run typecheck
+      - name: Unit tests with coverage
+        run: npm run test:coverage
+      - name: Production build
+        run: npm run build
+      - name: Reject high or critical dependency advisories
+        run: npm audit --audit-level=high
+      - name: Install Playwright Chromium
+        run: npx playwright install --with-deps chromium
+      - name: End-to-end desktop and mobile
+        run: npm run e2e

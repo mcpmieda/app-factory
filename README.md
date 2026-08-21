@@ -131,6 +131,6 @@ app-factory/
 
 ## Estado
 
-Versão de trabalho: `0.4-web-admin-profile`
+Versão de trabalho: `0.5-web-admin-starter`
 
-O piloto V0.3 foi integrado após revisão e CI reproduzível. A V0.4 promove somente os aprendizados comprovados para um perfil `web-admin` condicional. O próximo gate é gerar um starter limpo a partir do perfil e validar um segundo app do zero antes de declarar V1 estável.
+O perfil V0.4 agora possui starter real, gerador e recipes condicionais. A V0.5 também inclui um segundo app de patrimônio escolar fictício criado pelo gerador; a revisão do draft PR e dos gates reproduzíveis ainda precede qualquer declaração de V1 estável.

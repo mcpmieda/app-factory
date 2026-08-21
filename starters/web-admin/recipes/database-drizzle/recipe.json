@@ -1,0 +1,20 @@
+{
+  "id": "database-drizzle",
+  "description": "Drizzle persistence with SQLite for local validation",
+  "requires": [],
+  "dependencies": {
+    "better-sqlite3": "12.11.1",
+    "dotenv": "17.3.1",
+    "drizzle-orm": "0.45.2"
+  },
+  "devDependencies": {
+    "@types/better-sqlite3": "7.6.13",
+    "drizzle-kit": "0.31.10",
+    "tsx": "4.21.0"
+  },
+  "scripts": {
+    "db:generate": "drizzle-kit generate",
+    "db:migrate": "tsx scripts/migrate.ts",
+    "setup": "tsx scripts/setup-local-env.ts && npm run db:migrate"
+  }
+}

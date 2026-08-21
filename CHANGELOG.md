@@ -1,5 +1,31 @@
 # Changelog
 
+## 0.5-web-admin-starter — 2026-08-21
+
+Validação de que o perfil `web-admin` pode gerar aplicações novas sem depender da cópia do piloto V0.3.
+
+### Criado
+
+- starter limpo em `starters/web-admin/template/`;
+- gerador Node multiplataforma com proteção de destino, personalização, manifesto e lockfile npm 10.9.9;
+- recipes pequenos para Drizzle, Better Auth e decisão seletiva de ReUI;
+- segundo app gerado em `examples/asset-admin/` para patrimônio escolar fictício;
+- workflow que gera uma cópia temporária e valida starter e exemplo em checkout limpo;
+- relatório e evidências visuais V0.5.
+
+### Validado localmente
+
+- Better Auth e Drizzle entram por requisito, não no starter base;
+- SQLite é provider somente local/teste;
+- ReUI foi corretamente dispensado para uma listagem sem complexidade avançada;
+- setup/migrations/seed idempotentes;
+- format, lint, typecheck sem artefato prévio, testes, build e audit high/critical;
+- fluxo crítico Playwright em desktop/mobile e navegador real sem overlay.
+
+### Próximo gate
+
+Revisar o draft PR e o CI antes de decidir estabilidade V1. Provider de produção e manutenção do schema Better Auth continuam decisões dependentes do destino real.
+
 ## 0.4-web-admin-profile — 2026-08-21
 
 Promoção controlada dos aprendizados comprovados pelo piloto V0.3.

@@ -4,11 +4,11 @@
 
 ## Objetivo atual
 
-Gerar um starter `web-admin` limpo a partir do perfil V0.4 e validar um segundo aplicativo criado do zero, provando que o conhecimento é reutilizável e não dependente do primeiro piloto.
+Validar em revisão o starter `web-admin` limpo e o segundo aplicativo gerado do zero, provando que o conhecimento promovido na V0.4 é reutilizável.
 
 ## Estado
 
-- fase: `V0.5 — starter web-admin + segundo app do zero`;
+- fase: `V0.5 — starter e segundo app implementados; aguardando revisão do draft PR`;
 - baseline oficial: `main` após merge do PR #9 (`2e2ca4e8fef963a1fe126b84e7ff55470742b66a`);
 - V0.1 bootstrap: concluída;
 - V0.2 pesquisa: concluída e integrada;
@@ -17,8 +17,8 @@ Gerar um starter `web-admin` limpo a partir do perfil V0.4 e validar um segundo 
 - V0.3 piloto web-admin: concluído, revisado, CI reproduzível e integrado;
 - V0.4 perfil web-admin: concluído, CI aprovado e integrado;
 - Issues #4 e #8: concluídas;
-- Issue #10: aberta e liberada para Codex;
-- CI: valida Core/Skills/plugin e o piloto web-admin em checkout limpo.
+- Issue #10: implementação concluída localmente na branch `pilot/web-admin-starter-v0.5`;
+- CI: valida Core/Skills/plugin, piloto V0.3 e o novo starter/exemplo V0.5 em checkout limpo.
 
 ## Decisões vigentes
 
@@ -43,14 +43,15 @@ Gerar um starter `web-admin` limpo a partir do perfil V0.4 e validar um segundo 
 ## Trabalho atual
 
 - bloco: Issue #10 — gerar starter limpo e validar segundo app do zero;
-- ambiente recomendado: Codex;
-- motivo: exige scaffold real, gerador, dependências, recipes condicionais, testes, build e navegador;
-- regra: não copiar cegamente `pilots/web-admin/`; usar `profiles/web-admin/PROFILE.md` como fonte de decisão;
-- não fazer merge automático ao concluir.
+- ambiente: Codex;
+- resultado: starter limpo, gerador, três recipes e `examples/asset-admin/` criados a partir do perfil V0.4;
+- decisão: Better Auth/Drizzle foram ativados no exemplo; ReUI foi dispensado por falta de complexidade que justificasse o grid;
+- evidência: `research/V0.5_WEB_ADMIN_STARTER_VALIDATION.md`, testes, workflow e screenshots V0.5;
+- regra: não fazer merge automático.
 
 ## Próxima ação
 
-Executar integralmente a Issue #10 no Codex, abrir draft PR com evidências e devolver para revisão do ChatGPT.
+Revisar o draft PR da Issue #10 e os checks finais do gerador temporário e do exemplo antes de qualquer promoção para V1. Não fazer merge automático.
 
 ## Handoff
 
@@ -61,4 +62,5 @@ Outro agente deve começar por:
 3. Issue #10;
 4. `profiles/web-admin/PROFILE.md`;
 5. `starters/web-admin/README.md`;
-6. `research/V0.3_WEB_ADMIN_PILOT.md`.
+6. `research/V0.5_WEB_ADMIN_STARTER_VALIDATION.md`;
+7. `examples/asset-admin/PROJECT_STATE.md` e `.app-factory.json`.

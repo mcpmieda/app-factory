@@ -1,0 +1,59 @@
+{
+  "name": "patrimonio-escolar",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "packageManager": "npm@10.9.9",
+  "engines": {
+    "node": ">=22 <25",
+    "npm": "10.x"
+  },
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "format:check": "prettier --check .",
+    "lint": "eslint . --max-warnings=0",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "test:coverage": "vitest run --coverage",
+    "e2e": "playwright test",
+    "db:generate": "drizzle-kit generate",
+    "db:migrate": "tsx scripts/migrate.ts",
+    "setup": "tsx scripts/setup-local-env.ts && npm run db:migrate && npm run db:seed",
+    "db:seed": "tsx scripts/seed-admin.ts"
+  },
+  "dependencies": {
+    "class-variance-authority": "^0.7.1",
+    "clsx": "^2.1.1",
+    "lucide-react": "^1.33.0",
+    "next": "16.3.2",
+    "radix-ui": "^1.6.7",
+    "react": "19.2.8",
+    "react-dom": "19.2.8",
+    "tailwind-merge": "^3.6.0",
+    "tw-animate-css": "^1.4.0",
+    "zod": "^4.4.3",
+    "better-sqlite3": "12.11.1",
+    "dotenv": "17.3.1",
+    "drizzle-orm": "0.45.2",
+    "better-auth": "1.7.1"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.62.1",
+    "@tailwindcss/postcss": "^4",
+    "@types/node": "^20",
+    "@types/react": "^19",
+    "@types/react-dom": "^19",
+    "@vitest/coverage-v8": "^4.1.11",
+    "eslint": "^9",
+    "eslint-config-next": "16.3.2",
+    "prettier": "^3.6.2",
+    "tailwindcss": "^4",
+    "typescript": "^5",
+    "vitest": "^4.1.11",
+    "@types/better-sqlite3": "7.6.13",
+    "drizzle-kit": "0.31.10",
+    "tsx": "4.21.0"
+  }
+}
