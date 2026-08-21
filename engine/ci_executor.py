@@ -25,6 +25,7 @@ KNOWN_PYTHON_VALIDATORS = (
     "scripts/validate_v1_release.py",
     "scripts/validate_v1_1.py",
     "scripts/validate_v1_2.py",
+    "scripts/validate_v1_3.py",
 )
 
 
