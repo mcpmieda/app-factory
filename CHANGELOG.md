@@ -1,5 +1,29 @@
 # Changelog
 
+## 1.0.0 — 2026-08-21
+
+Primeira release estável da App Factory.
+
+### Aprovado para release
+
+- auditoria final end-to-end concluída sem blocker objetivo;
+- bootstrap isolado do plugin Codex com 11 Skills e integridade origem/cache;
+- roteamento por pedido comum sem palavra-chave especial;
+- sistema novo de empréstimos criado do zero, com persistência, regras de negócio e browser desktop/mobile;
+- Living UI e `prefers-reduced-motion` validados;
+- continuidade por segundo agente sem contexto e recuperação de regressão controlada comprovadas;
+- gates anteriores de web-admin, PostgreSQL/Auth, Living UI e quatro famílias universais permanecem verdes;
+- gerador e starter passam a derivar/registrar a baseline corrente da Factory, eliminando referência operacional antiga a V0.7;
+- perfil `web-admin` promovido de `v1-rc` para `v1`.
+
+### Evidência
+
+- `research/V1.0_FINAL_AUDIT.md`;
+- `audits/v1-final/equipment-loans/`;
+- `research/evidence/V1_CONTINUITY_HANDOFF.md`;
+- `research/evidence/V1_CONTROLLED_RECOVERY.md`;
+- `.github/workflows/validate-v1-release.yml`.
+
 ## 1.0.0-rc.1 — 2026-08-21
 
 Release candidate final da App Factory, sem tag ou publicação antecipada.
@@ -155,7 +179,7 @@ Promoção controlada dos aprendizados comprovados pelo piloto V0.3.
 ### Guardrails aprendidos
 
 - lockfile/package manager devem ser reproduzíveis entre desenvolvimento e CI;
-- CI deve usar instalação limpa (`npm ci` ou equivalente), não mascarar inconsistência com instalação permissiva;
+- CI deve usar instalação limpa (`npm ci` ou equivalente), não mascarar inconsistências com instalação permissiva;
 - typecheck/testes não podem depender silenciosamente de artefatos gerados previamente;
 - operações destrutivas relevantes devem ter proteção de domínio e teste E2E quando apropriado;
 - código vindo de registry deve ser auditado e módulos/dependências não usados removidos.
