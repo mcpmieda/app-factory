@@ -81,6 +81,22 @@ class AutonomyEngineTests(unittest.TestCase):
         record_event(root, "context-reconciled", "delta revisado")
         self.assertEqual(next_action(root, auto_refresh=False)[0]["action"], "implement")
 
+    def test_repeated_resume_preserves_pending_context_delta(self) -> None:
+        temp, root = self.make_repo()
+        self.addCleanup(temp.cleanup)
+        init_project(root, goal="Continuar sem perder contexto")
+        record_event(root, "plan-ready")
+        (root / "app.py").write_text("def main():\n    return 3\n", encoding="utf-8")
+
+        first = resume_project(root)
+        self.assertIn("app.py", first.action["delta"]["changed"])
+        second = resume_project(root)
+        self.assertEqual(second.action["action"], "reconcile_context")
+        self.assertIn("app.py", second.action["delta"]["changed"])
+
+        record_event(root, "context-reconciled", "delta preservado e revisado")
+        self.assertEqual(next_action(root, auto_refresh=False)[0]["action"], "implement")
+
     def test_human_intervention_is_explicit_and_categorized(self) -> None:
         temp, root = self.make_repo()
         self.addCleanup(temp.cleanup)
