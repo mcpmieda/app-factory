@@ -30,6 +30,20 @@ from engine.execution_engine import (  # noqa: E402
     route_action,
 )
 from engine.learning_engine import learning_status, record_learning_event  # noqa: E402
+from engine.semantic_verification import (  # noqa: E402
+    CHANGE_TYPES,
+    REVIEW_MODES,
+    RISK_LEVELS,
+    VERDICTS,
+    build_clean_review_packet,
+    create_verification_plan,
+    new_spec,
+    read_spec,
+    semantic_status,
+    validate_spec,
+    write_review_evidence,
+    write_verification_plan,
+)
 
 
 def emit(value: object) -> None:
@@ -88,8 +102,20 @@ def capability_request(args: argparse.Namespace):
     )
 
 
+def parse_criterion_results(values: list[str]) -> dict[str, str]:
+    result: dict[str, str] = {}
+    for raw in values:
+        criterion_id, separator, status = raw.partition("=")
+        criterion_id = criterion_id.strip()
+        status = status.strip()
+        if not separator or not criterion_id or status not in {"pass", "fail"}:
+            raise ValueError("--criterion must use AC-001=pass or AC-001=fail")
+        result[criterion_id] = status
+    return result
+
+
 def parser() -> argparse.ArgumentParser:
-    root = argparse.ArgumentParser(description="App Factory V1.3 autonomous context/execution/learning CLI")
+    root = argparse.ArgumentParser(description="App Factory V1.4 autonomous context/execution/learning/semantic CLI")
     root.add_argument("--root", default=".", help="Project root (default: current directory)")
     root.add_argument(
         "--backends",
@@ -103,6 +129,7 @@ def parser() -> argparse.ArgumentParser:
     init = sub.add_parser("init", help="Initialize autonomous project state")
     init.add_argument("--goal", help="User outcome; inferred from PROJECT_STATE/README when omitted")
     init.add_argument("--max-repairs", type=int, default=3)
+    init.add_argument("--require-spec", action="store_true", help="Route planning through semantic specification before implementation")
 
     sub.add_parser("status", help="Show compact autonomous state")
     sub.add_parser("next", help="Refresh context and choose the next action plus execution backend")
@@ -110,11 +137,28 @@ def parser() -> argparse.ArgumentParser:
     resume = sub.add_parser("resume", help="Recover state in a fresh session and choose action/backend")
     resume.add_argument("--goal", help="Used only when no state exists and no clear goal can be inferred")
     resume.add_argument("--max-repairs", type=int, default=3)
+    resume.add_argument("--require-spec", action="store_true", help="Used only when creating missing state")
 
     record = sub.add_parser("record", help="Record one agent/workflow event")
     record.add_argument("event", choices=sorted(EVENTS))
     record.add_argument("--summary")
     record.add_argument("--category", choices=sorted(HUMAN_CATEGORIES))
+
+    spec_template = sub.add_parser("spec-template", help="Emit a structured semantic-spec template; the agent fills criteria before spec-ready")
+    spec_template.add_argument("--goal", required=True)
+    spec_template.add_argument("--change-type", choices=sorted(CHANGE_TYPES), default="functional")
+    spec_template.add_argument("--risk", choices=sorted(RISK_LEVELS), default="medium")
+
+    sub.add_parser("spec-validate", help="Validate specs/semantic-contract.json")
+    sub.add_parser("verification-plan-init", help="Generate verification-plan rows from the current semantic spec")
+    sub.add_parser("semantic-status", help="Validate semantic spec, traceability and review freshness")
+    sub.add_parser("review-packet", help="Emit a clean-context review packet without implementation reasoning")
+
+    review = sub.add_parser("record-semantic-review", help="Record decoupled semantic review evidence")
+    review.add_argument("--mode", required=True, choices=sorted(REVIEW_MODES))
+    review.add_argument("--verdict", required=True, choices=sorted(VERDICTS))
+    review.add_argument("--criterion", action="append", default=[], help="Criterion result AC-001=pass; repeatable")
+    review.add_argument("--finding", action="append", default=[], help="Review finding; repeatable")
 
     route = sub.add_parser("route", help="Choose a capable backend, using local learning only when evidence is sufficient")
     route.add_argument("action")
@@ -162,7 +206,12 @@ def main() -> int:
         })
         return 0
     if args.command == "init":
-        emit(init_project(project_root, goal=args.goal, max_repairs=args.max_repairs))
+        emit(init_project(
+            project_root,
+            goal=args.goal,
+            max_repairs=args.max_repairs,
+            require_spec=args.require_spec,
+        ))
         return 0
     if args.command == "status":
         state = read_state(project_root)
@@ -173,7 +222,12 @@ def main() -> int:
         emit({"action": action, "execution": execution_for_action(project_root, action, backends), "state": state})
         return 0
     if args.command == "resume":
-        result = resume_project(project_root, goal=args.goal, max_repairs=args.max_repairs)
+        result = resume_project(
+            project_root,
+            goal=args.goal,
+            max_repairs=args.max_repairs,
+            require_spec=args.require_spec,
+        )
         emit({
             "action": result.action,
             "execution": execution_for_action(project_root, result.action, backends),
@@ -189,6 +243,47 @@ def main() -> int:
         state = record_event(project_root, args.event, summary=args.summary, category=args.category)
         action = next_action(project_root, auto_refresh=False)[0]
         emit({"state": state, "next": action, "execution": execution_for_action(project_root, action, backends)})
+        return 0
+    if args.command == "spec-template":
+        emit(new_spec(args.goal, change_type=args.change_type, risk=args.risk))
+        return 0
+    if args.command == "spec-validate":
+        spec = read_spec(project_root)
+        errors = validate_spec(spec)
+        emit({"valid": not errors, "errors": errors})
+        return 0 if not errors else 1
+    if args.command == "verification-plan-init":
+        spec = read_spec(project_root)
+        errors = validate_spec(spec)
+        if errors:
+            emit({"written": False, "errors": errors})
+            return 1
+        assert spec is not None
+        plan = create_verification_plan(spec)
+        write_verification_plan(project_root, plan)
+        emit({"written": True, "path": "specs/verification-plan.json", "plan": plan})
+        return 0
+    if args.command == "semantic-status":
+        status = semantic_status(project_root)
+        emit(status.to_dict())
+        return 0 if status.ready_for_delivery else 1
+    if args.command == "review-packet":
+        emit(build_clean_review_packet(project_root))
+        return 0
+    if args.command == "record-semantic-review":
+        try:
+            criteria = parse_criterion_results(args.criterion)
+            review_value = write_review_evidence(
+                project_root,
+                mode=args.mode,
+                verdict=args.verdict,
+                criterion_results=criteria,
+                findings=args.finding,
+            )
+        except ValueError as error:
+            emit({"written": False, "error": str(error)})
+            return 1
+        emit({"written": True, "path": "specs/review-evidence.json", "review": review_value})
         return 0
     if args.command in {"route", "learning-recommend"}:
         decision = route_action(
