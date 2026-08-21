@@ -10,6 +10,13 @@
 ## Resultado esperado
 [O que deve ficar mais simples, rápido, seguro ou possível?]
 
+## Experiência visual
+- design system/preferência visual:
+- Motion Profile: `ambient` por padrão, salvo decisão explícita (`none`, `subtle`, `ambient`, `expressive`):
+- exceções relevantes de leitura, densidade, acessibilidade ou desempenho:
+
+Não obrigar o usuário a escolher detalhes técnicos de animação. Registre aqui apenas preferência de produto/identidade quando ela existir; o comportamento padrão segue `ui/MOTION_POLICY.md`.
+
 ## Fluxos principais
 1. ...
 2. ...
