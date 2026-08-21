@@ -1,0 +1,7 @@
+{
+  "profile": "web-admin",
+  "factoryBaseline": "v0.5",
+  "generatedAt": "2026-08-21T12:31:22.674Z",
+  "source": "starters/web-admin/template",
+  "recipes": ["database-drizzle", "auth-better-auth"]
+}
