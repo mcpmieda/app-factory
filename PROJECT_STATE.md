@@ -4,18 +4,20 @@
 
 ## Objetivo atual
 
-Transformar os aprendizados validados do piloto V0.3 em um perfil `web-admin` reutilizável e, depois, gerar um starter limpo para um segundo teste do zero.
+Gerar um starter `web-admin` limpo a partir do perfil V0.4 e validar um segundo aplicativo criado do zero, provando que o conhecimento é reutilizável e não dependente do primeiro piloto.
 
 ## Estado
 
-- fase: `V0.4 — promoção do perfil web-admin`;
-- baseline oficial: `main` após merge do PR #6 (`2e786d39505cfdbc766f6481535cb65413d2b735`);
+- fase: `V0.5 — starter web-admin + segundo app do zero`;
+- baseline oficial: `main` após merge do PR #9 (`2e2ca4e8fef963a1fe126b84e7ff55470742b66a`);
 - V0.1 bootstrap: concluída;
 - V0.2 pesquisa: concluída e integrada;
 - V0.2.1 entry router: concluído e integrado;
 - Issue #3 / Codex Plugin: concluída e revisada;
 - V0.3 piloto web-admin: concluído, revisado, CI reproduzível e integrado;
+- V0.4 perfil web-admin: concluído, CI aprovado e integrado;
 - Issues #4 e #8: concluídas;
+- Issue #10: aberta e liberada para Codex;
 - CI: valida Core/Skills/plugin e o piloto web-admin em checkout limpo.
 
 ## Decisões vigentes
@@ -32,7 +34,7 @@ Transformar os aprendizados validados do piloto V0.3 em um perfil `web-admin` re
 - Better Auth é primeira opção condicional quando o projeto exige autenticação própria;
 - Drizzle é primeira opção condicional quando o projeto exige persistência própria;
 - provider de banco é escolhido pelo ambiente; SQLite/better-sqlite3 fica local/teste salvo requisito real;
-- Zod, Vitest, Playwright e lint oficial do Next foram promovidos para o perfil;
+- Zod, Vitest, Playwright e lint oficial do Next fazem parte da base validada do perfil;
 - Biome fica opcional/complementar;
 - Spec Kit continua proporcional à escala;
 - starters permanecem componíveis, sem serviços opcionais impostos;
@@ -40,14 +42,15 @@ Transformar os aprendizados validados do piloto V0.3 em um perfil `web-admin` re
 
 ## Trabalho atual
 
-- bloco: promover `profiles/web-admin/PROFILE.md` e ligar o perfil ao `factory-router`/`app-planner`;
-- ambiente recomendado: ChatGPT + GitHub;
-- motivo: é consolidação de arquitetura/documentação já comprovada, sem necessidade de ambiente local neste bloco;
-- branch: `promote/web-admin-profile-v0.4`.
+- bloco: Issue #10 — gerar starter limpo e validar segundo app do zero;
+- ambiente recomendado: Codex;
+- motivo: exige scaffold real, gerador, dependências, recipes condicionais, testes, build e navegador;
+- regra: não copiar cegamente `pilots/web-admin/`; usar `profiles/web-admin/PROFILE.md` como fonte de decisão;
+- não fazer merge automático ao concluir.
 
 ## Próxima ação
 
-Após CI/revisão e merge da V0.4, criar uma Issue para Codex gerar um starter `web-admin` limpo a partir do perfil, sem copiar cegamente `pilots/web-admin/`, e validar um segundo app do zero.
+Executar integralmente a Issue #10 no Codex, abrir draft PR com evidências e devolver para revisão do ChatGPT.
 
 ## Handoff
 
@@ -55,7 +58,7 @@ Outro agente deve começar por:
 
 1. `AGENTS.md`;
 2. este `PROJECT_STATE.md`;
-3. `profiles/web-admin/PROFILE.md`;
-4. `research/V0.3_WEB_ADMIN_PILOT.md`;
+3. Issue #10;
+4. `profiles/web-admin/PROFILE.md`;
 5. `starters/web-admin/README.md`;
-6. PR da branch `promote/web-admin-profile-v0.4` quando existir.
+6. `research/V0.3_WEB_ADMIN_PILOT.md`.
