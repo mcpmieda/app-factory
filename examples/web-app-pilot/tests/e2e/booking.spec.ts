@@ -13,7 +13,9 @@ test("user completes booking end to end", async ({ page }, info) => {
     .click();
   await page.getByRole("button", { name: "Continuar" }).click();
   await page.getByLabel("Nome").fill("Ana Lima");
-  await page.getByLabel("E-mail").fill("ana@example.test");
+  await page
+    .getByRole("textbox", { name: "E-mail", exact: true })
+    .fill("ana@example.test");
   await page.getByRole("button", { name: "Confirmar reserva" }).click();
   await expect(
     page.getByRole("heading", { name: "Confirmando sua reserva…" }),

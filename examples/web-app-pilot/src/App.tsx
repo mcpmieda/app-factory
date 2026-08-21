@@ -87,7 +87,7 @@ export default function App() {
         <Stepper step={step} />
         <a
           className="help"
-          aria-label="Pedir ajuda por e-mail"
+          aria-label="Abrir ajuda"
           href="mailto:ajuda@encontro.example"
         >
           ?
