@@ -58,7 +58,8 @@ class ReviewPacketTests(unittest.TestCase):
                 encoding="utf-8",
             )
             (root / "app.py").write_text("def save():\n    return False\n", encoding="utf-8")
-            self.git(root, "add", "app.py", "specs/semantic-contract.json", "specs/verification-plan.json")
+            (root / "tracked.py").write_text("VALUE = 1\n", encoding="utf-8")
+            self.git(root, "add", "app.py", "tracked.py", "specs/semantic-contract.json", "specs/verification-plan.json")
             self.git(root, "commit", "-m", "baseline")
 
             self.git(root, "checkout", "-b", "feature")
@@ -70,13 +71,19 @@ class ReviewPacketTests(unittest.TestCase):
             self.git(root, "add", "app.py", "specs/review-evidence.json")
             self.git(root, "commit", "-m", "implement save")
 
+            # The packet must also include current tracked working-tree changes,
+            # so a local clean-context review cannot silently miss them.
+            (root / "tracked.py").write_text("VALUE = 2\n", encoding="utf-8")
+
             packet = build_clean_review_packet(root, base_ref="main")
             self.assertIn("Fresh review input only", packet["review_contract"])
             self.assertEqual(packet["spec"]["goal"], spec["goal"])
             self.assertTrue(packet["change"]["available"])
             self.assertIn("app.py", packet["change"]["changed_files"])
+            self.assertIn("tracked.py", packet["change"]["changed_files"])
             self.assertNotIn("specs/review-evidence.json", packet["change"]["changed_files"])
             self.assertIn("return True", packet["change"]["diff"])
+            self.assertIn("VALUE = 2", packet["change"]["diff"])
             self.assertNotIn("implementation_reasoning", json.dumps(packet))
             self.assertNotIn("current_review", packet)
 
