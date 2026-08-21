@@ -32,7 +32,7 @@ async function json(path) {
   return JSON.parse(await readFile(path, "utf8"));
 }
 
-test("generator resolves recipe providers, order and failures safely", async () => {
+test("generator resolves recipe providers, motion baseline, order and failures safely", async () => {
   const temporaryRoot = await mkdtemp(join(tmpdir(), "app-factory-web-admin-"));
 
   try {
@@ -43,7 +43,11 @@ test("generator resolves recipe providers, order and failures safely", async () 
       (await json(join(base, "package.json"))).name,
       "patrimonio-escolar",
     );
-    assert.deepEqual((await json(join(base, ".app-factory.json"))).recipes, []);
+    const baseManifest = await json(join(base, ".app-factory.json"));
+    assert.deepEqual(baseManifest.recipes, []);
+    assert.equal(baseManifest.profile, "web-admin");
+    assert.equal(baseManifest.factoryBaseline, "v0.7");
+    assert.equal(baseManifest.motionProfile, "ambient");
     assert.match(
       await readFile(join(base, "PROJECT_STATE.md"), "utf8"),
       /Patrimônio Escolar/,
@@ -84,10 +88,15 @@ test("generator resolves recipe providers, order and failures safely", async () 
       "auth-better-auth",
     ]);
     assert.equal(postgresRun.status, 0, postgresRun.stderr);
-    assert.deepEqual(
-      (await json(join(postgresAuth, ".app-factory.json"))).recipes,
-      ["database-drizzle-postgres", "auth-better-auth"],
+    const postgresManifest = await json(
+      join(postgresAuth, ".app-factory.json"),
     );
+    assert.deepEqual(postgresManifest.recipes, [
+      "database-drizzle-postgres",
+      "auth-better-auth",
+    ]);
+    assert.equal(postgresManifest.factoryBaseline, "v0.7");
+    assert.equal(postgresManifest.motionProfile, "ambient");
     const postgresPackage = await json(join(postgresAuth, "package.json"));
     assert.equal(postgresPackage.dependencies.postgres, "3.4.9");
     assert.equal(postgresPackage.dependencies["better-sqlite3"], undefined);
