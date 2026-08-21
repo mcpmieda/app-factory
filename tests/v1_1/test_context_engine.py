@@ -20,12 +20,14 @@ class ContextEngineTests(unittest.TestCase):
             "scripts": {"build": "next build", "test": "vitest run"},
         }), encoding="utf-8")
         (root / "src/app.tsx").write_text(
-            'import React from "react";\nexport function App() { return <main>Hello</main>; }\n',
+            'import React from "react";\nimport { x } from "./missing";\nexport function App() { return <main>Hello</main>; }\n',
             encoding="utf-8",
         )
         (root / "src/domain.py").write_text("import json\n\nclass Student:\n    pass\n", encoding="utf-8")
         (root / "README.md").write_text("# Demo\n", encoding="utf-8")
         (root / ".env").write_text("SECRET=do-not-read\n", encoding="utf-8")
+        (root / ".npmrc").write_text("//registry.example/:_authToken=secret\n", encoding="utf-8")
+        (root / "terraform.tfvars").write_text("password = \"secret\"\n", encoding="utf-8")
         (root / "node_modules/pkg/index.js").write_text("module.exports = 1\n", encoding="utf-8")
         return temp, root
 
@@ -38,10 +40,16 @@ class ContextEngineTests(unittest.TestCase):
         self.assertIn("App", mapped["src/app.tsx"]["symbols"])
         self.assertIn("Student", mapped["src/domain.py"]["symbols"])
         self.assertNotIn(".env", mapped)
+        self.assertNotIn(".npmrc", mapped)
+        self.assertNotIn("terraform.tfvars", mapped)
         self.assertNotIn("node_modules/pkg/index.js", mapped)
         self.assertEqual(result.repo_map["stack"]["package_manager"], None)
         self.assertIn("Next.js", result.repo_map["stack"]["frameworks"])
         self.assertIn("HeroUI", result.repo_map["stack"]["frameworks"])
+        self.assertIn(
+            {"from": "src/app.tsx", "import": "./missing"},
+            result.repo_map["local_dependency_edges"],
+        )
 
     def test_incremental_cache_reuses_unchanged_metadata(self) -> None:
         temp, root = self.make_repo()
