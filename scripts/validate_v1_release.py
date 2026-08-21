@@ -90,6 +90,7 @@ def validate_version_coherence() -> tuple[str, tuple[int, int, int]]:
         template / "src/config/project.test.ts": f'factoryBaseline: "{expected_baseline}"',
         ROOT / "README.md": f"`{version}`",
         ROOT / "PROJECT_STATE.md": f"versão: `{version}`",
+        ROOT / "CHANGELOG.md": f"## {version} —",
         ROOT / "profiles/web-admin/PROFILE.md": "Status: `v1`",
     }
     for path, marker in required_markers.items():
