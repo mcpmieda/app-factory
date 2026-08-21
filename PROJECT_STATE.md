@@ -4,22 +4,24 @@
 
 ## Objetivo atual
 
-Revisar o hardening V0.6 que promove o perfil `web-admin` a candidato `v1-rc`, com recipes diretamente verificáveis, PostgreSQL de produção e manutenção segura de Better Auth/schema.
+Formalizar e validar a política universal **Living UI / Semantic Motion**, independente de HeroUI, shadcn, ReUI ou outro design system, após a promoção do perfil `web-admin` para `v1-rc`.
 
 ## Estado
 
-- fase: `V0.6 — hardening implementado; aguardando revisão do draft PR`;
-- baseline oficial: `main` após merge do PR #11 (`7339a25f401813f6c05778e3f30228f518914a95`);
+- fase: `V0.7 — Living UI / Semantic Motion`;
+- baseline oficial anterior: `main` após merge do PR #14 (`3d81d6aa0d0d8a36ff070e5bd5d09b276aa6ae5f`);
 - V0.1 bootstrap: concluída;
 - V0.2 pesquisa: concluída e integrada;
 - V0.2.1 entry router: concluído e integrado;
 - Issue #3 / Codex Plugin: concluída e revisada;
-- V0.3 piloto web-admin: concluído, revisado, CI reproduzível e integrado;
+- V0.3 piloto web-admin: concluído, revisado e integrado;
 - V0.4 perfil web-admin: concluído e integrado;
 - V0.5 starter + segundo app: concluída, revisada e integrada;
-- Issues #4, #8 e #10: concluídas;
-- Issue #12: implementação concluída na branch `pilot/web-admin-hardening-v0.6`;
-- CI: valida Core/Skills/plugin, starter base, recipes SQLite diretos, PostgreSQL/Auth em banco real efêmero e exemplo `asset-admin` V0.5.
+- V0.6 hardening PostgreSQL/Auth: concluído, revisado e integrado;
+- perfil `web-admin`: `v1-rc`;
+- Issues #4, #8, #10 e #12: concluídas;
+- Issue #15: Living UI / Semantic Motion em implementação/revisão;
+- CI: valida Core/Skills/plugin, starter base, recipes SQLite diretos, PostgreSQL/Auth em banco real efêmero e exemplo `asset-admin`.
 
 ## Decisões vigentes
 
@@ -29,32 +31,34 @@ Revisar o hardening V0.6 que promove o perfil `web-admin` a candidato `v1-rc`, c
 - processo varia por escala XS/S/M/L;
 - Factory pode selecionar perfil validado em `profiles/` após entender o produto;
 - perfil não é dogma e módulos opcionais só entram quando necessários;
-- no perfil `web-admin`, shadcn é a base visual;
-- ReUI é opcional/seletivo por componente avançado;
-- Better Auth é primeira opção condicional quando o projeto exige autenticação própria;
-- Drizzle é primeira opção condicional quando o projeto exige persistência própria;
-- SQLite/better-sqlite3 permanece provider local/teste, não default universal de produção;
-- V0.6 deve validar PostgreSQL como caminho de produção sem contaminar o starter base;
-- Zod, Vitest, Playwright e lint oficial do Next fazem parte da base validada do perfil;
-- Biome permanece opcional/complementar;
-- starters permanecem componíveis, sem serviços opcionais impostos;
-- instalação limpa, recipes gerados e CI reproduzível são gates de qualidade;
+- no perfil `web-admin`, shadcn é a base visual e ReUI é seletivo;
+- HeroUI continua alternativa visual legítima e pode ser exigido pelo usuário como sistema único;
+- Living UI / Semantic Motion é transversal e independente do design system;
+- Motion Profile default contextual: `ambient`;
+- perfis disponíveis: `none`, `subtle`, `ambient`, `expressive`;
+- motion deve comunicar ambiente, interação, dados, estado, atenção ou navegação; animação sem função deve ser removida;
+- `prefers-reduced-motion` é obrigatório para movimento não essencial;
+- telas densas, leitura longa, concentração ou performance limitada atenuam `ambient` para comportamento `subtle` quando necessário;
+- ações importantes podem usar atenção temporária, mas o movimento deve parar/reduzir após cumprir a função;
+- gráficos podem animar mudanças reais e não devem reanimar sem alteração de dado;
+- Better Auth é primeira opção condicional de auth no `web-admin`;
+- Drizzle é primeira opção condicional de persistência;
+- SQLite/better-sqlite3 permanece provider local/teste;
+- PostgreSQL é caminho de produção validado por recipe/CI para `web-admin`;
 - migrations destrutivas não devem ser aplicadas automaticamente sem análise;
-- recipes podem declarar capabilities, conflitos e variantes pequenas, sem virar framework complexo;
-- Better Auth e sua CLI de schema são fixados juntos em 1.7.1 no baseline V0.6;
-- o perfil `web-admin` é candidato `v1-rc`, não declaração de V1 estável ou produção pública já implantada.
+- instalação limpa, recipes gerados e CI reproduzível são gates de qualidade.
 
 ## Trabalho atual
 
-- bloco: Issue #12 — hardening pré-V1 do perfil `web-admin`;
-- resultado: gerador resolve providers/conflitos; recipes são testados em árvores limpas; PostgreSQL/Auth tem migration, seed, query, sessão, schema check, build e smoke de produção;
-- regressão: starter mínimo e `examples/asset-admin` SQLite permanecem inalterados funcionalmente e cobertos pelo workflow;
-- gate humano remanescente: somente autorização/conta/recurso/segredos para um deploy público real;
-- regra: abrir draft PR e não fazer merge automático.
+- bloco: Issue #15 — Living UI / Semantic Motion universal;
+- ambiente: ChatGPT + GitHub;
+- motivo: esta fase formaliza regras/contratos e templates; não exige ainda execução local pesada;
+- implementação: `ui/MOTION_POLICY.md`, `ui/UI_POLICY.md`, `ui-builder`, templates e perfil `web-admin`;
+- regra: motion não impõe biblioteca nova nem mistura design systems.
 
 ## Próxima ação
 
-Revisar o draft PR da Issue #12 e seus checks finais. Não fazer merge automático; um deploy público real deve ser autorizado como fase separada.
+Validar CI da V0.7 e integrar a política. Em fase executável posterior, provar o Motion Profile em UI real gerada, incluindo reduced motion, desktop/mobile, atenção temporária e dados/estados quando aplicáveis.
 
 ## Handoff
 
@@ -62,8 +66,8 @@ Outro agente deve começar por:
 
 1. `AGENTS.md`;
 2. este `PROJECT_STATE.md`;
-3. draft PR e Issue #12;
-4. `profiles/web-admin/PROFILE.md`;
-5. `starters/web-admin/README.md`;
-6. `research/V0.6_WEB_ADMIN_HARDENING.md`;
-7. `.github/workflows/validate-web-admin-starter.yml`.
+3. `ui/MOTION_POLICY.md`;
+4. `ui/UI_POLICY.md`;
+5. `skills/ui-builder/SKILL.md`;
+6. `profiles/web-admin/PROFILE.md`;
+7. Issue #15.
