@@ -24,22 +24,25 @@ Também ative quando o usuário expressar apenas o resultado, por exemplo:
 - "Quero automatizar este processo."
 - "Continue o projeto X."
 
-O usuário não precisa conhecer stack, arquitetura, perfis, Skills, estados internos ou agentes.
+O usuário não precisa conhecer stack, arquitetura, perfis, Skills, estados internos, semantic-spec ou agentes.
 
 ## Primeira passagem obrigatória
 
 1. Entenda o resultado real pretendido.
 2. Determine se é projeto novo, evolução, manutenção, bug, automação ou pesquisa técnica.
 3. Se existir repositório/projeto, recupere primeiro o estado versionado (`AGENTS.md`, `PROJECT_STATE.md`) e use o Context Engine para mapear/atualizar o contexto incremental quando disponível.
-4. Se existir `.factory/state.json`, use o Autonomy Engine para retomar; se não existir, ele pode inicializar/inferir o objetivo a partir do estado versionado.
-5. Classifique a escala em `core/PROJECT_SCALE.md`.
-6. Verifique `profiles/` e selecione um perfil validado quando o produto corresponder claramente; não force perfil quando nenhum servir.
-7. Aplique risco em `core/RISK_MODEL.md`.
-8. Escolha o executor com `core/TASK_ROUTER.md`, priorizando as capacidades do agente atual + GitHub/CI antes de handoff.
-9. Carregue apenas as Skills necessárias.
-10. Pesquise solução existente antes de construir equivalente do zero quando houver ganho real.
-11. Defina o próximo bloco funcional completo.
-12. Execute imediatamente tudo que o ambiente atual permitir com segurança e continue o loop técnico sem pedir ao usuário o próximo passo rotineiro.
+4. Classifique escala e risco (`core/PROJECT_SCALE.md` + `core/RISK_MODEL.md`).
+5. Classifique se o trabalho exige Semantic Verification:
+   - **sim** para funcionalidade nova, bugfix relevante, regra de negócio, contrato de dados/API ou mudança estrutural de médio/alto risco;
+   - **não por padrão** para documentação/chore e refactor pequeno que não muda comportamento observável.
+6. Se existir `.factory/state.json`, use o Autonomy Engine para retomar. Se não existir, inicialize/infera o objetivo; quando a classificação anterior exigir prova semântica, crie o novo estado com `require_spec` sem perguntar ao usuário por essa decisão técnica.
+7. Verifique `profiles/` e selecione um perfil validado quando o produto corresponder claramente; não force perfil quando nenhum servir.
+8. Quando Semantic Verification se aplicar, carregue `semantic-verification` e materialize o contrato estruturado antes da implementação. O agente preenche a spec; o usuário só entra se faltar uma regra genuinamente humana.
+9. Escolha o executor com `core/TASK_ROUTER.md`, priorizando as capacidades do agente atual + GitHub/CI antes de handoff.
+10. Carregue apenas as demais Skills necessárias.
+11. Pesquise solução existente antes de construir equivalente do zero quando houver ganho real.
+12. Defina o próximo bloco funcional completo e, quando aplicável, seus critérios `given/when/then` antes do código.
+13. Execute imediatamente tudo que o ambiente atual permitir com segurança e continue o loop técnico sem pedir ao usuário o próximo passo rotineiro.
 
 ## Contexto incremental
 
@@ -52,11 +55,27 @@ Ao retomar um projeto existente:
 - abra em detalhe apenas os arquivos relevantes;
 - se o fingerprint tiver mudado durante uma fase ativa, reconcilie o delta antes de continuar.
 
+O grafo atual de imports é deliberadamente leve. Não fingir que ele é um call graph semântico universal; análises profundas devem ser promovidas somente após pilotos por stack/linguagem.
+
 ## Autonomia
 
-`core/AUTONOMY_ENGINE.md` define a máquina de estados. O agente deve avançar por contexto, planejamento, implementação, verificação, reparo, revisão e entrega até concluir ou encontrar bloqueio real.
+`core/AUTONOMY_ENGINE.md` define a máquina de estados. O agente deve avançar por contexto, planejamento, especificação quando aplicável, implementação, verificação, reparo, revisão e entrega até concluir ou encontrar bloqueio real.
 
 Não devolva ao usuário perguntas como "quer que eu continue?", "qual o próximo passo?" ou escolhas técnicas rotineiras quando o engine/agente puder decidir com segurança.
+
+## Prova semântica
+
+`core/SEMANTIC_VERIFICATION.md` define quando a intenção precisa virar alvo estruturado e verificável.
+
+Quando aplicável:
+
+- `specs/semantic-contract.json` define objetivo, invariantes e critérios observáveis;
+- `specs/verification-plan.json` liga cada critério `must` a evidência executável/gate real;
+- risco médio/alto exige revisão desacoplada, preferencialmente outro agente/contexto ou, na ausência, um `clean-context` baseado em spec + diff + evidências atuais;
+- `specs/review-evidence.json` fica ligado por fingerprints àquilo que foi realmente revisado;
+- código/spec/plano alterados depois tornam a revisão anterior stale.
+
+Deterministic CI continua obrigatório quando aplicável, mas não é sozinho um reviewer semântico para risco médio/alto.
 
 ## Regra de perfis
 
@@ -78,6 +97,7 @@ Quando o projeto ganhar repositório próprio, grave nele pelo menos:
 - `PROJECT_STATE.md`;
 - `.factory/state.json` em handoffs importantes quando o runtime estiver em uso;
 - artefatos de produto/arquitetura proporcionais à escala;
+- `specs/` semânticos quando a mudança exigir esse nível de prova;
 - perfil selecionado e desvios relevantes quando aplicável;
 - testes/CI quando aplicáveis.
 
@@ -91,7 +111,7 @@ Se o `AGENTS.md` do projeto indicar App Factory, use o plugin/Skills instalados 
 
 ## Regra de interação
 
-Não pergunte ao usuário qual framework, ORM, linter ou biblioteca usar quando isso for uma decisão técnica rotineira que o agente consegue avaliar.
+Não pergunte ao usuário qual framework, ORM, linter, biblioteca ou modo interno de verificação usar quando isso for uma decisão técnica rotineira que o agente consegue avaliar.
 
 Pergunte quando faltar:
 
@@ -111,6 +131,7 @@ O agente deve saber, mesmo que não exponha todos os detalhes:
 - escala;
 - perfil selecionado, se houver;
 - risco;
+- se Semantic Verification é exigida;
 - fingerprint/contexto atual;
 - fase e próxima ação do Autonomy Engine;
 - Skill(s) necessárias;
