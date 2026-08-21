@@ -18,8 +18,7 @@
     "websiteURL": "https://github.com/mcpmieda/app-factory",
     "defaultPrompt": [
       "I want to create a software system. Route it through App Factory automatically.",
-      "Plan a complete, verifiable application slice.",
-      "Route this software task to ChatGPT or Codex.",
+      "Route this software task to ChatGPT or Codex and plan a complete, verifiable slice.",
       "Review the UI approach and verification plan."
     ]
   }
