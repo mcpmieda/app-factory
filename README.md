@@ -11,10 +11,12 @@ A App Factory não é um prompt gigante. Ela combina:
 - `AGENTS.md` como mapa operacional;
 - Core curto e modular;
 - Skills especializadas carregadas conforme a tarefa;
-- templates por tipo de projeto;
+- profundidade proporcional por escala XS/S/M/L;
+- templates e starters componíveis;
 - políticas de UI, dependências e Git;
 - roteamento entre ChatGPT, Codex e outros agentes;
 - verificações automáticas e definição objetiva de pronto;
+- adaptadores finos por agente;
 - GitHub como fonte de verdade para continuidade.
 
 ## Princípio central
@@ -27,21 +29,28 @@ A IA deve trabalhar para atingir o objetivo do usuário, não apenas obedecer li
 2. `APP_FACTORY_PLAN.md` — visão, fases e decisões já tomadas.
 3. `core/PRINCIPLES.md` — princípios universais.
 4. `core/HUMAN_INTERACTION.md` — o que a IA faz sozinha e o que depende do usuário.
-5. `core/TASK_ROUTER.md` — quando usar ChatGPT, Codex ou outro agente.
-6. `core/WORKFLOW.md` — ciclo de projeto novo e manutenção.
-7. `core/DEFINITION_OF_DONE.md` — como provar que terminou.
-8. `PORTABILITY.md` — continuidade entre agentes.
+5. `core/PROJECT_SCALE.md` — profundidade XS/S/M/L.
+6. `core/TASK_ROUTER.md` — quando usar ChatGPT, Codex ou outro agente.
+7. `core/WORKFLOW.md` — ciclo de projeto novo e manutenção.
+8. `core/DEFINITION_OF_DONE.md` — como provar que terminou.
+9. `PORTABILITY.md` — continuidade entre agentes.
+10. `docs/CODEX_PLUGIN.md` — adaptador Codex validado em piloto.
 
-## Estrutura V0.1
+## Estrutura atual
 
 ```text
 app-factory/
 ├── AGENTS.md
 ├── APP_FACTORY_PLAN.md
 ├── PORTABILITY.md
+├── .codex-plugin/
+│   └── plugin.json
+├── .agents/plugins/
+│   └── marketplace.json
 ├── core/
 │   ├── PRINCIPLES.md
 │   ├── HUMAN_INTERACTION.md
+│   ├── PROJECT_SCALE.md
 │   ├── TASK_ROUTER.md
 │   ├── WORKFLOW.md
 │   ├── RISK_MODEL.md
@@ -58,34 +67,33 @@ app-factory/
 │   ├── verification/
 │   └── deployment/
 ├── policies/
-│   ├── GIT.md
-│   └── DEPENDENCIES.md
 ├── templates/
-│   ├── project/
-│   └── github/workflows/
 ├── starters/
+│   └── web-admin/
 ├── ui/
 ├── registry/
 ├── research/
 └── scripts/
 ```
 
-## Decisões já consolidadas
+## Decisões consolidadas
 
 - GitHub é a fonte técnica de verdade.
-- A Factory deve orientar o usuário sobre quando usar ChatGPT e quando usar Codex.
+- A Factory orienta o usuário sobre quando usar ChatGPT e quando usar Codex.
 - ChatGPT é preferido para produto, pesquisa, arquitetura conceitual, documentação e revisão.
 - Codex é preferido para execução local, múltiplos arquivos, terminal, dependências, testes, build, navegador, debugging e migrations.
-- A Factory deve minimizar trabalho manual do usuário e tomar decisões técnicas rotineiras autonomamente.
-- Sistemas administrativos devem avaliar primeiro shadcn + ReUI; HeroUI é alternativa seletiva, não mistura obrigatória.
+- A Factory minimiza trabalho manual do usuário e toma decisões técnicas rotineiras autonomamente.
+- A profundidade do processo cresce com escala e risco; projeto pequeno não recebe ritual de sistema crítico.
+- Sistemas administrativos avaliam primeiro shadcn + ReUI; HeroUI é perfil alternativo, não mistura obrigatória.
 - Pesquisar e reutilizar antes de construir do zero.
 - Escopo fechado significa fatia funcional verificável, não microtarefas.
 - Baseline/diff/rollback continuam centrais para manutenção de sistemas existentes.
 - Regras fortes devem virar testes, scripts ou CI quando isso reduzir risco de forma concreta.
-- O núcleo deve permanecer portátil entre agentes.
+- O núcleo permanece portátil entre agentes.
+- A integração Codex foi validada como plugin fino, reutilizando as mesmas Skills sem duplicação.
 
 ## Estado
 
-Versão: `0.1-bootstrap`
+Versão de trabalho: `0.2-research`
 
-A V0.2 executará pesquisa estruturada de referências externas antes de congelar o primeiro starter e a arquitetura V1.
+A pesquisa avaliou 58 referências e o adaptador Codex passou por piloto real. A próxima fase é o piloto `web-admin` da Issue #4 para validar a stack candidata em aplicação real antes de promover defaults da V1.
