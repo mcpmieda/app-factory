@@ -1,5 +1,47 @@
 # Changelog
 
+## 1.1.0 — 2026-08-21
+
+Primeira evolução estável da linha V1, focada em autonomia, recuperação de contexto e menor dependência de executor específico.
+
+### Adicionado
+
+- Context Engine incremental em Python stdlib com SHA-256, cache de metadados, fingerprint e delta `added/changed/removed`;
+- mapa leve de stack, manifests, linguagens, símbolos, imports e dependências locais relativas;
+- exclusão preventiva de dependências/builds/caches/binários e arquivos comuns de segredo/credencial, incluindo `.env*`, `.npmrc`, `.netrc`, `.ssh`, `.aws` e `tfvars`;
+- Autonomy Engine com `init`, `status`, `next`, `resume` e `record`;
+- máquina de estados explícita de planejamento até entrega, com rejeição de eventos fora de ordem;
+- repair loop limitado, com bloqueio técnico após estagnação em vez de sucesso inventado;
+- intervenção humana categorizada apenas para decisões reais de produto, custo, risco, credencial/dado ou decisão legal/organizacional;
+- Skills `context-engine` e `autonomy-engine`, totalizando 13 Skills portáteis;
+- workflow dedicado `Validate V1.1 Autonomous Context` e composição com os gates já existentes da linha V1.
+
+### Alterado
+
+- roteamento deixa de tratar múltiplos arquivos, build ou testes como motivo automático para usar Codex;
+- prioridade passa a ser agente atual + ferramentas → GitHub/CI → executor leve → Codex/local quando capacidade interativa/local for realmente necessária;
+- starter `web-admin` e documentação operacional passam a registrar baseline `v1.1.0`;
+- plugin Codex passa para `1.1.0`, preservando o adaptador fino e a fonte única de Skills.
+
+### Validado
+
+- 9 contratos unitários do Context/Autonomy Engine, incluindo transições inválidas sem corrupção de estado;
+- retomada em sessão nova usando apenas arquivos do repositório;
+- detecção de mudança externa e reconciliação antes de continuar;
+- exclusão de credenciais e artefatos gerados;
+- segunda passagem no repositório real com todos os 505 arquivos mapeados reaproveitados e 0 reprocessados;
+- bootstrap isolado do plugin com 13 Skills e gates V1 anteriores preservados;
+- tag/release `v1.0.0` permanece imutável como baseline anterior.
+
+### Evidência
+
+- `research/V1.1_AUTONOMOUS_CONTEXT_VALIDATION.md`;
+- `engine/context_engine.py`;
+- `engine/autonomy_engine.py`;
+- `tests/v1_1/`;
+- `.github/workflows/validate-v1-1-autonomy.yml`;
+- `.github/workflows/validate-v1-release.yml`.
+
 ## 1.0.0 — 2026-08-21
 
 Primeira release estável da App Factory.
