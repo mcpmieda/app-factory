@@ -143,17 +143,39 @@ def refresh_context(root: Path, state: dict[str, Any] | None = None) -> tuple[Sc
     return context, changed
 
 
+def merge_context_delta(existing: Any, incoming: Any) -> dict[str, list[str]]:
+    result: dict[str, list[str]] = {}
+    old = existing if isinstance(existing, dict) else {}
+    new = incoming if isinstance(incoming, dict) else {}
+    for key in ("added", "changed", "removed"):
+        left = old.get(key, []) if isinstance(old.get(key, []), list) else []
+        right = new.get(key, []) if isinstance(new.get(key, []), list) else []
+        result[key] = sorted({str(item) for item in [*left, *right]})
+    return result
+
+
 def reconcile_if_needed(root: Path, state: dict[str, Any], context: ScanResult) -> bool:
     old = state.get("context_fingerprint")
     new = context.repo_map["fingerprint"]
-    if old and old != new and state.get("phase") not in {"context", "planning", "done", "blocked"}:
-        if state.get("phase") != "context":
-            state["previous_phase"] = state.get("phase")
+    phase = state.get("phase")
+
+    if old and old != new and phase == "context":
+        incoming = context.repo_map["delta"]
+        state["context_generated_at"] = context.repo_map["generated_at"]
+        state["context_delta"] = merge_context_delta(state.get("context_delta"), incoming)
+        if any(incoming.get(key) for key in ("added", "changed", "removed")):
+            append_history(state, "context-changed", f"{old[:12]} -> {new[:12]} while reconciling")
+        write_state(root, state)
+        return True
+
+    if old and old != new and phase not in {"planning", "done", "blocked"}:
+        state["previous_phase"] = phase
         state["phase"] = "context"
         state["context_delta"] = context.repo_map["delta"]
         append_history(state, "context-changed", f"{old[:12]} -> {new[:12]}")
         write_state(root, state)
         return True
+
     state["context_fingerprint"] = new
     state["context_generated_at"] = context.repo_map["generated_at"]
     state["context_delta"] = context.repo_map["delta"]
