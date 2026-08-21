@@ -68,7 +68,7 @@ O mapa é cache de navegação. Arquivos reais e GitHub continuam sendo a autori
 
 `context → planning → implementation → verification → repair → review → delivery → done`
 
-O repair loop tem limite padrão de 3 tentativas. Ao estagnar, a Factory deve mudar estratégia/executor antes de envolver o usuário.
+O repair loop tem limite padrão de 3 tentativas. Ao estagnar, a Factory deve mudar estratégia/executor antes de envolver o usuário. Eventos fora da fase permitida são recusados antes de alterar o estado.
 
 ### Roteamento atual
 
@@ -217,8 +217,4 @@ app-factory/
 
 Versão estável: **`1.1.0` — App Factory V1.1**.
 
-A V1.1 preserva toda a evidência da V1.0 e adiciona Context Engine + Autonomy Engine. O gate dedicado comprovou máquina de estados, retomada sem conversa anterior, mudança externa de contexto, limite de reparo e cache incremental. No próprio repositório da Factory, a segunda passagem reutilizou os metadados dos **504 arquivos mapeados** e reprocessou **0**.
-
-A tag/release `v1.0.0` permanece como baseline histórica da primeira release estável. Uma eventual tag/release `v1.1.0` é etapa de publicação separada do merge de código.
-
-Escopos ainda não validados — como mobile nativo, desktop nativo, jogos e infraestrutura cloud complexa — não são promessa automática desta versão.
+A V1.1 preserva toda a evidência da V1.0 e adiciona Context Engine + Autonomy Engine. O gate dedicado comprovou máquina de estados, retomada sem conversa anterior, mudança externa de contexto, limite de reparo e cache incremental. No próprio repositório da Factory, a segunda passagem reutilizou os metadados dos **505 arquivos mapeados** e reprocessou **0**.
