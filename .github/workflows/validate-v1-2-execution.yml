@@ -1,0 +1,52 @@
+name: Validate V1.2 Execution Fabric
+
+on:
+  pull_request:
+    paths:
+      - "engine/**"
+      - "scripts/factory.py"
+      - "scripts/validate_v1_2.py"
+      - "scripts/validate_factory.py"
+      - "tests/v1_2/**"
+      - "core/EXECUTION_FABRIC.md"
+      - "core/TASK_ROUTER.md"
+      - "skills/execution-router/**"
+      - "skills/tool-router/**"
+      - ".github/workflows/validate-v1-2-execution.yml"
+  push:
+    branches: [main]
+    paths:
+      - "engine/**"
+      - "scripts/factory.py"
+      - "scripts/validate_v1_2.py"
+      - "scripts/validate_factory.py"
+      - "tests/v1_2/**"
+      - "core/EXECUTION_FABRIC.md"
+      - "core/TASK_ROUTER.md"
+      - "skills/execution-router/**"
+      - "skills/tool-router/**"
+      - ".github/workflows/validate-v1-2-execution.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  execution-fabric:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Structural Factory validation
+        run: python scripts/validate_factory.py
+      - name: V1.1 regression gate
+        run: python scripts/validate_v1_1.py
+      - name: V1.2 execution fabric validation
+        run: python scripts/validate_v1_2.py
+      - name: Prove current-agent then CI routing
+        run: |
+          python scripts/factory.py --root . route implement
+          python scripts/factory.py --root . route verify
+      - name: Prove repository-owned gate discovery
+        run: python scripts/factory.py --root . gates
