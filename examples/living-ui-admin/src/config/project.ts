@@ -8,9 +8,9 @@ const projectConfigSchema = z.object({
 });
 
 export const projectConfig = projectConfigSchema.parse({
-  name: "Web Admin Starter",
+  name: "Pulse Desk",
   description:
-    "Uma base administrativa enxuta para implementar a primeira fatia funcional.",
+    "Uma central fictícia para acompanhar filas operacionais e revisar exceções.",
   profile: "web-admin",
   factoryBaseline: "v0.7",
 });
