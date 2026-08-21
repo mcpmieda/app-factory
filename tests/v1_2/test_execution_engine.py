@@ -66,6 +66,21 @@ class ExecutionEngineTests(unittest.TestCase):
         self.assertEqual(decision.backend_id, "sandbox")
         self.assertEqual(decision.rejected["github_ci"], ["failure-threshold-reached"])
 
+    def test_recent_failures_still_escalate_when_older_success_exists(self) -> None:
+        temp, root = self.make_root()
+        self.addCleanup(temp.cleanup)
+        for outcome in ("success", "failure", "failure"):
+            record_execution_attempt(
+                root,
+                action="verify",
+                backend_id="github_ci",
+                required_capabilities=["deterministic_commands", "test"],
+                outcome=outcome,
+            )
+        decision = route_action(root, "verify", available_backends=["current_agent", "github_ci", "sandbox"])
+        self.assertEqual(decision.backend_id, "sandbox")
+        self.assertEqual(decision.rejected["github_ci"], ["failure-threshold-reached"])
+
     def test_success_resets_failure_escalation_for_backend(self) -> None:
         temp, root = self.make_root()
         self.addCleanup(temp.cleanup)
