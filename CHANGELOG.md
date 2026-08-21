@@ -25,7 +25,7 @@ Primeira evolução estável da linha V1, focada em autonomia, recuperação de 
 
 ### Validado
 
-- 9 contratos unitários do Context/Autonomy Engine, incluindo transições inválidas sem corrupção de estado;
+- 10 contratos unitários do Context/Autonomy Engine, incluindo transições inválidas sem corrupção de estado e preservação do delta em `resume` repetido;
 - retomada em sessão nova usando apenas arquivos do repositório;
 - detecção de mudança externa e reconciliação antes de continuar;
 - exclusão de credenciais e artefatos gerados;
