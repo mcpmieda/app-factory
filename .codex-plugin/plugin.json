@@ -1,7 +1,7 @@
 {
   "name": "app-factory",
-  "version": "1.2.0",
-  "description": "Portable AI software-development factory with incremental context, autonomous next-action routing and capability-based execution backends.",
+  "version": "1.3.0",
+  "description": "Portable AI software-development factory with autonomous context, capability-based execution and privacy-safe local learning.",
   "author": {
     "name": "mcpmieda",
     "url": "https://github.com/mcpmieda"
@@ -10,16 +10,16 @@
   "skills": "./skills/",
   "interface": {
     "displayName": "App Factory",
-    "shortDescription": "Recover context, choose an executor, build, verify and continue automatically.",
-    "longDescription": "A portable software-development factory that activates from software intent, recovers incremental repository context and autonomous state, then routes each action to the lightest capable backend, preferring the current agent and GitHub CI before a full local executor.",
+    "shortDescription": "Recover context, choose executors, verify and learn from safe local outcomes.",
+    "longDescription": "A portable software-development factory that activates from software intent, recovers repository context and autonomous state, routes each action to capable backends, uses GitHub CI for deterministic proof, and conservatively learns from privacy-safe local execution metadata without making Codex or any vendor mandatory.",
     "developerName": "mcpmieda",
     "category": "Productivity",
     "capabilities": ["Interactive"],
     "websiteURL": "https://github.com/mcpmieda/app-factory",
     "defaultPrompt": [
       "I want to create a software system. Route it through App Factory automatically.",
-      "Resume this software project and continue with the lightest capable execution backend.",
-      "Use GitHub CI for deterministic verification before escalating to a local executor."
+      "Resume this software project, use the safest capable backend and continue autonomously.",
+      "Use local execution evidence when it is strong enough, without bypassing capability or verification."
     ]
   }
 }
