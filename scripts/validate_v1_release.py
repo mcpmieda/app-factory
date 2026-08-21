@@ -60,6 +60,37 @@ def validate_repository_hygiene() -> None:
                 stop(f"possible {label} in {relative}")
 
 
+def validate_version_coherence() -> None:
+    manifest = json.loads(
+        (ROOT / ".codex-plugin/plugin.json").read_text(encoding="utf-8")
+    )
+    version = manifest.get("version")
+    if not isinstance(version, str) or not version.startswith("1.0.0"):
+        stop("plugin manifest must identify the V1.0 release line")
+
+    expected_baseline = f"v{version}"
+    template = ROOT / "starters/web-admin/template"
+    template_metadata = json.loads(
+        (template / ".factory-template.json").read_text(encoding="utf-8")
+    )
+    if template_metadata.get("factoryBaseline") != expected_baseline:
+        stop(
+            "web-admin template baseline diverges from plugin version: "
+            f"{template_metadata.get('factoryBaseline')} != {expected_baseline}"
+        )
+
+    required_markers = {
+        template / "PROJECT_STATE.md": f"Factory baseline: `{expected_baseline}`",
+        template / "src/config/project.ts": f'factoryBaseline: "{expected_baseline}"',
+        template / "src/config/project.test.ts": f'factoryBaseline: "{expected_baseline}"',
+        ROOT / "README.md": version,
+        ROOT / "PROJECT_STATE.md": "V1.0 release candidate",
+    }
+    for path, marker in required_markers.items():
+        if marker not in path.read_text(encoding="utf-8"):
+            stop(f"version marker {marker!r} missing from {path.relative_to(ROOT)}")
+
+
 def validate_composed_gates() -> None:
     required_workflows = {
         ".github/workflows/validate-factory.yml": "validate_plugin.py",
@@ -99,8 +130,9 @@ def validate_composed_gates() -> None:
 
 def main() -> int:
     validate_repository_hygiene()
+    validate_version_coherence()
     validate_composed_gates()
-    print("OK: V1 gate composition, final project contract, secrets and artifacts validated.")
+    print("OK: V1 version coherence, gate composition, final project contract, secrets and artifacts validated.")
     return 0
 
 
