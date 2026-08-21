@@ -1,9 +1,10 @@
 {
   "profile": "web-admin",
-  "factoryBaseline": "v0.5",
+  "factoryBaseline": "v0.6",
   "optionalModules": [
     "auth-better-auth",
     "database-drizzle",
+    "database-drizzle-postgres",
     "advanced-ui-reui"
   ]
 }

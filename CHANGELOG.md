@@ -1,5 +1,26 @@
 # Changelog
 
+## 0.6-web-admin-hardening — 2026-08-21
+
+Hardening pré-V1 do perfil `web-admin`.
+
+### Criado
+
+- resolução simples de capabilities, conflitos e variantes condicionais de recipes;
+- recipe `database-drizzle-postgres` sem dependências SQLite;
+- migrations, query smoke e `next start` smoke para o caminho PostgreSQL;
+- contrato executável de schema Better Auth 1.7.1 e política curta de manutenção;
+- CI com geração direta dos recipes SQLite e PostgreSQL/Auth em Postgres efêmero real.
+
+### Validado
+
+- Auth sozinho resolve automaticamente o provider SQLite local;
+- combinação explícita SQLite/Auth não duplica recipes;
+- PostgreSQL satisfaz a capability de banco do Auth sem instalar `better-sqlite3`;
+- migrations/seed são idempotentes e login/sessão usam PostgreSQL real no CI;
+- starter base e exemplo V0.5 permanecem gates de regressão;
+- perfil promovido no draft para `v1-rc`, preservando deploy público real como fase autorizada separadamente.
+
 ## 0.5-web-admin-starter — 2026-08-21
 
 Validação de que o perfil `web-admin` pode gerar aplicações novas sem depender da cópia do piloto V0.3.

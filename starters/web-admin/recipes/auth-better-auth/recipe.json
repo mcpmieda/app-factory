@@ -5,9 +5,21 @@
   "dependencies": {
     "better-auth": "1.7.1"
   },
-  "devDependencies": {},
+  "devDependencies": {
+    "auth": "1.7.1"
+  },
   "scripts": {
+    "auth:schema:check": "node scripts/check-auth-schema.mjs",
     "auth:seed": "tsx scripts/seed-admin.ts",
     "setup": "tsx scripts/setup-local-env.ts && npm run db:migrate && npm run auth:seed"
-  }
+  },
+  "variants": [
+    {
+      "when": "database-drizzle-postgres",
+      "template": "variants/database-drizzle-postgres",
+      "scripts": {
+        "auth:smoke": "tsx scripts/smoke-auth.ts"
+      }
+    }
+  ]
 }

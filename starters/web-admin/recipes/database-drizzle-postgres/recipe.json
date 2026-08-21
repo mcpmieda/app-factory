@@ -1,0 +1,24 @@
+{
+  "id": "database-drizzle-postgres",
+  "description": "Drizzle persistence with PostgreSQL for production-style deploys",
+  "provides": ["database-drizzle"],
+  "conflicts": ["database-drizzle"],
+  "requires": [],
+  "dependencies": {
+    "dotenv": "17.3.1",
+    "drizzle-orm": "0.45.2",
+    "postgres": "3.4.9"
+  },
+  "devDependencies": {
+    "drizzle-kit": "0.31.10",
+    "tsx": "4.21.0"
+  },
+  "scripts": {
+    "db:check": "drizzle-kit check",
+    "db:generate": "drizzle-kit generate",
+    "db:migrate": "tsx scripts/migrate.ts",
+    "db:smoke": "tsx scripts/smoke-database.ts",
+    "setup": "tsx scripts/setup-local-env.ts && npm run db:migrate",
+    "start:smoke": "node scripts/smoke-production.mjs"
+  }
+}

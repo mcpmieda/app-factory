@@ -8,7 +8,7 @@ Implement the first complete functional slice of **Web Admin Starter**.
 
 - phase: bootstrap;
 - App Factory profile: `web-admin`;
-- Factory baseline: `v0.5`;
+- Factory baseline: `v0.6`;
 - authentication: not activated;
 - persistence: not activated;
 - advanced UI/ReUI: not activated.
