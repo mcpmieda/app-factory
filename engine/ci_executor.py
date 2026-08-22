@@ -15,6 +15,7 @@ ALLOWED_PACKAGE_SCRIPTS = (
     "check",
     "test",
     "test:coverage",
+    "test:visual",
     "build",
     "e2e:ci",
     "e2e",
@@ -26,6 +27,7 @@ KNOWN_PYTHON_VALIDATORS = (
     "scripts/validate_v1_1.py",
     "scripts/validate_v1_2.py",
     "scripts/validate_v1_3.py",
+    "scripts/validate_v1_4.py",
 )
 
 

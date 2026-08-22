@@ -27,5 +27,12 @@
 - **D-025:** hospedagem é detalhe interno: conteúdo estático pode ser servido diretamente pelo site escolar; aplicações com backend/runtime podem usar Vercel ou outro backend adequado, mas devem permanecer acessíveis pelo mesmo padrão `escolaieda.com/<slug>` através de rewrite/proxy quando a infraestrutura permitir.
 - **D-026:** URLs temporárias de preview/deploy são técnicas e descartáveis; a Factory deve apresentar ao usuário principalmente o endereço canônico simples e manter o mesmo link após atualizações aprovadas.
 - **D-027:** alterações de DNS, domínio ou roteamento global do `escolaieda.com` são infraestrutura de maior impacto e exigem implantação controlada; até essa camada estar configurada, a Factory deve registrar a URL canônica desejada sem fingir que o roteamento já existe.
+- **D-028:** funcionalidade nova, bugfix relevante, regra de negócio, contrato de dados/API e mudança estrutural de médio/alto risco devem possuir contrato semântico verificável antes da implementação; documentação/chore e refactor pequeno sem mudança observável permanecem leves.
+- **D-029:** critérios `must` da spec precisam ser rastreados até evidência executável/gate declarado; testes escritos somente depois da implementação, sem vínculo com a intenção, não bastam como prova semântica.
+- **D-030:** risco médio/alto exige revisão semântica desacoplada antes da entrega: `independent-agent` quando disponível ou `clean-context` como fallback provider-neutral; deterministic CI sozinho continua necessário, mas não suficiente como reviewer semântico.
+- **D-031:** review evidence é ligado por fingerprint à spec, ao plano de verificação e ao conteúdo revisado; qualquer mudança posterior invalida a revisão anterior até nova passagem.
+- **D-032:** visual regression é gate condicional quando existe baseline visual estável e regressão visual é risco material; não criar snapshots frágeis para interfaces ainda exploratórias.
+- **D-033:** não promover call graph universal superficial baseado em regex como se fosse análise semântica; dependência profunda deve ser pilotada por linguagem/stack antes de virar regra da Factory.
+- **D-034:** typecheck/build/lockfile/runtime são defesa padrão contra uso incorreto de APIs; integrações não tipadas ou dependentes de runtime devem ganhar smoke/integration evidence específica em vez de consulta online obrigatória e instável no CI.
 
 Quando uma decisão for substituída, registrar a nova decisão e marcar a anterior como superada; não apagar silenciosamente o histórico.

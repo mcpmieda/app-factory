@@ -1,0 +1,32 @@
+name: Validate V1.4 Semantic Verification
+
+on:
+  pull_request:
+    paths:
+      - "core/**"
+      - "engine/**"
+      - "skills/**"
+      - "scripts/**"
+      - "tests/v1_4/**"
+      - ".github/workflows/validate-v1-4-semantic.yml"
+      - ".codex-plugin/plugin.json"
+      - "PROJECT_STATE.md"
+      - "README.md"
+      - "CHANGELOG.md"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  semantic-verification:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Compile semantic runtime
+        run: python -m py_compile engine/semantic_verification.py scripts/validate_v1_4.py
+      - name: Validate V1.4 contracts
+        run: python scripts/validate_v1_4.py
