@@ -4,6 +4,7 @@ on:
   pull_request:
     paths:
       - "AGENTS.md"
+      - "templates/project/AGENTS.md"
       - "core/SYSTEM_ENGINEERING.md"
       - "core/ENTRYPOINT.md"
       - "core/PROJECT_SCALE.md"
