@@ -17,7 +17,7 @@
     "capabilities": ["Interactive"],
     "websiteURL": "https://github.com/mcpmieda/app-factory",
     "defaultPrompt": [
-      "I want to create a software system. Route it through App Factory automatically and prove the implementation against the intended behavior.",
+      "Create a software system with App Factory and prove it against the intended behavior.",
       "Resume this software project, use the safest capable backend and continue autonomously.",
       "Use semantic contracts and execution evidence when relevant without adding unnecessary process."
     ]
