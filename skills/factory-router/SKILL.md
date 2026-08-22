@@ -46,6 +46,7 @@ Activate from software-development intent itself. The user may describe only an 
 - use `app-planner` and the validated profile to define the first complete slice;
 - derive persistence, identity, authorization, server-side validation and recovery needs from the actual operation;
 - materialize the first slice's invariants and `given/when/then` criteria before coding;
+- use only the optional modules the product actually needs;
 - implement with the current agent when GitHub/CI can provide sufficient proof;
 - use Codex/local only for work requiring interactive runtime, browser, debugging, migrations or capabilities unavailable in the current environment;
 - verification/review/delivery are state transitions, not additional prompts the user has to request.
@@ -72,7 +73,7 @@ If it is a simple copy-only change with no behavior/rule impact, Semantic Verifi
 
 ### "Implemente autenticação e permissões"
 
-Semantic Verification is required because security rules and observable authorization behavior matter. Define invariants/acceptance criteria before implementation. Authorization must be enforced server-side where protected operations exist. Try current-agent + GitHub/CI when the environment can execute adequate integration/security gates; use a local executor when real interactive services, browser flows or migration investigation require it.
+Semantic Verification is required because security rules and observable authorization behavior matter. Define invariants/acceptance criteria before implementation. Use architecture/security Skills. Authorization must be enforced server-side where protected operations exist. Try current-agent + GitHub/CI when the environment can execute adequate integration/security gates; use a local executor when real interactive services, browser flows or migration investigation require it.
 
 ## User experience contract
 
