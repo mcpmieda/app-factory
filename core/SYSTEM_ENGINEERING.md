@@ -1,0 +1,165 @@
+# System Engineering Contract
+
+Este contrato impede que um pedido de sistema real seja reduzido silenciosamente a uma demonstração local ou a uma página com dados efêmeros.
+
+A regra é orientada por capacidades e risco, não apenas pelas palavras usadas pelo usuário.
+
+## Classificação de produto
+
+Classifique o produto em um dos níveis abaixo antes de fechar a arquitetura.
+
+### 1. `website`
+
+Conteúdo predominantemente público/editorial, sem dados próprios mutáveis como núcleo do produto.
+
+Pode ser estático quando isso satisfizer o objetivo.
+
+### 2. `local-app`
+
+Aplicação de uso local/individual em que os dados podem legitimamente existir apenas no dispositivo/navegador do usuário.
+
+`localStorage`, IndexedDB ou arquivo local podem ser armazenamento autoritativo somente quando o requisito for explicitamente local e não compartilhado.
+
+### 3. `persistent-app`
+
+Aplicação que possui dados próprios que precisam sobreviver de forma confiável e independente de um navegador/dispositivo.
+
+Exige persistência durável adequada ao ambiente. Dados mockados, arrays hardcoded e `localStorage` podem existir em protótipo/teste, mas não como fonte autoritativa final.
+
+### 4. `multi-user-system`
+
+Sistema com múltiplos usuários, dados compartilhados, colaboração, gestão institucional, cadastros operacionais ou uso por perfis distintos.
+
+Por padrão exige:
+
+- backend ou camada server-side equivalente para operações protegidas;
+- persistência durável compartilhada;
+- autenticação quando a identidade do usuário altera acesso, autoria ou experiência;
+- autorização server-side quando existem perfis, papéis, escopos ou dados restritos;
+- validação server-side para mutações;
+- modelo de domínio e relacionamentos explícitos;
+- migrations/versionamento de schema quando houver banco próprio;
+- estratégia de concorrência/idempotência para operações suscetíveis a repetição ou conflito;
+- testes do fluxo crítico com persistência real ou ambiente equivalente.
+
+### 5. `production-system`
+
+Sistema destinado a operação real com dados importantes, múltiplos usuários, continuidade esperada ou impacto operacional relevante.
+
+Além de `multi-user-system`, exige proporcionalmente:
+
+- configuração separada por ambiente e segredos fora do Git;
+- estratégia de backup/restore ou recuperação compatível com o provedor;
+- logs/auditoria para operações relevantes;
+- observabilidade suficiente para diagnosticar falhas de produção;
+- política de erro/retry para integrações externas;
+- rollout/rollback ou estratégia equivalente de recuperação;
+- proteção de operações destrutivas;
+- verificação de deploy/produção e não apenas build local.
+
+### 6. `critical-system`
+
+Sistema em que falha, corrupção, indisponibilidade ou acesso indevido pode causar impacto alto em pessoas, operação, finanças, conformidade ou dados sensíveis/importantes.
+
+Além dos níveis anteriores, exige arquitetura e gates formais proporcionais ao risco, incluindo revisão de segurança, runbook, auditoria ampliada, recuperação testada e decisões explícitas para disponibilidade, integridade e controle de acesso.
+
+## Regra de classificação
+
+Não classifique pelo nome do projeto sozinho. Use o comportamento esperado.
+
+Sinais fortes de `multi-user-system` ou superior:
+
+- vários usuários ou computadores acessam os mesmos dados;
+- aluno/professor/turma/usuário/cliente/patrimônio/estoque/processo são registros institucionais;
+- existem papéis como administrador, professor, secretaria, operador, gestor ou cliente;
+- o produto precisa de histórico, autoria, permissões ou colaboração;
+- os dados não podem desaparecer ao limpar o navegador;
+- o usuário espera continuar o trabalho em outro dispositivo;
+- o sistema será usado na operação real de uma organização.
+
+Quando houver dúvida entre dois níveis, escolha o nível mais alto se a diferença afetar integridade, compartilhamento, segurança ou recuperação dos dados.
+
+## Proibição de falsa persistência
+
+Para `persistent-app`, `multi-user-system`, `production-system` e `critical-system`:
+
+- `localStorage`, IndexedDB, fixtures, mocks, arrays locais e JSON estático não podem ser apresentados como persistência final compartilhada;
+- uma demonstração pode usar esses recursos somente se estiver marcada claramente como demo/protótipo e houver plano explícito para a arquitetura final;
+- interface bonita, CRUD visual e dados que sobrevivem a um refresh não são prova de sistema completo.
+
+## Identidade e autorização
+
+Autenticação não é obrigatória em todo software, mas deve ser ativada quando identidade real for requisito.
+
+Autorização é obrigatória no servidor quando usuários autenticados possuem poderes ou escopos diferentes. Esconder botão no frontend não é controle de acesso.
+
+Regras de autorização devem ser verificadas por comportamento, incluindo pelo menos um teste de acesso permitido e um de acesso negado em fluxos críticos.
+
+## Dados e domínio
+
+Para sistemas com dados próprios:
+
+1. identifique entidades principais;
+2. modele relacionamentos e invariantes;
+3. defina quem cria/lê/altera/arquiva/exclui;
+4. diferencie exclusão permanente de arquivamento/soft delete quando o domínio exigir histórico;
+5. defina constraints importantes também no banco quando possível;
+6. trate migrations como histórico versionado, sem reescrever migrations já aplicadas em produção.
+
+## Capacidades condicionais
+
+A Factory deve avaliar, sem instalar tudo por padrão:
+
+- papéis/permissões;
+- auditoria/histórico;
+- soft delete/arquivamento;
+- busca global;
+- paginação/filtros server-side;
+- arquivos/uploads;
+- importação/exportação;
+- notificações;
+- jobs/filas/agendamentos;
+- rate limiting/abuse protection;
+- observabilidade;
+- backup/recovery;
+- integração com serviços externos;
+- cache e concorrência.
+
+Ative somente quando o produto exigir, mas não omita uma capacidade necessária apenas para manter a arquitetura simples.
+
+## Saída mínima da arquitetura
+
+Para `persistent-app` ou superior, a arquitetura deve registrar pelo menos:
+
+- nível de sistema;
+- fonte autoritativa dos dados;
+- fronteira cliente/servidor;
+- estratégia de identidade e autorização, quando aplicável;
+- modelo de persistência/migrations;
+- principais entidades e relações;
+- estratégia de validação;
+- riscos de perda/duplicidade/conflito;
+- ambiente de deploy e recuperação proporcional.
+
+## Definition of Done adicional
+
+Um projeto classificado como `multi-user-system` ou superior não pode ser declarado pronto para produção se:
+
+- os dados autoritativos ainda estiverem apenas no navegador/dispositivo;
+- regras de acesso dependerem somente do frontend;
+- mutações não tiverem validação server-side;
+- banco/schema tiver sido alterado sem migration/estratégia equivalente;
+- não houver teste do fluxo crítico com a camada real de persistência/autorização aplicável;
+- recuperação/backup for requisito material e não houver estratégia definida.
+
+## Relação com os demais módulos
+
+- `core/PROJECT_SCALE.md` decide profundidade de processo; este arquivo decide profundidade mínima da arquitetura do produto.
+- `core/RISK_MODEL.md` pode elevar exigências de segurança, revisão e recovery.
+- `core/SEMANTIC_VERIFICATION.md` transforma regras funcionais/arquiteturais relevantes em critérios observáveis.
+- `profiles/*` fornecem stacks/defaults comprovados, mas não podem reduzir os requisitos deste contrato.
+- `core/DEFINITION_OF_DONE.md` continua sendo o gate geral de conclusão.
+
+## Princípio final
+
+Escolha a arquitetura mais simples que satisfaça o produto real — não a arquitetura mais simples que apenas faça a tela funcionar.
