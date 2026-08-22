@@ -5,6 +5,7 @@ on:
     paths:
       - "AGENTS.md"
       - "templates/project/AGENTS.md"
+      - "templates/project/PROJECT_STATE.md"
       - "core/SYSTEM_ENGINEERING.md"
       - "core/ENTRYPOINT.md"
       - "core/PROJECT_SCALE.md"
