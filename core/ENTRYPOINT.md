@@ -31,18 +31,20 @@ O usuário não precisa conhecer stack, arquitetura, perfis, Skills, estados int
 1. Entenda o resultado real pretendido.
 2. Determine se é projeto novo, evolução, manutenção, bug, automação ou pesquisa técnica.
 3. Se existir repositório/projeto, recupere primeiro o estado versionado (`AGENTS.md`, `PROJECT_STATE.md`) e use o Context Engine para mapear/atualizar o contexto incremental quando disponível.
-4. Classifique escala e risco (`core/PROJECT_SCALE.md` + `core/RISK_MODEL.md`).
-5. Classifique se o trabalho exige Semantic Verification:
+4. Classifique **três eixos independentes** antes de fechar arquitetura: escala (`core/PROJECT_SCALE.md`), risco (`core/RISK_MODEL.md`) e nível do produto (`core/SYSTEM_ENGINEERING.md`).
+5. Se o produto for `persistent-app` ou superior, registre a fonte autoritativa dos dados e impeça que `localStorage`, mocks, arrays locais ou JSON estático sejam tratados como persistência final compartilhada.
+6. Se o produto for `multi-user-system` ou superior, derive explicitamente necessidades de backend/server-side, banco compartilhado, identidade, autorização, validação server-side, migrations e recuperação proporcional antes de escolher uma arquitetura simplificada.
+7. Classifique se o trabalho exige Semantic Verification:
    - **sim** para funcionalidade nova, bugfix relevante, regra de negócio, contrato de dados/API ou mudança estrutural de médio/alto risco;
    - **não por padrão** para documentação/chore e refactor pequeno que não muda comportamento observável.
-6. Se existir `.factory/state.json`, use o Autonomy Engine para retomar. Se não existir, inicialize/infera o objetivo; quando a classificação anterior exigir prova semântica, crie o novo estado com `require_spec` sem perguntar ao usuário por essa decisão técnica.
-7. Verifique `profiles/` e selecione um perfil validado quando o produto corresponder claramente; não force perfil quando nenhum servir.
-8. Quando Semantic Verification se aplicar, carregue `semantic-verification` e materialize o contrato estruturado antes da implementação. O agente preenche a spec; o usuário só entra se faltar uma regra genuinamente humana.
-9. Escolha o executor com `core/TASK_ROUTER.md`, priorizando as capacidades do agente atual + GitHub/CI antes de handoff.
-10. Carregue apenas as demais Skills necessárias.
-11. Pesquise solução existente antes de construir equivalente do zero quando houver ganho real.
-12. Defina o próximo bloco funcional completo e, quando aplicável, seus critérios `given/when/then` antes do código.
-13. Execute imediatamente tudo que o ambiente atual permitir com segurança e continue o loop técnico sem pedir ao usuário o próximo passo rotineiro.
+8. Se existir `.factory/state.json`, use o Autonomy Engine para retomar. Se não existir, inicialize/infera o objetivo; quando a classificação anterior exigir prova semântica, crie o novo estado com `require_spec` sem perguntar ao usuário por essa decisão técnica.
+9. Verifique `profiles/` e selecione um perfil validado quando o produto corresponder claramente; não force perfil quando nenhum servir. Nenhum perfil pode reduzir requisitos mínimos de `core/SYSTEM_ENGINEERING.md`.
+10. Quando Semantic Verification se aplicar, carregue `semantic-verification` e materialize o contrato estruturado antes da implementação. O agente preenche a spec; o usuário só entra se faltar uma regra genuinamente humana.
+11. Escolha o executor com `core/TASK_ROUTER.md`, priorizando as capacidades do agente atual + GitHub/CI antes de handoff.
+12. Carregue apenas as demais Skills necessárias.
+13. Pesquise solução existente antes de construir equivalente do zero quando houver ganho real.
+14. Defina o próximo bloco funcional completo e, quando aplicável, seus critérios `given/when/then` antes do código.
+15. Execute imediatamente tudo que o ambiente atual permitir com segurança e continue o loop técnico sem pedir ao usuário o próximo passo rotineiro.
 
 ## Contexto incremental
 
@@ -63,6 +65,20 @@ O grafo atual de imports é deliberadamente leve. Não fingir que ele é um call
 
 Não devolva ao usuário perguntas como "quer que eu continue?", "qual o próximo passo?" ou escolhas técnicas rotineiras quando o engine/agente puder decidir com segurança.
 
+## Engenharia de sistemas
+
+`core/SYSTEM_ENGINEERING.md` separa página/site, app local, app persistente, sistema multiusuário, sistema de produção e sistema crítico.
+
+A classificação é por comportamento esperado, não pela palavra usada no pedido. Exemplos de sinais que elevam a arquitetura:
+
+- dados institucionais compartilhados entre computadores;
+- usuários com papéis diferentes;
+- necessidade de histórico, autoria ou permissões;
+- dados que não podem depender do armazenamento de um navegador;
+- operação real de uma organização.
+
+Para `multi-user-system` ou superior, interface funcional sozinha não prova completude. A arquitetura e os testes precisam cobrir a camada real de persistência, regras server-side e autorização aplicáveis.
+
 ## Prova semântica
 
 `core/SEMANTIC_VERIFICATION.md` define quando a intenção precisa virar alvo estruturado e verificável.
@@ -79,11 +95,11 @@ Deterministic CI continua obrigatório quando aplicável, mas não é sozinho um
 
 ## Regra de perfis
 
-Perfis transformam evidência real em defaults condicionais. Eles não substituem entendimento do produto.
+Perfis transformam evidência real em defaults condicionais. Eles não substituem entendimento do produto nem `core/SYSTEM_ENGINEERING.md`.
 
-Exemplo: um sistema de patrimônio com login, CRUD, filtros e dashboard provavelmente corresponde a `profiles/web-admin/PROFILE.md`. A Factory pode usar os defaults comprovados desse perfil, mas só ativa autenticação, banco, ReUI ou outros módulos quando o produto realmente precisar.
+Exemplo: um sistema de patrimônio com login, CRUD, filtros e dashboard provavelmente corresponde a `profiles/web-admin/PROFILE.md`. A Factory pode usar os defaults comprovados desse perfil e deve ativar persistência, autenticação/autorização ou outros módulos quando o nível do sistema e o produto exigirem.
 
-Requisitos específicos do projeto têm precedência sobre defaults do perfil, salvo conflito de segurança.
+Requisitos específicos do projeto têm precedência sobre defaults do perfil, salvo conflito de segurança ou redução indevida dos requisitos mínimos do nível de sistema.
 
 ## Regra de GitHub
 
@@ -97,6 +113,7 @@ Quando o projeto ganhar repositório próprio, grave nele pelo menos:
 - `PROJECT_STATE.md`;
 - `.factory/state.json` em handoffs importantes quando o runtime estiver em uso;
 - artefatos de produto/arquitetura proporcionais à escala;
+- nível de sistema e fonte autoritativa dos dados quando `persistent-app` ou superior;
 - `specs/` semânticos quando a mudança exigir esse nível de prova;
 - perfil selecionado e desvios relevantes quando aplicável;
 - testes/CI quando aplicáveis.
@@ -129,6 +146,8 @@ O agente deve saber, mesmo que não exponha todos os detalhes:
 
 - modo do trabalho;
 - escala;
+- **nível do sistema**;
+- fonte autoritativa dos dados quando aplicável;
 - perfil selecionado, se houver;
 - risco;
 - se Semantic Verification é exigida;
