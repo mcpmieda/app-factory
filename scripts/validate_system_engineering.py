@@ -16,6 +16,7 @@ REQUIRED = [
     "core/DEFINITION_OF_DONE.md",
     "AGENTS.md",
     "templates/project/AGENTS.md",
+    "templates/project/PROJECT_STATE.md",
     "skills/factory-router/SKILL.md",
     "skills/app-planner/SKILL.md",
     "profiles/web-app/PROFILE.md",
@@ -101,6 +102,13 @@ def main() -> int:
         "authoritative data source",
         "multi-user-system",
     )
+    require(
+        "templates/project/PROJECT_STATE.md",
+        "nível do sistema",
+        "fonte autoritativa dos dados",
+        "autenticação/autorização",
+        "recovery/backup",
+    )
 
     # Regression guard: the new architecture policy must not replace/remove
     # the established V1.4 semantic/autonomy/execution/learning surfaces.
@@ -120,7 +128,7 @@ def main() -> int:
     if removed:
         fail("existing V1.4 capability unexpectedly missing: " + ", ".join(removed))
 
-    print("OK: System Engineering Contract is wired, propagated to projects, and V1.4 core capabilities remain present.")
+    print("OK: System Engineering Contract is wired, persisted in project templates, and V1.4 core capabilities remain present.")
     return 0
 
 
