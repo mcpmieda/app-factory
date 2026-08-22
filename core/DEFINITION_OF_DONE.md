@@ -18,6 +18,20 @@ Quando a mudança exigir Semantic Verification (`core/SEMANTIC_VERIFICATION.md`)
 
 Documentação, chore e refactor pequeno sem mudança observável não precisam receber especificação formal pesada.
 
+## Adequação da arquitetura
+
+Quando `core/SYSTEM_ENGINEERING.md` se aplicar:
+
+- o nível do produto foi classificado e registrado de forma proporcional;
+- `persistent-app` ou superior possui fonte autoritativa de dados durável compatível com o requisito real;
+- `multi-user-system` ou superior não depende de `localStorage`, mocks, arrays locais ou JSON estático como persistência final compartilhada;
+- identidade/autenticação existe quando necessária ao produto;
+- autorização é aplicada server-side quando usuários/perfis possuem escopos diferentes;
+- mutações protegidas possuem validação server-side;
+- mudanças de schema persistente usam migrations/versionamento equivalente;
+- concorrência, repetição/idempotência e recovery foram considerados quando materiais;
+- um protótipo/demo não é rotulado como produção apenas porque a interface e o CRUD visual funcionam.
+
 ## Implementação
 
 - comportamento solicitado existe;
@@ -43,7 +57,9 @@ Typecheck/build são também defesa contra imports/assinaturas inexistentes. Int
 - fluxo principal foi exercitado;
 - estados de loading, vazio, sucesso e erro foram considerados quando aplicáveis;
 - regressão direta foi verificada;
-- operações repetíveis não criam duplicidade quando idempotência for requisito.
+- operações repetíveis não criam duplicidade quando idempotência for requisito;
+- para `persistent-app` ou superior, o fluxo crítico exercita persistência real ou ambiente equivalente, não apenas estado de navegador;
+- para fluxos protegidos, testes cobrem acesso permitido e negado quando autorização for requisito material.
 
 ## UI
 
@@ -64,13 +80,16 @@ Quando relevante:
 - autenticação/autorização verificadas;
 - inputs validados;
 - segredos não foram adicionados ao repositório;
-- migrations e alterações de dados têm estratégia de recuperação.
+- migrations e alterações de dados têm estratégia de recuperação;
+- para `production-system` ou superior, backup/restore ou recuperação compatível com o provedor foi definido quando perda de dados for material;
+- logs/auditoria/observabilidade existem no nível necessário para diagnosticar operações e falhas relevantes.
 
 ## Entrega
 
 - diff revisado proporcionalmente ao risco;
 - estado do projeto continua recuperável pelo Git;
 - documentação/PROJECT_STATE é atualizada apenas quando o estado vigente realmente mudou;
+- nível do sistema e decisões de persistência/identidade/recovery ficam recuperáveis no repositório quando relevantes;
 - limitações ou testes impossíveis de executar são declarados explicitamente.
 
 ## Regra final
@@ -78,3 +97,5 @@ Quando relevante:
 Nunca declarar "pronto" se houver erro conhecido que invalide o objetivo principal. Distinguir claramente: implementado, testado, validado e pronto para produção.
 
 Para trabalho funcional com spec aplicável, `lint + typecheck + build + testes verdes` sem rastreabilidade e revisão semântica atual ainda não é Definition of Done completa.
+
+Para `multi-user-system` ou superior, UI completa + CRUD visual + dados no navegador também não são Definition of Done de produção sem a arquitetura compartilhada e os gates exigidos por `core/SYSTEM_ENGINEERING.md`.
