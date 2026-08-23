@@ -5,6 +5,7 @@ on:
     paths:
       - "README.md"
       - "AGENTS.md"
+      - "PROJECT_STATE.md"
       - "PORTABILITY.md"
       - "core/API_ENGINEERING.md"
       - "core/SYSTEM_ENGINEERING.md"
