@@ -4,6 +4,24 @@ Uma funcionalidade não está pronta porque o código foi escrito.
 
 A Factory deve adaptar esta lista ao tipo de projeto e risco, mas por padrão verificar:
 
+## Qualidade da especificação — Semantic Assurance
+
+Quando `core/SEMANTIC_ASSURANCE.md` selecionar profundidade `domain` ou `formal`:
+
+- `specs/semantic-assurance.json` corresponde ao fingerprint do `semantic-contract.json` atual;
+- requisitos `must` possuem origem/estrutura clara e estão ligados a critérios de aceite;
+- critérios `must` possuem requisito de origem rastreável ou exceção explícita e justificada;
+- conceitos, entidades, relações, estados e restrições referenciados existem e são coerentes;
+- não há cardinalidade/range/enum impossível ou dependência estruturada simultaneamente exigida e proibida;
+- perguntas semânticas marcadas `blocking` foram resolvidas antes da implementação;
+- cobertura semântica é tratada como **cobertura estrutural de rastreabilidade**, nunca como percentual de correção da intenção humana;
+- semantic diff foi considerado quando a baseline de requisitos/domínio mudou, e ACs/invariantes/gates impactados foram reverificados;
+- property/stateful/model-based testing foi derivado quando invariantes, ranges ou máquina de estados justificarem exploração além de exemplos manuais;
+- formalizações `required`, quando existirem, possuem artefato versionado, referências de origem e gate executado;
+- métodos formais registram pressupostos/limites do modelo e não são tratados como prova de que a interpretação humana original estava perfeita.
+
+Em profundidade `scenario`, não exigir `semantic-assurance.json` apenas para preencher processo; o contrato semântico atual pode ser suficiente.
+
 ## Correspondência com a intenção
 
 Quando a mudança exigir Semantic Verification (`core/SEMANTIC_VERIFICATION.md`):
@@ -14,7 +32,8 @@ Quando a mudança exigir Semantic Verification (`core/SEMANTIC_VERIFICATION.md`)
 - os gates referenciados foram realmente executados e passaram; rastreabilidade textual não substitui execução;
 - `specs/review-evidence.json` corresponde à spec, ao plano e ao conteúdo atual;
 - risco médio/alto recebeu revisão desacoplada (`independent-agent` ou `clean-context`), não apenas autoavaliação do mesmo raciocínio;
-- mudança posterior em código/spec/plano invalida a revisão anterior até nova verificação.
+- mudança posterior em código/spec/plano invalida a revisão anterior até nova verificação;
+- mudança semântica material indicada por Semantic Assurance invalida evidência dependente até nova prova.
 
 Documentação, chore e refactor pequeno sem mudança observável não precisam receber especificação formal pesada.
 
@@ -70,7 +89,7 @@ Quando `core/INDEPENDENT_VERIFICATION.md` selecionar modo acima de `baseline`:
 
 Semgrep Community Edition, Trivy, StrykerJS/mutmut, Schemathesis, OWASP ZAP, axe-core e Lighthouse CI são defaults preferidos, não dependências universais. Ferramenta gratuita equivalente pode substituí-los quando tecnicamente melhor.
 
-Independent Verification fornece evidência técnica independente da IA implementadora, mas **não substitui** revisão semântica desacoplada de risco médio/alto.
+Independent Verification fornece evidência técnica independente da IA implementadora, mas **não substitui** revisão semântica desacoplada de risco médio/alto nem Semantic Assurance da especificação quando aplicável.
 
 ## Implementação
 
@@ -124,7 +143,7 @@ Quando relevante:
 - para `production-system` ou superior, backup/restore ou recuperação compatível com o provedor foi definido quando perda de dados for material;
 - logs/auditoria/observabilidade existem no nível necessário para diagnosticar operações e falhas relevantes.
 
-API Security específica fica detalhada em `core/API_ENGINEERING.md` + `skills/security-review`; Independent Verification executa scanners/gates proporcionais sem duplicar o catálogo de ameaças.
+API Security específica fica detalhada em `core/API_ENGINEERING.md` + `skills/security-review`; Independent Verification executa scanners/gates proporcionais sem duplicar o catálogo de ameaças. Regras de autorização complexas podem usar OPA/Rego ou Cedar quando Semantic Assurance justificar policy-as-code, sem torná-los defaults universais.
 
 ## Entrega
 
@@ -133,12 +152,15 @@ API Security específica fica detalhada em `core/API_ENGINEERING.md` + `skills/s
 - documentação/PROJECT_STATE é atualizada apenas quando o estado vigente realmente mudou;
 - nível do sistema e decisões de persistência/identidade/recovery ficam recuperáveis no repositório quando relevantes;
 - modo/fonte de verdade da API e baseline de compatibilidade ficam recuperáveis quando `contract`/`governed` se aplicar;
+- semantic depth, `semantic-assurance.json`, baseline/diff e formalizações ficam recuperáveis quando `domain`/`formal` se aplicar, preferencialmente com `SEMANTICS.md` para decisões humanas específicas;
 - modo/checks/exceções de Independent Verification ficam recuperáveis quando acima de `baseline`, preferencialmente em `VERIFICATION.md` e workflows/configs;
 - limitações ou testes impossíveis de executar são declarados explicitamente.
 
 ## Regra final
 
 Nunca declarar "pronto" se houver erro conhecido que invalide o objetivo principal. Distinguir claramente: implementado, testado, validado e pronto para produção.
+
+Para Semantic Assurance `domain`/`formal`, especificação estruturalmente inconsistente ou com pergunta `blocking` também não está pronta para implementação/entrega.
 
 Para trabalho funcional com spec aplicável, `lint + typecheck + build + testes verdes` sem rastreabilidade e revisão semântica atual ainda não é Definition of Done completa.
 
