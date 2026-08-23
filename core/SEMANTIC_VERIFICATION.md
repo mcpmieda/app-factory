@@ -119,6 +119,20 @@ Para APIs com contrato formal, a definição/alteração do contrato de interfac
 
 Contraexemplo encontrado por esses motores deve virar regressão reproduzível quando material.
 
+## Evidência browser/E2E em interfaces reais
+
+Testes de navegador devem provar comportamento, não depender acidentalmente da simplicidade momentânea da tela.
+
+Regras práticas quando a UI cresce:
+
+- escopar locators a uma região estável (`form`, dialog, painel, landmark, row/card) antes de selecionar por label/role quando o mesmo conceito puder aparecer em mais de um lugar;
+- preferir role/label/nome acessível dentro dessa região a seletores frágeis de CSS ou posição;
+- quando o teste manipular `localStorage`, IndexedDB, sessão ou fixture depois da navegação, esperar um sinal explícito de hidratação/readiness **antes** da mutação, ou semear o estado antes da inicialização;
+- não interpretar corrida de inicialização como falha de regra de negócio nem “corrigir” o produto para satisfazer um teste mal sincronizado;
+- evidência deve afirmar o invariante/resultado do critério. Texto incidental, animação ou detalhe visual só vira assert obrigatório quando fizer parte da especificação.
+
+Essas regras não criam um novo framework de testes; são disciplina para manter a evidência semântica válida conforme a interface fica mais densa.
+
 ## Independent Verification
 
 `core/INDEPENDENT_VERIFICATION.md` é complementar e **não substitui** Semantic Verification.

@@ -20,6 +20,8 @@ Aplicação de uso local/individual em que os dados podem legitimamente existir 
 
 `localStorage`, IndexedDB ou arquivo local podem ser armazenamento autoritativo somente quando o requisito for explicitamente local e não compartilhado.
 
+Hospedar/distribuir um `local-app` em Vercel, Cloudflare, GitHub Pages ou equivalente **não** o transforma automaticamente em `persistent-app` ou `multi-user-system`. A classificação depende de onde estão os dados autoritativos e de como o produto é usado, não de onde os arquivos do frontend são servidos.
+
 ### 3. `persistent-app`
 
 Aplicação que possui dados próprios que precisam sobreviver de forma confiável e independente de um navegador/dispositivo.
@@ -91,6 +93,22 @@ Para `persistent-app`, `multi-user-system`, `production-system` e `critical-syst
 - uma demonstração pode usar esses recursos somente se estiver marcada claramente como demo/protótipo e houver plano explícito para a arquitetura final;
 - interface bonita, CRUD visual e dados que sobrevivem a um refresh não são prova de sistema completo.
 
+## Evolução de dados em `local-app`
+
+Dados locais não exigem banco remoto, mas também não devem ser tratados como descartáveis quando o produto promete preservá-los.
+
+Quando uma mudança funcional relevante altera o contrato local (`localStorage`, IndexedDB ou arquivo persistente):
+
+1. versione o contrato, chave ou formato quando houver incompatibilidade material;
+2. valide o formato antigo antes de migrar;
+3. migre deterministicamente e preserve todos os valores conhecidos;
+4. quando um campo novo não possuir origem histórica, represente o desconhecido explicitamente em vez de inventar dado de negócio;
+5. grave/valide o formato novo **antes** de remover o antigo;
+6. mantenha caminho proporcional de recuperação/backup quando os dados forem importantes para o usuário;
+7. teste leitura antiga → migração → reload e rejeição segura de dados incompatíveis.
+
+Se a necessidade passar a incluir continuidade entre dispositivos, colaboração ou fonte compartilhada, reclassifique o produto; não tente resolver esse novo requisito ampliando indefinidamente armazenamento local.
+
 ## Identidade e autorização
 
 Autenticação não é obrigatória em todo software, mas deve ser ativada quando identidade real for requisito.
@@ -109,6 +127,8 @@ Para sistemas com dados próprios:
 4. diferencie exclusão permanente de arquivamento/soft delete quando o domínio exigir histórico;
 5. defina constraints importantes também no banco quando possível;
 6. trate migrations como histórico versionado, sem reescrever migrations já aplicadas em produção.
+
+Validação de schema por registro não prova invariantes que atravessam a coleção. Unicidade, cardinalidade, ausência de conflito entre registros e regras agregadas precisam ser aplicadas/testadas na camada que possui visão do conjunto — coleção local, serviço/domínio e/ou banco, conforme a arquitetura.
 
 ## Capacidades condicionais
 
@@ -146,6 +166,8 @@ Para `persistent-app` ou superior, a arquitetura deve registrar pelo menos:
 - riscos de perda/duplicidade/conflito;
 - ambiente de deploy e recuperação proporcional.
 
+Para `local-app` com dados persistentes relevantes, registre de forma leve a fonte local autoritativa e, quando houver evolução incompatível, o contrato/migração/recuperação. Não force a saída completa de `persistent-app` se o produto continua legitimamente local.
+
 Quando houver API relevante, registre também o modo de governança e a fonte de verdade do contrato conforme `core/API_ENGINEERING.md`, sem duplicar detalhes que pertencem ao documento/API contract específico.
 
 ## Definition of Done adicional
@@ -158,6 +180,8 @@ Um projeto classificado como `multi-user-system` ou superior não pode ser decla
 - banco/schema tiver sido alterado sem migration/estratégia equivalente;
 - não houver teste do fluxo crítico com a camada real de persistência/autorização aplicável;
 - recuperação/backup for requisito material e não houver estratégia definida.
+
+Um `local-app` com migração de dados relevante não deve ser declarado concluído se a evolução pode apagar/sobrescrever dados anteriores sem validação e recovery proporcional.
 
 Se uma API `contract`/`governed` fizer parte do sistema, os gates específicos de `core/API_ENGINEERING.md` também integram a conclusão proporcional.
 

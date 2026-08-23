@@ -72,6 +72,21 @@ Por padrão:
 - instalação de dependências só é proposta quando existe lockfile compatível;
 - um gate falho interrompe a sequência para preservar evidência clara.
 
+### Projeto legado sem lockfile
+
+Ausência de lockfile é um **estado de recuperação**, não permissão para CI não reproduzível.
+
+Quando existir `package.json` mas faltar lockfile compatível:
+
+1. `engine/ci_executor.py` mantém `install_argv=null` e `reproducible_install=false`;
+2. o plano informa `reproducibility_action=materialize-validate-commit-lockfile`;
+3. use executor limpo/controlado e versão de package manager explicitamente definida para materializar o lockfile;
+4. execute audit, build e testes relevantes sobre o resultado antes de aceitá-lo;
+5. versione o lockfile somente depois da validação;
+6. o CI definitivo volta a ser somente leitura e usa instalação congelada (`npm ci`, `pnpm --frozen-lockfile`, equivalente).
+
+Não transformar essa rota em `npm install` automático dentro do CI Executor. A Factory pode orquestrar o bootstrap de forma explícita, mas o estado final só é reproduzível depois que o lockfile validado está no repositório.
+
 ## Independent Verification
 
 `core/INDEPENDENT_VERIFICATION.md` usa esta Fabric para separar implementação de prova.

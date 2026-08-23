@@ -39,20 +39,35 @@ class CIExecutorTests(unittest.TestCase):
         temp, root = self.make_node_repo()
         self.addCleanup(temp.cleanup)
         plan = build_ci_plan(root)
+        self.assertTrue(plan["lockfile_present"])
         self.assertEqual(plan["install_argv"], ["npm", "ci"])
         self.assertTrue(plan["reproducible_install"])
+        self.assertEqual(plan["reproducibility_action"], "frozen-install")
         self.assertFalse(plan["security"]["shell"])
         self.assertFalse(plan["security"]["prompt_commands"])
         self.assertFalse(plan["security"]["secrets_required"])
 
-    def test_package_without_lockfile_has_no_permissive_install_command(self) -> None:
+    def test_package_without_lockfile_has_safe_recovery_action_and_no_install(self) -> None:
         temp, root = self.make_node_repo()
         self.addCleanup(temp.cleanup)
         (root / "package-lock.json").unlink()
         plan = build_ci_plan(root)
         self.assertEqual(plan["package_manager"], "npm")
+        self.assertFalse(plan["lockfile_present"])
         self.assertIsNone(plan["install_argv"])
         self.assertFalse(plan["reproducible_install"])
+        self.assertEqual(
+            plan["reproducibility_action"],
+            "materialize-validate-commit-lockfile",
+        )
+
+    def test_non_package_repo_has_no_reproducibility_action(self) -> None:
+        temp = tempfile.TemporaryDirectory()
+        self.addCleanup(temp.cleanup)
+        plan = build_ci_plan(Path(temp.name))
+        self.assertIsNone(plan["lockfile_present"])
+        self.assertIsNone(plan["reproducible_install"])
+        self.assertIsNone(plan["reproducibility_action"])
 
     def test_known_python_validator_can_run_without_shell(self) -> None:
         temp = tempfile.TemporaryDirectory()

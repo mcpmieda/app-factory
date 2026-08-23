@@ -39,8 +39,6 @@ jobs:
         run: npm install --global npm@11.5.2
 
       - name: Validate semantic specification
-        env:
-          PYTHONPATH: .
         run: |
           python scripts/factory.py --root projects/cadastro-aluno-factory-heroui spec-validate
           python scripts/semantic_assurance.py --root projects/cadastro-aluno-factory-heroui analyze
@@ -73,6 +71,4 @@ jobs:
         run: npm run e2e
 
       - name: Validate semantic review freshness
-        env:
-          PYTHONPATH: .
         run: python scripts/factory.py --root projects/cadastro-aluno-factory-heroui semantic-status

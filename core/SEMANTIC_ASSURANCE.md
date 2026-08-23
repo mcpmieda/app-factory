@@ -198,6 +198,8 @@ Considere **DMN**/decision tables quando comportamento for predominantemente tab
 
 Considere **OPA/Rego** ou **Cedar** para policies complexas separadas da implementação.
 
+`pattern: policy` sozinho não seleciona policy-as-code. Exija sinais materiais de autorização, permissões, papéis ou controle de acesso antes de recomendar OPA/Rego/Cedar.
+
 Nenhuma técnica é dependência universal.
 
 ## 11. Formalization registry
