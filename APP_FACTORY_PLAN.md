@@ -2,186 +2,221 @@
 
 ## Visão
 
-Manter um sistema operacional portátil de desenvolvimento com IA que transforma intenção em software funcional, recuperável e verificável, com pouca intervenção manual do usuário e sem depender de um agente ou fornecedor específico.
+Manter um sistema operacional portátil e **general-purpose** de desenvolvimento com IA que transforma intenção em software funcional, recuperável e verificável, com pouca intervenção manual e sem depender de agente, fornecedor ou domínio de negócio específico.
+
+Sistemas escolares são um caso importante de uso, não o limite da Factory. O mesmo Core deve servir software administrativo, SaaS, e-commerce, logística, integrações, automações, produtos públicos, sistemas internos e software crítico quando os contratos proporcionais forem satisfeitos.
 
 ## Problemas que a Factory deve resolver
 
-- projetos começando do zero sem padrão;
-- contexto perdido entre chats, computadores e agentes;
-- excesso de microtarefas e cliques;
-- código criado sem teste real ou sem provar a intenção;
-- especificações ambíguas, contraditórias ou incompletas tratadas como verdade apenas porque foram escritas pela IA;
-- testes escritos pela mesma IA que implementou sem evidência técnica externa suficiente para risco alto;
+- projetos começando sem padrão;
+- contexto perdido entre chats/computadores/agentes;
+- excesso de microtarefas/cliques;
+- código sem teste real ou sem prova da intenção;
+- especificações ambíguas/contraditórias tratadas como verdade;
+- testes escritos pela mesma IA sem evidência externa proporcional;
 - demos locais apresentadas como sistemas completos;
-- APIs criadas sem contrato, compatibilidade ou segurança proporcional;
-- bibliotecas e componentes reinventados;
-- interfaces genéricas ou inconsistentes;
-- uso desnecessário de executores pesados para tarefas simples;
-- dificuldade para recuperar uma versão segura;
-- regras importantes existindo apenas em documentação manual;
-- divergência entre intenção, domínio, especificação, documentação, arquitetura, contratos, verificação e implementação.
+- APIs sem contrato/compatibilidade/segurança proporcional;
+- migrations arriscadas, arquitetura degradada, CI inseguro ou performance/resiliência não comprovadas quando materiais;
+- bibliotecas/componentes reinventados;
+- interfaces inconsistentes;
+- executores pesados usados sem necessidade;
+- dificuldade para recuperar versão segura;
+- regras importantes apenas em documentação manual;
+- divergência entre intenção, domínio, especificação, arquitetura, contratos, verificação e implementação.
 
-## Arquitetura atual da Factory
+## Arquitetura atual
 
-A Factory é composta por camadas complementares com responsabilidades separadas:
+Camadas complementares com responsabilidades separadas:
 
-1. **Core** — princípios, interação humana, escala, risco, workflow, Definition of Done e contratos transversais.
-2. **System Engineering** — classifica a profundidade mínima da arquitetura do produto e impede falsa persistência/completude.
-3. **API Engineering** — governa APIs, integrações, eventos e webhooks somente quando existe uma fronteira real, com contrato e gates proporcionais.
-4. **Semantic Assurance** — verifica a qualidade da própria especificação antes da implementação, com profundidade `scenario`/`domain`/`formal`, domínio explícito, consistência, cobertura estrutural e semantic diff.
-5. **Independent Verification** — seleciona, por risco/arquitetura, motores determinísticos gratuitos/open source que tentam encontrar falhas independentemente do raciocínio da IA implementadora.
-6. **Context Engine** — recupera o repositório incrementalmente sem substituir arquivos reais como fonte de verdade.
-7. **Autonomy Engine** — mantém estado e calcula a próxima ação técnica.
-8. **Semantic Verification** — transforma intenção funcional relevante em critérios observáveis, rastreabilidade e revisão desacoplada, provando implementação contra a especificação atual.
-9. **Execution Fabric** — escolhe executor por capacidade/disponibilidade e usa CI para prova determinística quando adequado; GitHub CI é o executor preferido da matriz independente/formal quando capaz.
-10. **Learning Engine** — otimiza decisões localmente somente com evidência técnica allowlisted, sempre subordinado aos gates.
-11. **Skills** — conhecimento especializado carregado sob demanda.
-12. **Profiles/starters/templates** — defaults comprovados e estruturas reutilizáveis, sem congelar uma stack universal.
-13. **UI system** — política de design system, Living UI e Semantic Motion.
-14. **Scripts/CI** — guardrails executáveis e regressão.
-15. **Research/audits** — evidência para promover novos padrões à Factory.
+1. **Core** — princípios, interação humana, escala, risco, workflow e Definition of Done.
+2. **System Engineering** — profundidade mínima da arquitetura; impede falsa persistência/completude.
+3. **API Engineering** — governa APIs/integrações/eventos/webhooks somente quando existe fronteira real.
+4. **Semantic Assurance** — qualidade da especificação: `scenario`/`domain`/`formal`, domínio, consistência, cobertura, semantic diff e geração/modelagem condicional.
+5. **Independent Verification** — matriz `free-only` por classes de falha, independente do raciocínio implementador.
+6. **Context Engine** — recuperação incremental do repositório.
+7. **Autonomy Engine** — estado e próxima ação técnica.
+8. **Semantic Verification** — critérios observáveis, rastreabilidade e revisão desacoplada.
+9. **Execution Fabric** — executor por capacidade/disponibilidade; CI para prova determinística.
+10. **Learning Engine** — otimização local somente entre candidatos já elegíveis.
+11. **Skills** — conhecimento especializado sob demanda.
+12. **Profiles/starters/templates** — defaults comprovados, sem stack universal congelada.
+13. **UI system** — design system, Living UI e Semantic Motion.
+14. **Scripts/CI** — guardrails executáveis/regressão.
+15. **Research/audits** — evidência antes de promover padrões novos.
 
-## Relação entre os contratos
+## Relação entre contratos
 
 ```text
-objetivo do produto
-      │
-      ├── PROJECT_SCALE ───── profundidade do processo
-      ├── RISK_MODEL ─────── risco e gates adicionais
-      └── SYSTEM_ENGINEERING profundidade mínima do produto
-                 │
-                 └── existe API/integração relevante?
-                         │
-                         └── API_ENGINEERING
-                             contrato/protocolo/compatibilidade
+objetivo
+  ├─ PROJECT_SCALE ─ profundidade do processo
+  ├─ RISK_MODEL ─── risco/gates
+  └─ SYSTEM_ENGINEERING ─ profundidade mínima do produto
+          └─ API/integração relevante? → API_ENGINEERING
 
-intenção funcional relevante
-      │
-      ├── SEMANTIC_ASSURANCE
-      │   qualidade da especificação
-      │   scenario / domain / formal
-      │   domínio → consistência → cobertura → diff
-      │
-      └── SEMANTIC_VERIFICATION
-          critérios → evidência → revisão
+intenção funcional
+  ├─ SEMANTIC_ASSURANCE
+  │    qualidade da spec
+  │    domínio / propriedades / combinações / formalização
+  └─ SEMANTIC_VERIFICATION
+       critérios → evidência → revisão
 
-risco + sistema + API + sinais técnicos
-      └── INDEPENDENT_VERIFICATION
-          matriz externa free-only
-          required/advisory/exception
+risco + sistema + API + superfícies técnicas
+  └─ INDEPENDENT_VERIFICATION
+       menor matriz diversa free-only
+       required / advisory / exception
 
-entrega
-      └── DEFINITION_OF_DONE
-          confirma que todos os gates aplicáveis passaram
+EXECUTION_FABRIC
+  └─ escolhe onde cada prova roda
+
+DEFINITION_OF_DONE
+  └─ fecha somente quando gates aplicáveis passaram
 ```
 
-Nenhuma camada deve copiar integralmente a responsabilidade da outra. Security Review continua sendo o dono do threat model; Semantic Assurance não substitui decisão humana de domínio; Independent Verification apenas transforma riscos automatizáveis em prova externa.
+Security Review continua dono do threat model. Semantic Assurance não substitui decisão humana. Independent Verification não duplica API Engineering nem Semantic Verification.
 
 ## Estratégia de execução
 
 Não existe divisão fixa “ChatGPT faz X / Codex faz Y”. A Execution Fabric decide por capacidade:
 
-1. `current_agent` quando possui as capacidades necessárias;
-2. `github_ci` para prova determinística/headless, gates formais e matriz independente quando adequado;
-3. `sandbox` quando disponível e suficiente;
-4. `local_full` quando browser/runtime/debug/migrations interativos ou outra capacidade local forem realmente necessários.
+1. `current_agent`;
+2. `github_ci`;
+3. `sandbox` quando disponível/suficiente;
+4. `local_full` quando capacidade local/interativa for necessária.
 
-Codex pode ser um executor `local_full`, mas não é dependência arquitetural. Claude Code, Cursor e futuros agentes continuam possíveis por adaptadores finos.
+Codex pode ser `local_full`, mas não é dependência. Independent Verification e métodos formais são gates executados por backends, não novos agentes de raciocínio.
 
-Independent Verification e métodos formais não adicionam um novo backend de raciocínio: scanners, solvers e model checkers são **gates determinísticos executados por um backend**.
+## Estratégia de arquitetura do produto
 
-## Estratégia de arquitetura de produto
-
-- escolher a arquitetura mais simples que satisfaça o produto real, não apenas a tela;
-- `local-app` pode usar persistência local quando isso for requisito legítimo;
-- `persistent-app` ou superior exige fonte autoritativa durável adequada;
-- `multi-user-system` ou superior exige compartilhamento/server-side, autorização e validação proporcionais quando aplicáveis;
-- produção/criticidade elevam recovery, observabilidade, auditoria, segurança e rollout conforme risco;
-- perfis fornecem defaults, mas não podem reduzir os contratos centrais.
+- arquitetura mais simples que satisfaça o produto real;
+- `local-app` pode usar persistência local quando legítimo;
+- `persistent-app`+ exige fonte autoritativa durável;
+- `multi-user-system`+ exige compartilhamento/server-side, autorização e validação proporcionais;
+- produção/criticidade elevam recovery, observabilidade, auditoria, segurança e rollout quando materiais;
+- perfis não podem reduzir contratos centrais.
 
 ## Estratégia de Semantic Assurance
 
-- não criar um segundo documento pesado para toda funcionalidade;
-- usar `scenario` quando invariantes + `given/when/then` forem suficientes;
-- usar `domain` quando conceitos, relações, papéis, estados, decisões ou regras interagirem;
-- usar `formal` somente quando temporalidade, concorrência/distribuição, safety/liveness, policy complexa, combinatória ou criticidade justificarem;
-- em `domain`/`formal`, manter `specs/semantic-assurance.json` ligado por fingerprint ao contrato semântico;
-- estruturar requisitos inspirados em EARS/FRET com scope/precondition/trigger/component/response/timing + referências, sem impor runtime Cucumber ou FRET a todo projeto;
-- detectar determinísticamente referências quebradas, cardinalidades/ranges impossíveis, enum inviável, dependências contraditórias e perguntas `blocking`;
-- medir cobertura somente como rastreabilidade estrutural; 100% não significa correção humana total;
-- usar semantic diff por IDs/fingerprints para propagar impacto a REQ/AC/INV/gates;
-- property/stateful/model-based testing entra quando invariantes/ranges/state machines justificarem exploração adicional;
-- Z3/SMT, Alloy, NASA FRET/FRETish, P, Quint/TLA+, DMN, OPA/Rego e Cedar são opções condicionais conforme a natureza da propriedade;
-- formalização `required` só conta como prova com artefato versionado, `source_refs` e gate executado;
-- findings probabilísticos da IA permanecem hipótese/advisory até resolução estruturada, formal ou humana.
+- `scenario` quando invariantes + `given/when/then` bastarem;
+- `domain` quando conceitos/relações/papéis/estados/regras interagirem;
+- `formal` somente para temporalidade, concorrência/distribuição, safety/liveness, policy/combinatória complexa ou criticidade;
+- `specs/semantic-assurance.json` ligado por fingerprint ao contrato semântico em `domain/formal`;
+- requisitos inspirados em EARS/FRET sem impor runtime Cucumber/FRET universal;
+- consistência determinística, cobertura estrutural e semantic diff por IDs/fingerprints;
+- coverage nunca é “percentual de verdade”;
+- **Hypothesis**/ **fast-check** entram quando invariantes/ranges/estados justificarem property/stateful testing;
+- **NIST ACTS**/covering arrays entram quando múltiplas dimensões finitas interagirem; só bloqueiam com modelo versionado e força t-way justificada;
+- Z3/SMT, Alloy, FRET, P, Quint/TLA+, DMN, OPA/Rego/Cedar permanecem métodos formais condicionais;
+- formalização `required` exige artefato + `source_refs` + gate executado;
+- finding probabilístico da IA permanece hipótese/advisory até resolução estruturada/formal/humana.
 
 ## Estratégia de APIs e integrações
 
-- não criar API formal somente porque existe backend;
-- classificar governança como `none`, `lightweight`, `contract` ou `governed`;
-- para `contract`/`governed`, usar uma fonte de verdade machine-readable adequada ao protocolo;
-- HTTP/OpenAPI é um default forte para APIs HTTP compartilhadas, não padrão universal;
-- GraphQL, gRPC/Protobuf, AsyncAPI e Arazzo entram somente quando o comportamento justificar;
-- segurança usa OWASP API Security como referência de ameaça;
-- integrações externas materiais recebem timeout/retry/rate-limit/idempotência/recovery proporcionais;
-- compatibilidade e breaking changes viram gates quando consumidores dependem de estabilidade;
-- Redocly CLI, oasdiff, Schemathesis e Pact são ferramentas condicionais/substituíveis, com versões fixadas em CI quando usadas;
-- quando API Engineering selecionar fuzz/negative/DAST como evidência, Independent Verification controla a combinação e execução segura sem duplicar o contrato.
+- backend não implica API formal;
+- governança: `none`, `lightweight`, `contract`, `governed`;
+- `contract/governed` usa fonte machine-readable adequada;
+- HTTP/OpenAPI é forte default HTTP, não universal;
+- GraphQL, gRPC/Protobuf, AsyncAPI e Arazzo são condicionais;
+- OWASP API Security é referência de ameaça;
+- integrações materiais recebem timeout/retry/rate-limit/idempotência/recovery proporcionais;
+- breaking changes viram gate quando consumidores dependem de estabilidade;
+- Redocly CLI, oasdiff, Schemathesis e Pact são condicionais/substituíveis;
+- Independent Verification executa fuzz/DAST/deep state sem duplicar o contrato da API.
 
 ## Estratégia de Independent Verification
 
-- política `free-only` por padrão: nenhuma segunda IA paga ou SaaS comercial é requisito;
-- classificar como `baseline`, `independent`, `adversarial` ou `release`;
-- projetos simples permanecem leves e não recebem scanners empresariais por cerimônia;
-- Trivy verifica supply chain/secrets/misconfiguration;
-- Semgrep Community Edition fornece SAST;
-- StrykerJS/mutmut fazem mutation testing seletivo e verificam força dos próprios testes;
-- Schemathesis gera property/fuzz/stateful cases quando API Engineering indicar;
-- OWASP ZAP faz DAST em alvo efêmero/explicitamente autorizado, nunca produção por inferência;
-- axe-core + Playwright fornece evidência automatizada de acessibilidade em estados relevantes;
-- Lighthouse CI detecta regressões de performance/qualidade somente quando houver baseline confiável;
-- check `required` que não executou não vira `pass`;
+Princípio: **diversidade de método > quantidade de ferramentas**.
+
+A política é `free-only` por padrão e classifica `baseline`, `independent`, `adversarial` ou `release`.
+
+### Base preservada
+
+- Trivy — supply chain/secrets/misconfiguration;
+- Semgrep Community Edition — SAST;
+- StrykerJS/mutmut — mutation testing;
+- Schemathesis — API property/fuzz/stateful;
+- OWASP ZAP — DAST;
+- axe-core + Playwright — acessibilidade;
+- Lighthouse CI — page quality com baseline.
+
+### Lacunas agora cobertas estrategicamente
+
+- **actionlint** — correção do próprio GitHub Actions;
+- **zizmor** — segurança do próprio GitHub Actions;
+- **Hypothesis / fast-check** — property/stateful do domínio derivado da semântica;
+- **NIST ACTS** — combinatorial/t-way quando há dimensões finitas relevantes;
+- **Squawk** — segurança de migrations PostgreSQL;
+- **dependency-cruiser** ou equivalente — conformidade de limites arquiteturais declarados;
+- **k6** — load/concurrency quando workload/SLO/baseline justificar;
+- **Toxiproxy** ou equivalente — resiliência de rede para integrações materiais em proxy/stub controlado;
+- **Playwright Chromium + Firefox + WebKit** — compatibilidade quando suporte multi-engine for requisito.
+
+### Escalonamentos, não duplicação
+
+- Schemathesis continua API fuzz principal; **Microsoft RESTler** entra somente em REST/OpenAPI `governed` com estado profundo, normalmente release/nightly;
+- Semgrep CE continua SAST default; **Opengrep** é substituto qualificado após piloto, não scanner paralelo;
+- Pact continua governado por API Engineering;
+- OpenSSF Scorecard e Cosign/SLSA permanecem candidatos para futura política de provenance/distribuição, não entram automaticamente sem esse problema existir.
+
+### Regras de ativação
+
+- actionlint/zizmor: workflows GitHub;
+- property testing: invariantes/ranges/estados materiais;
+- ACTS: múltiplas dimensões finitas interativas e modelo versionado para virar required;
+- Squawk: PostgreSQL + migrations compatíveis;
+- architecture check: limites materializados;
+- k6: workload/SLO/baseline;
+- Toxiproxy: integração externa material;
+- RESTler: API governed/OpenAPI profunda;
+- cross-browser: suporte multi-engine prometido.
+
+Nenhum motor entra só porque “produção deve ter tudo”.
+
+## Segurança dos próprios testes
+
+- GitHub CI é laboratório preferido quando capaz, mas actionlint/zizmor verificam o próprio workflow;
+- ZAP ativo, RESTler fuzz profundo, Schemathesis destrutivo, k6 e Toxiproxy nunca inferem produção/terceiro;
+- Toxiproxy degrada proxy/stub controlado, não o provedor;
+- thresholds de mutation/Lighthouse/k6/t-way vêm de requisito/SLO/baseline, não números universais;
+- check `required` não executado não vira `pass`;
 - suppressions/exceções são pequenas, justificadas e versionadas;
-- versões/commits de ferramentas/actions são fixados em CI real;
-- scanner verde não significa regra de negócio correta nem segurança total; Semantic Assurance, revisão semântica e threat model permanecem separados.
+- versões/commits de ferramentas/actions são fixados no CI real.
 
 ## Estratégia de UI
 
-- sistemas administrativos e dashboards: shadcn como base do perfil `web-admin`, com ReUI seletivo para componentes avançados;
-- HeroUI permanece alternativa visual quando seu sistema for mais adequado;
-- não misturar design systems apenas por estética;
-- pesquisar componente/bloco existente antes de implementar equivalente;
-- motion é transversal ao design system e segue `ui/MOTION_POLICY.md`;
-- `ambient` é contextual, podendo ser atenuado para `subtle` em telas densas;
-- `prefers-reduced-motion` é obrigatório para movimento não essencial;
-- axe/Lighthouse/visual regression entram conforme Independent Verification/risco, não como estética obrigatória em todo projeto.
+- web-admin/dashboard: shadcn como base validada, ReUI seletivo; HeroUI permanece alternativa;
+- não misturar design systems sem ganho;
+- reuse-first para componentes/blocos;
+- motion transversal via `ui/MOTION_POLICY.md`;
+- `ambient` pode ser atenuado para `subtle` em telas densas;
+- `prefers-reduced-motion` obrigatório para movimento não essencial;
+- axe/Lighthouse/visual regression/cross-browser entram por risco/suporte, não como estética universal.
 
 ## Estratégia de trabalho
 
-- GitHub é a fonte técnica de verdade;
-- recuperar contexto/estado antes de depender de memória de chat;
-- trabalhar em fatias funcionais completas;
-- em manutenção, preservar baseline e revisar diff/impacto, incluindo semantic diff quando o domínio/spec mudar;
-- em projeto novo, evitar fragmentação artificial;
-- fazer o máximo seguro antes de pedir intervenção humana;
-- governança cresce proporcionalmente ao risco, sistema e custo de incompatibilidade/ambiguidade;
-- pesquisar/reutilizar antes de construir equivalente;
-- transformar regras repetitivas importantes em teste, lint, policy, solver ou CI quando houver retorno real;
-- manter conhecimento durável em uma fonte comum e apontar para ela em vez de duplicá-la;
-- manter `SEMANTICS.md`/`semantic-assurance.json` somente para `domain`/`formal`;
-- manter `VERIFICATION.md`/workflow recuperável quando a verificação independente estiver acima de `baseline`.
+- GitHub é fonte técnica de verdade;
+- recuperar contexto antes de depender de chat;
+- fatias funcionais completas;
+- preservar baseline/diff/rollback em manutenção;
+- semantic diff quando domínio/spec mudar;
+- máximo seguro antes de pedir intervenção;
+- governança proporcional a risco/sistema/custo de incompatibilidade;
+- pesquisar/reutilizar antes de criar equivalente;
+- transformar regras repetitivas em teste/lint/policy/solver/CI quando houver retorno;
+- fonte comum para cada contrato; templates/perfis apontam para ela em vez de duplicar catálogo;
+- `SEMANTICS.md`/assurance somente em `domain/formal`;
+- `VERIFICATION.md` quando Independent Verification estiver acima de `baseline`.
 
 ## Linha evolutiva consolidada
 
-- **V1.0** — baseline estável, starter/pilotos, portabilidade e validação final.
+- **V1.0** — baseline estável, starters/pilotos/portabilidade/validação final.
 - **V1.1** — Context Engine + Autonomy Engine.
 - **V1.2** — Execution Fabric + CI Executor.
-- **V1.3** — Learning Engine local e conservador.
-- **V1.4** — Semantic Verification e revisão desacoplada.
-- **Governance hardenings sobre V1.4** — System Engineering + API Engineering + Semantic Assurance + Independent Verification, sem alterar os engines V1.1–V1.4 nem inventar uma versão nova.
+- **V1.3** — Learning Engine local/conservador.
+- **V1.4** — Semantic Verification + revisão desacoplada.
+- **Governance hardenings sobre V1.4** — System Engineering + API Engineering + Semantic Assurance + Independent Verification e enriquecimento por classes de falha, sem alterar engines V1.1–V1.4 nem inventar versão nova.
 
-Novas capacidades só viram defaults/perfis estáveis após evidência/pilotos suficientes. Complexidade não comprovada permanece condicional.
+Novas capacidades viram defaults/perfis estáveis somente após evidência/pilotos suficientes.
 
 ## Critério principal de sucesso
 
-Um usuário deve poder descrever um objetivo em linguagem simples e a Factory deve recuperar o estado, classificar arquitetura/risco/interface/semântica/verificação, escolher ferramentas e executor, melhorar a qualidade da própria especificação quando necessário, implementar a maior fatia segura possível, provar o resultado com testes primários e evidência externa proporcional, preservar continuidade e impedir que a própria IA seja a única fonte de confiança — sem exigir que o usuário conheça frameworks, protocolos, solvers, scanners, Skills ou fases internas.
+O usuário descreve objetivo em linguagem simples. A Factory recupera estado, classifica arquitetura/risco/interface/semântica/verificação, escolhe ferramentas e executor, melhora a especificação quando necessário, implementa a maior fatia segura possível e prova o resultado com testes primários + evidência independente proporcional — sem exigir que o usuário conheça frameworks, protocolos, solvers, scanners, Skills ou fases internas.
