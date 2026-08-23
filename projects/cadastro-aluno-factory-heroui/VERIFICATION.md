@@ -17,7 +17,7 @@ A classificação `baseline` é deliberada: o produto não possui backend, API i
 | --- | --- | --- |
 | lint | `package:lint` | required |
 | typecheck | `package:typecheck` | required |
-| regras/migração/exportação | `package:test` | required |
+| regras/migração/exportação/invariantes de coleção | `package:test` | required |
 | build | `package:build` | required |
 | comportamento desktop/mobile | `package:e2e` | required |
 | dependências | `npm audit` no workflow | required |
@@ -26,12 +26,13 @@ A classificação `baseline` é deliberada: o produto não possui backend, API i
 
 ## Evidência obtida no field test
 
-- 15/15 testes unitários aprovados;
+- 17/17 testes unitários aprovados;
 - 10/10 E2E aprovados em Chromium desktop/mobile;
 - lint, typecheck e build aprovados;
 - `npm audit` completo aprovado;
 - migração v1 → v2 exercitada no navegador;
 - backup/restauração exercitados no navegador;
+- leitura, escrita, exportação e restauração rejeitam coleções com matrículas equivalentes duplicadas;
 - Semantic Assurance com 7/7 requisitos obrigatórios rastreados, 7/7 critérios `must` com gate executável e 4/4 invariantes referenciados.
 
 ## Revisão semântica
@@ -53,6 +54,7 @@ Como o risco do contrato é `low`, `deterministic-ci` é um modo válido de revi
 - migração automática v1 → v2;
 - backup JSON válido;
 - rejeição de backup inválido;
+- rejeição de coleção v2 adulterada com matrícula duplicada;
 - confirmação antes de substituição;
 - persistência após reload.
 
