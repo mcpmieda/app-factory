@@ -55,7 +55,8 @@ Todo critério `must` precisa apontar para pelo menos uma evidência executável
 - E2E/browser;
 - gate funcional;
 - lint/compatibility/contract test de API quando aplicável;
-- visual regression quando aplicável.
+- visual regression quando aplicável;
+- evidência de Independent Verification quando um motor externo provar o critério ou risco relacionado.
 
 O plano não substitui a execução dos testes. Ele liga intenção → teste/gate para reduzir testes que apenas confirmam uma implementação errada.
 
@@ -87,6 +88,21 @@ A fase `specification` deve terminar antes da implementação.
 
 Para APIs com contrato formal, a definição/alteração do contrato de interface faz parte da especificação e deve preceder consumidores que dependam do novo comportamento. `core/API_ENGINEERING.md` define a forma desse contrato; este módulo define a prova de que a intenção foi atendida.
 
+## Independent Verification
+
+`core/INDEPENDENT_VERIFICATION.md` é complementar e **não substitui** Semantic Verification.
+
+Ele adiciona motores determinísticos que podem tentar reprovar a implementação por métodos diferentes dos testes escritos pela IA, por exemplo mutation testing, Schemathesis, OWASP ZAP, Semgrep, Trivy, axe-core e Lighthouse CI.
+
+A divisão de responsabilidade é:
+
+- Semantic Verification responde **"isso corresponde ao que foi pedido?"**;
+- Independent Verification responde **"motores externos conseguem encontrar falhas que os testes/implementação podem ter deixado passar?"**.
+
+Resultados de scanners podem ser ligados a critérios `must` quando realmente provarem parte deles, mas não devem ser usados como substituto genérico da revisão semântica.
+
+Mutation testing, SAST, DAST e fuzzing **não entendem sozinhos a intenção** do produto. Um sistema pode passar em todos eles e ainda implementar a regra de negócio errada.
+
 ## Independência realista
 
 A Factory é provider-neutral. Não exigir API paga ou Codex somente para criar um segundo reviewer.
@@ -95,7 +111,9 @@ Ordem desejada:
 
 1. segundo agente/contexto independente, quando disponível;
 2. clean-context review com pacote restrito a spec + evidência verificável;
-3. deterministic CI continua como prova complementar, nunca como substituto exclusivo para risco médio/alto.
+3. deterministic CI e Independent Verification continuam como provas complementares, nunca como substituto exclusivo para risco médio/alto.
+
+A camada independente é `free-only` por padrão e não exige segunda IA paga.
 
 ## Visual regression
 
@@ -107,6 +125,8 @@ Screenshot diffing é uma evidência forte quando a UI já possui baseline visua
 
 Typecheck, build, lockfile e runtime/E2E continuam sendo a primeira defesa contra uso incorreto de bibliotecas/APIs. Quando uma integração não é protegida por tipos ou só falha em runtime, a spec/verification plan deve exigir smoke/integration evidence específica. Para APIs `contract`/`governed`, lint do contrato, compatibilidade, testes negativos/property-based ou consumer/provider contracts podem ser evidências executáveis conforme o risco.
 
+Quando API Engineering selecionar testes adversariais como Schemathesis/DAST, `core/INDEPENDENT_VERIFICATION.md` define sua execução proporcional e segura sem duplicar o contrato de API.
+
 Consulta externa de documentação não é gate universal porque pode introduzir rede/instabilidade no CI. Referências externas orientam desenho; o projeto deve versionar o contrato e os gates que realmente precisa executar.
 
 ## Context Engine e impacto
@@ -117,4 +137,4 @@ O mapa atual de imports é deliberadamente leve. Não fingir precisão de call g
 
 `lint + typecheck + build + testes verdes` não é suficiente para declarar sucesso funcional quando existe uma spec semântica aplicável. A entrega precisa também demonstrar rastreabilidade dos critérios `must` e revisão válida contra o contrato atual.
 
-Da mesma forma, uma API com spec válida mas sem evidência de comportamento crítico não está semanticamente provada; contrato de interface e comportamento executável se complementam.
+Da mesma forma, uma API com spec válida mas sem evidência de comportamento crítico não está semanticamente provada; contrato de interface, comportamento executável e verificação independente proporcional se complementam.
