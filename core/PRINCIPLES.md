@@ -20,3 +20,5 @@
 18. **Portabilidade entre agentes.** O conhecimento essencial deve sobreviver à troca entre ChatGPT, Codex, Claude, Cursor e futuros agentes.
 19. **Explicar decisões importantes em linguagem simples.** Detalhes técnicos rotineiros podem ser assumidos autonomamente; decisões com impacto devem ser justificadas.
 20. **Usuário decide o que é dele.** Objetivo, regra de negócio, preferência subjetiva, custo e autorização de risco pertencem ao usuário; detalhes técnicos comuns pertencem ao agente.
+21. **Preservar comportamento, não implementação obsoleta.** Manutenção deve proteger o que funciona para o usuário, mas substituir/remover caminhos antigos quando a nova implementação os tornou desnecessários.
+22. **A árvore final não é o histórico de tentativas.** Depois de repair/debug, consolidar a solução: remover patches descartados, código morto, overrides, suppressions e temporários; o Git guarda a história, o produto guarda somente o estado vigente.
