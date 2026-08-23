@@ -28,10 +28,23 @@ Persistência, auth, cache cliente, backend e SSR continuam condicionais — por
 
 Não herdar dashboard shell, Data Grid, ReUI, banco ou módulos do `web-admin` quando não forem necessários. Da mesma forma, não omitir banco/backend/auth/autorização quando o nível do sistema os exigir.
 
+## APIs e integrações
+
+Ter backend não torna OpenAPI obrigatório.
+
+Quando houver consumidor independente, API compartilhada, integração externa, webhook, eventos ou evolução separada entre cliente/provedor, aplicar `core/API_ENGINEERING.md` e classificar a interface como `none`, `lightweight`, `contract` ou `governed`.
+
+- `lightweight`: tipos/validação/teste de integração podem ser suficientes para uma interface interna pequena;
+- `contract`/`governed`: manter fonte de verdade machine-readable adequada ao protocolo e gates proporcionais de contrato, compatibilidade, runtime e segurança;
+- HTTP/OpenAPI é default forte para API HTTP compartilhada, mas GraphQL, gRPC, AsyncAPI e Arazzo entram somente quando o requisito justificar;
+- Redocly/oasdiff/Schemathesis/Pact são opções de gate, não dependências automáticas deste perfil.
+
 ## Living UI e gates
 
 Default contextual `ambient`, priorizando interaction/state e reduced motion. Exigir acessibilidade, desktop/mobile, build/audit e ausência de erro. Fluxos reais com concorrência ou transação exigem contrato servidor, autorização, idempotência e recovery antes de produção.
 
 Para `persistent-app` ou superior, o E2E crítico deve exercitar a fonte de persistência real ou ambiente equivalente; sobreviver a refresh via `localStorage` não comprova persistência compartilhada.
+
+Quando API `contract`/`governed` fizer parte do fluxo, o E2E/integration evidence deve provar correspondência entre contrato e implementação e os gates de `core/API_ENGINEERING.md` aplicáveis.
 
 Evidence: `examples/web-app-pilot/` and `research/V0.9_UNIVERSAL_VALIDATION.md`.
