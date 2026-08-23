@@ -28,8 +28,24 @@ Priorize riscos concretos do sistema. Não gere checklist genérica como substit
 
 Em APIs protegidas, esconder ação no frontend nunca substitui autorização no servidor. Prove pelo menos um caso permitido e um negado quando o risco for material.
 
+## Relação com Independent Verification
+
+`security-review` continua sendo o **dono do threat model**. `core/INDEPENDENT_VERIFICATION.md` não redefine ameaças; ele escolhe motores externos para tentar verificar riscos que sejam automatizáveis.
+
+Exemplos:
+
+- dependências/secrets/misconfiguration → Trivy;
+- padrões inseguros de código → Semgrep Community Edition;
+- superfície web executável → OWASP ZAP em ambiente efêmero/autorizado;
+- API contract/governed → Schemathesis/negative testing quando API Engineering indicar;
+- autorização por objeto/função → testes negativos explícitos continuam obrigatórios; scanner genérico não substitui a prova.
+
+Um scanner verde não significa "seguro". Findings e ausências precisam ser interpretados contra o threat model e a arquitetura real.
+
 ## Guardrails
 
 Quando uma falha importante puder ser evitada automaticamente, prefira secret scanning, schema validation, teste, lint, policy ou CI em vez de depender apenas de documentação.
 
-Para API `contract`/`governed`, combine a revisão com os gates de contrato/runtime/compatibilidade definidos em `core/API_ENGINEERING.md` sem duplicar responsabilidade entre os módulos.
+Para API `contract`/`governed`, combine a revisão com os gates de contrato/runtime/compatibilidade definidos em `core/API_ENGINEERING.md` e, quando aplicável, com a execução adversarial de `independent-verification`, sem duplicar responsabilidade entre os módulos.
+
+DAST/fuzz ativo nunca recebe produção como alvo por inferência. Use ambiente descartável ou explicitamente autorizado.
