@@ -13,8 +13,9 @@
 - Motion Profile: `ambient` por padrão (`none`, `subtle`, `ambient`, `expressive`):
 - motion implementation: recursos nativos do design system / CSS / biblioteca especializada somente se necessário:
 - testes:
+- semantic depth: [não aplicável / `scenario` / `domain` / `formal`]
 - Independent Verification: `baseline` / `independent` / `adversarial` / `release`
-- executor de verificação independente: `github_ci` / self-hosted / local equivalente / não aplicável
+- executor de verificação determinística: `github_ci` / self-hosted / local equivalente / não aplicável
 
 Para cada escolha importante, registrar motivo curto e evitar tecnologia sem necessidade.
 
@@ -38,6 +39,16 @@ Adapte ou remova o diagrama quando não ajudar. Se não houver API formal, não 
 - schema/dados:
 - integrações:
 - permissões:
+
+### Semantic Assurance, quando `domain`/`formal`
+- semantic contract: `specs/semantic-contract.json`
+- semantic assurance: `specs/semantic-assurance.json`
+- vocabulário/entidades/relações/estados que afetam arquitetura:
+- restrições importantes:
+- semantic diff/baseline:
+- formalizações selecionadas: [não aplicável / kind + artefato + gate]
+
+Use `core/SEMANTIC_ASSURANCE.md`. Não replique aqui o glossário/requisito inteiro: detalhes estruturados ficam em `semantic-assurance.json` e decisões/limites humanos específicos podem ficar em `SEMANTICS.md`. `scenario` não exige estes artefatos por cerimônia.
 
 ### API, quando aplicável
 - modo de governança: `none` / `lightweight` / `contract` / `governed`
@@ -73,7 +84,7 @@ Para Independent Verification, ambientes destrutivos/fuzz/DAST devem usar dados 
 - secrets:
 - privilégio mínimo:
 
-Para APIs expostas, detalhes específicos ficam em `API.md`/contrato e seguem `core/API_ENGINEERING.md` + `skills/security-review`. Security Review define ameaças; Independent Verification executa somente os scanners/gates selecionados para riscos automatizáveis.
+Para APIs expostas, detalhes específicos ficam em `API.md`/contrato e seguem `core/API_ENGINEERING.md` + `skills/security-review`. Security Review define ameaças; Semantic Assurance pode estruturar policies complexas; Independent Verification executa somente os scanners/gates selecionados para riscos automatizáveis.
 
 ## Acessibilidade e movimento
 - reduced motion:
