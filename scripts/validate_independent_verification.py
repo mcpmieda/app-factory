@@ -26,7 +26,7 @@ REQUIRED_FILES = [
 ]
 
 WIRING_MARKERS = {
-    "AGENTS.md": ["INDEPENDENT_VERIFICATION.md", "independent-verification", "free"],
+    "AGENTS.md": ["INDEPENDENT_VERIFICATION.md", "independent-verification", "gratuitas/open source"],
     "core/ENTRYPOINT.md": ["Verificação independente", "baseline", "adversarial"],
     "core/WORKFLOW.md": ["INDEPENDENT_VERIFICATION.md", "required/advisory"],
     "core/DEFINITION_OF_DONE.md": ["Independent Verification", "mutation testing", "OWASP ZAP"],
@@ -34,7 +34,7 @@ WIRING_MARKERS = {
     "core/SEMANTIC_VERIFICATION.md": ["Independent Verification", "não substitui"],
     "skills/api-engineering/SKILL.md": ["independent-verification", "Schemathesis/DAST"],
     "skills/security-review/SKILL.md": ["Independent Verification", "threat model"],
-    "skills/app-planner/SKILL.md": ["Independent Verification", "free"],
+    "skills/app-planner/SKILL.md": ["Independent Verification", "gratuitos/open source"],
     "skills/factory-router/SKILL.md": ["independent-verification", "adversarial"],
     "skills/verification/SKILL.md": ["independent-verification", "mutation"],
     "templates/project/AGENTS.md": ["INDEPENDENT_VERIFICATION.md", "VERIFICATION.md"],
