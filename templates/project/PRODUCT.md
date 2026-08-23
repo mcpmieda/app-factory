@@ -12,10 +12,15 @@
 
 ## Experiência visual
 - design system/preferência visual:
+- Professional UI Profile: `professional-default` por padrão para UI material, ou exceção justificada:
+- density: `compact` / `comfortable` / `spacious` quando relevante:
+- surface/emphasis quando relevante:
 - Motion Profile: `ambient` por padrão, salvo decisão explícita (`none`, `subtle`, `ambient`, `expressive`):
 - exceções relevantes de leitura, densidade, acessibilidade ou desempenho:
 
-Não obrigar o usuário a escolher detalhes técnicos de animação. Registre aqui apenas preferência de produto/identidade quando ela existir; o comportamento padrão segue `ui/MOTION_POLICY.md`.
+`professional-default` é um quality bar, não uma biblioteca. Para admin/dashboard/CRUD, shadcn continua base preferencial e ReUI continua complemento seletivo; HeroUI continua alternativa quando a linguagem visual do produto justificar. Seguir `ui/UI_POLICY.md`, `ui/PROFESSIONAL_UI_PROFILE.md` e `ui/MOTION_POLICY.md`.
+
+Não obrigar o usuário a escolher detalhes técnicos de radius, shadow, spacing, density ou animação. Registre aqui apenas preferência de produto/identidade quando ela existir; os defaults podem ser inferidos pela Factory.
 
 ## Fluxos principais
 1. ...

@@ -18,6 +18,33 @@ O piloto V0.3 mostrou que ReUI agrega muito valor em componentes avançados, mas
 
 Avaliar **HeroUI** como design system principal quando oferecer vantagem clara. Não adicioná-lo apenas para usar componentes decorativos se o projeto já estiver coeso em shadcn/ReUI.
 
+## Professional UI Profile
+
+Toda UI funcional destinada a usuário final deve considerar `ui/PROFESSIONAL_UI_PROFILE.md`.
+
+Default de acabamento da Factory: **`professional-default`**.
+
+Este perfil é um **quality bar transversal**, não um design system. Ele define composição profissional — hierarquia, ritmo de espaçamento, tipografia, superfícies, densidade, estados completos, responsividade, acessibilidade, microcopy e visual QA — usando a biblioteca já escolhida pelo projeto.
+
+Consequências:
+
+- **shadcn continua preferencial** em admin/dashboard/CRUD;
+- **ReUI continua complemento seletivo** para padrões administrativos avançados;
+- **HeroUI continua alternativa principal** quando o produto for altamente visual ou sua linguagem oferecer vantagem clara;
+- não misturar bibliotecas para “alcançar o perfil”;
+- HeroUI Pro pode inspirar linguagem/composição publicamente observável, mas a Factory não copia código, templates ou assets proprietários;
+- protótipo descartável pode reduzir o acabamento, mas não pode ignorar coerência, estados essenciais ou acessibilidade básica.
+
+Quando a UI for relevante, registrar no projeto:
+
+- Professional UI Profile: `professional-default` ou exceção justificada;
+- density: `compact`, `comfortable` ou `spacious` quando material;
+- surface: `flat`, `layered` ou `immersive` quando material;
+- emphasis: `quiet`, `balanced` ou `bold` quando material;
+- Motion Profile conforme `ui/MOTION_POLICY.md`.
+
+Não obrigar o usuário a escolher esses detalhes técnicos quando a Factory puder inferi-los pelo tipo do produto e pela preferência já conhecida.
+
 ## Motion Profile universal
 
 Toda interface deve seguir `ui/MOTION_POLICY.md` e registrar um Motion Profile.
@@ -33,7 +60,7 @@ Perfis disponíveis:
 - `ambient`;
 - `expressive`.
 
-Uma preferência explícita do usuário sobre design/motion tem precedência. O perfil de motion é independente do design system: HeroUI, shadcn, ReUI ou outro kit continuam responsáveis pela linguagem visual; a Motion Policy define como a interface se move.
+Uma preferência explícita do usuário sobre design/motion tem precedência. O perfil de motion é independente do design system e do Professional UI Profile: HeroUI, shadcn, ReUI ou outro kit continuam responsáveis pela linguagem visual; `PROFESSIONAL_UI_PROFILE.md` define o quality bar de composição; a Motion Policy define como a interface se move.
 
 ## Regras
 
@@ -45,9 +72,11 @@ Uma preferência explícita do usuário sobre design/motion tem precedência. O 
 6. Preservar o design system vigente em manutenção, salvo redesign explícito.
 7. Criar tokens e convenções locais para não depender visualmente dos defaults da biblioteca.
 8. Após instalar código de registry, revisar arquivos/dependências adicionados e remover o que não for utilizado.
-9. Não instalar outro design system apenas para obter animação.
+9. Não instalar outro design system apenas para obter animação ou acabamento visual.
 10. Usar movimento para comunicar interação, dados, estado, atenção, navegação ou atmosfera contextual; remover animação que só gere ruído.
 11. Respeitar `prefers-reduced-motion` e reduzir movimento em leitura longa, telas densas ou contextos em que ele atrapalhe a tarefa.
+12. Para UI média/grande, fazer inventário dos arquétipos necessários antes de criar componentes próprios: shell, page header, stats, search/command, filters, data view, form, detail/inspector, feedback e somente então calendar/kanban/chart quando o produto exigir.
+13. Evitar padrões de aparência genérica de app gerado por IA: excesso de cards equivalentes, múltiplos CTAs primários, gradientes/glow sem função, hierarquia fraca e mistura de design systems.
 
 ## Padrões mínimos de tela
 
@@ -55,10 +84,29 @@ Quando aplicável, tratar loading, empty state, error state, success feedback, d
 
 Ações importantes podem receber atenção visual temporária; gráficos podem animar mudanças reais; transições de navegação devem preservar continuidade. Nada disso deve competir com conteúdo ou permanecer chamando atenção indefinidamente.
 
+O estado ideal não basta: quando material, verificar também hover, focus-visible, pressed, selected, loading, empty, partial data, warning, error, permission denied e recovery/retry.
+
+## Verificação visual
+
+UI relevante deve ser validada no browser real quando a capacidade estiver disponível.
+
+Verificar proporcionalmente:
+
+- desktop;
+- viewport móvel;
+- teclado/foco;
+- loading/empty/error;
+- ação principal e destrutiva;
+- overflow/clipping;
+- console sem erro relevante;
+- `prefers-reduced-motion`;
+- acessibilidade básica;
+- screenshot regression somente quando houver baseline estável e risco material.
+
 ## Perfil web-admin validado
 
-Consultar `profiles/web-admin/PROFILE.md` para defaults e módulos opcionais comprovados. O perfil herda a Motion Policy universal e atenua `ambient` para `subtle` em telas administrativas densas quando necessário.
+Consultar `profiles/web-admin/PROFILE.md` para defaults e módulos opcionais comprovados. O perfil herda esta UI Policy, portanto mantém shadcn como base, ReUI seletivo, `professional-default` como quality bar e a Motion Policy universal; `ambient` pode ser atenuado para `subtle` em telas administrativas densas quando necessário.
 
 ## Registry futuro
 
-A Factory deverá distribuir componentes, layouts, páginas, convenções, motion primitives, testes e configurações aprovadas por registry.
+A Factory deverá distribuir somente componentes, layouts, páginas, convenções, motion primitives, testes e configurações **aprovados e licenciados** por registry. O Professional UI Profile pode orientar a composição desses itens, mas não transforma referência comercial em código redistribuível.

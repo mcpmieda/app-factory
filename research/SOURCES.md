@@ -23,17 +23,22 @@ Uso: Skills portáveis, `SKILL.md`, progressive disclosure, contexto do reposit�
 - https://ui.shadcn.com/docs/registry/github
 - https://ui.shadcn.com/docs/mcp
 
-Uso: registry distribuindo componentes, páginas, regras, workflows, testes e automações; MCP para agentes pesquisarem e instalarem itens.
+Uso: registry distribuindo componentes, páginas, regras, workflows, testes e automações; MCP para agentes pesquisarem e instalarem itens. Continua base preferencial da Factory para admin/dashboard/CRUD.
 
 ### ReUI
 - https://reui.io/
 
-Uso: componentes e padrões avançados para sistemas sobre ecossistema shadcn.
+Uso: componentes e padrões avançados para sistemas sobre ecossistema shadcn. Continua complemento seletivo, não segunda base obrigatória.
 
 ### HeroUI
 - https://www.heroui.com/
 
 Uso: alternativa de design system quando mais adequada que shadcn/ReUI.
+
+### HeroUI Pro
+- https://heroui.pro/
+
+Uso: **INSPIRAR** o quality bar `professional-default`, especialmente composição visual profissional e organização por arquétipos de produto. Não é fonte de código redistribuível da Factory: não copiar templates, assets, screenshots ou componentes proprietários sem licença específica aplicável ao projeto. Ver `research/PROFESSIONAL_UI_PROFILE_REVIEW.md` e `ui/PROFESSIONAL_UI_PROFILE.md`.
 
 ## Origem interna
 

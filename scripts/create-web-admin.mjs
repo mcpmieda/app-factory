@@ -35,6 +35,8 @@ const templateMetadata = JSON.parse(
 );
 const factoryBaseline = `v${factoryManifest.version}`;
 const templateBaseline = templateMetadata.factoryBaseline;
+const professionalUiProfile =
+  templateMetadata.professionalUiProfile ?? "professional-default";
 const motionProfile = "ambient";
 
 function usage() {
@@ -351,6 +353,7 @@ async function main() {
     const manifest = [
       "{",
       '  "profile": "web-admin",',
+      `  "professionalUiProfile": ${JSON.stringify(professionalUiProfile)},`,
       `  "motionProfile": ${JSON.stringify(motionProfile)},`,
       `  "factoryBaseline": ${JSON.stringify(factoryBaseline)},`,
       `  "generatedAt": ${JSON.stringify(new Date().toISOString())},`,
@@ -368,6 +371,7 @@ async function main() {
       `Created ${input.name} at ${isAbsolute(input.destination) ? destination : input.destination}`,
     );
     console.log(`Profile: web-admin (${factoryBaseline})`);
+    console.log(`Professional UI Profile: ${professionalUiProfile}`);
     console.log(`Motion Profile: ${motionProfile}`);
     console.log(
       `Recipes: ${recipes.map((recipe) => recipe.id).join(", ") || "none"}`,

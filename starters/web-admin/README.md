@@ -24,7 +24,8 @@ node scripts/create-web-admin.mjs <destination> <name> \
 - excludes dependencies, caches, `.env`, databases, coverage and browser artifacts;
 - personalizes package/project metadata;
 - creates `AGENTS.md`, `PROJECT_STATE.md`, `PRODUCT.md`, `ARCHITECTURE.md` and `.app-factory.json`;
-- records profile, **Motion Profile**, baseline and applied recipes;
+- records profile, **Professional UI Profile**, **Motion Profile**, baseline and applied recipes;
+- defaults new web-admin projects to `professionalUiProfile: professional-default` according to `ui/PROFESSIONAL_UI_PROFILE.md`;
 - defaults new web-admin projects to `motionProfile: ambient` according to `ui/MOTION_POLICY.md`;
 - normalizes recipe lockfiles with npm 10.9.9;
 - rejects unknown recipes, non-empty destinations and conflicting database providers before writing.
@@ -35,6 +36,7 @@ node scripts/create-web-admin.mjs <destination> <name> \
 
 - TypeScript, Next.js App Router and React;
 - Tailwind CSS and shadcn/ui components;
+- `professional-default` as a library-neutral quality bar;
 - Living UI / Semantic Motion policy reference with `ambient` contextual default;
 - Zod;
 - Vitest and Playwright;
@@ -42,6 +44,14 @@ node scripts/create-web-admin.mjs <destination> <name> \
 - Prettier only for the required deterministic format gate.
 
 It does **not** contain Better Auth, Drizzle/database provider, ReUI, Biome, form/state/cache frameworks, observability, analytics, monorepo tooling or a mandatory motion library.
+
+### Visual strategy
+
+shadcn/ui remains the foundation of this starter. ReUI remains a selective recipe for advanced administrative components. `professional-default` does not install HeroUI or any second design system; it defines the expected hierarchy, spacing rhythm, typography, surfaces, density, complete states, responsive behavior, accessibility and browser QA.
+
+HeroUI remains a valid alternative design system for products whose visual language benefits from it, but that is a product-level decision rather than an automatic addition to this starter.
+
+Commercial references such as HeroUI Pro may inspire publicly observable composition patterns, but proprietary code/templates/assets are not stored or redistributed by this starter without an applicable project license.
 
 Motion is a behavior contract, not another UI dependency. Use native design-system motion or CSS first; add a specialized motion library only when the product actually needs it. Dense admin views may attenuate `ambient` to `subtle`, and non-essential motion must respect `prefers-reduced-motion`.
 
@@ -70,4 +80,5 @@ The example then implements its own asset domain. ReUI was not activated because
 
 Full starter evidence: `research/V0.5_WEB_ADMIN_STARTER_VALIDATION.md`.
 PostgreSQL/Auth hardening: `research/V0.6_WEB_ADMIN_HARDENING.md`.
+Professional UI profile: `ui/PROFESSIONAL_UI_PROFILE.md`.
 Motion policy: `ui/MOTION_POLICY.md`.

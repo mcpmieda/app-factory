@@ -36,7 +36,7 @@ async function json(path) {
   return JSON.parse(await readFile(path, "utf8"));
 }
 
-test("generator resolves recipe providers, motion baseline, order and failures safely", async () => {
+test("generator resolves recipe providers, professional UI, motion baseline, order and failures safely", async () => {
   const temporaryRoot = await mkdtemp(join(tmpdir(), "app-factory-web-admin-"));
 
   try {
@@ -51,7 +51,9 @@ test("generator resolves recipe providers, motion baseline, order and failures s
     assert.deepEqual(baseManifest.recipes, []);
     assert.equal(baseManifest.profile, "web-admin");
     assert.equal(baseManifest.factoryBaseline, expectedFactoryBaseline);
+    assert.equal(baseManifest.professionalUiProfile, "professional-default");
     assert.equal(baseManifest.motionProfile, "ambient");
+    assert.match(baseRun.stdout, /Professional UI Profile: professional-default/);
     const baseProjectState = await readFile(
       join(base, "PROJECT_STATE.md"),
       "utf8",
@@ -62,7 +64,23 @@ test("generator resolves recipe providers, motion baseline, order and failures s
         `Factory baseline: \`${expectedFactoryBaseline}\``,
       ),
     );
+    assert.match(
+      baseProjectState,
+      /Professional UI Profile: `professional-default`/,
+    );
+    assert.match(baseProjectState, /design system: shadcn\/ui foundation/);
     assert.match(baseProjectState, /Motion Profile: `ambient` contextual/);
+    const baseProduct = await readFile(join(base, "PRODUCT.md"), "utf8");
+    assert.match(baseProduct, /Professional UI Profile: `professional-default`/);
+    assert.match(baseProduct, /visual system: shadcn\/ui baseline/);
+    assert.match(
+      await readFile(join(base, "ARCHITECTURE.md"), "utf8"),
+      /Professional UI Profile: `professional-default`/,
+    );
+    assert.match(
+      await readFile(join(base, "AGENTS.md"), "utf8"),
+      /ui\/PROFESSIONAL_UI_PROFILE\.md/,
+    );
     assert.match(
       await readFile(
         join(base, "src", "components", "motion", "ambient-surface.tsx"),
@@ -125,6 +143,10 @@ test("generator resolves recipe providers, motion baseline, order and failures s
       "auth-better-auth",
     ]);
     assert.equal(postgresManifest.factoryBaseline, expectedFactoryBaseline);
+    assert.equal(
+      postgresManifest.professionalUiProfile,
+      "professional-default",
+    );
     assert.equal(postgresManifest.motionProfile, "ambient");
     const postgresPackage = await json(join(postgresAuth, "package.json"));
     assert.equal(postgresPackage.dependencies.postgres, "3.4.9");
