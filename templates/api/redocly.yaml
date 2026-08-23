@@ -1,0 +1,5 @@
+extends:
+  - recommended-strict
+
+# Add project-specific rules only when they enforce a real local convention.
+# Keep this file small and version the Redocly CLI in package.json/lockfile or CI.
