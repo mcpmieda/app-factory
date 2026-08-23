@@ -4,6 +4,7 @@ on:
   pull_request:
     paths:
       - "AGENTS.md"
+      - "PROJECT_STATE.md"
       - "core/**"
       - "docs/DECISIONS.md"
       - "skills/factory-router/**"
@@ -18,6 +19,7 @@ on:
     branches: [main]
     paths:
       - "AGENTS.md"
+      - "PROJECT_STATE.md"
       - "core/**"
       - "docs/DECISIONS.md"
       - "skills/factory-router/**"
