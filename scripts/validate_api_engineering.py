@@ -71,6 +71,7 @@ def main() -> int:
             "Pact",
             "semantic-verification",
             "security-review",
+            "independent-verification",
         ],
     )
 
@@ -109,7 +110,7 @@ def main() -> int:
         [
             "governance hardening",
             "API Engineering Contract",
-            "17",
+            "18",
             "Validate API Engineering Contract",
         ],
     )
@@ -137,7 +138,7 @@ def main() -> int:
         "docs/CODEX_PLUGIN.md",
         [
             "1.4.0",
-            "17 Skills",
+            "18 Skills",
             "api-engineering",
             "System Engineering",
             "API Engineering",
@@ -199,12 +200,12 @@ def main() -> int:
         fail("Regressão: capacidades/recipes preservados ausentes: " + ", ".join(missing))
 
     readme = read("README.md")
-    if "17 Skills" not in readme:
-        fail("README deve refletir a nova Skill sem alterar a baseline dos engines")
+    if "18 Skills" not in readme:
+        fail("README deve refletir as Skills atuais sem alterar a baseline dos engines")
 
     print(
         "OK: API Engineering integrado de forma condicional a arquitetura, semântica, "
-        "segurança, perfis, templates, plugin/documentação e regressão dos engines/recipes existentes."
+        "segurança, Independent Verification, perfis, templates, plugin/documentação e regressão dos engines/recipes existentes."
     )
     return 0
 

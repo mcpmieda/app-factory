@@ -11,16 +11,17 @@ A App Factory combina:
 - entrada universal por intenção de software;
 - **System Engineering Contract** para impedir que sistemas reais sejam reduzidos a demos locais e para exigir persistência/backend/segurança proporcionais;
 - **API Engineering Contract** para governar APIs e integrações apenas quando elas realmente existirem, com contrato, compatibilidade, segurança e gates proporcionais;
+- **Independent Verification Contract** para adicionar motores determinísticos gratuitos/open source que tentam encontrar falhas de forma independente do raciocínio da IA implementadora;
 - **Context Engine** incremental para recuperar repositórios sem releitura integral desnecessária;
 - **Autonomy Engine** para calcular e registrar o próximo passo técnico;
 - **Semantic Verification** para transformar intenção funcional relevante em contrato, critérios de aceite e prova rastreável antes da entrega;
 - **Execution Fabric** para escolher executor por capacidade, disponibilidade e evidência;
-- GitHub Actions/CI como backend real de execução determinística;
+- GitHub Actions/CI como backend real de execução determinística e executor preferido dos verificadores independentes quando capaz;
 - **Learning Engine** local e conservador para melhorar escolhas futuras sem ultrapassar segurança ou Definition of Done;
 - seleção automática de perfil validado quando aplicável;
 - `AGENTS.md` como mapa operacional;
 - Core curto e modular;
-- **17 Skills** especializadas carregadas conforme a tarefa;
+- **18 Skills** especializadas carregadas conforme a tarefa;
 - templates e starters componíveis;
 - Living UI / Semantic Motion quando houver interface;
 - repair loop e fallback limitados;
@@ -32,13 +33,14 @@ O usuário pode começar apenas com o resultado desejado:
 
 > Quero criar um sistema de patrimônio para a escola.
 
-Ele não precisa escolher framework, Skill, executor, ChatGPT/Codex, preencher uma spec técnica nem conduzir manualmente cada fase.
+Ele não precisa escolher framework, Skill, executor, ChatGPT/Codex, scanners, preencher uma spec técnica nem conduzir manualmente cada fase.
 
 ```text
 pedido do usuário
 → recuperar contexto/estado
 → classificar escala/risco/nível do sistema
 → decidir se existe API/integração relevante e seu modo de governança
+→ classificar Independent Verification proporcional
 → planejar
 → criar spec + critérios observáveis quando aplicável
 → definir contrato machine-readable quando API contract/governed exigir
@@ -46,6 +48,7 @@ pedido do usuário
 → consultar aprendizado local se houver evidência suficiente
 → implementar
 → CI/verificar critérios + arquitetura + contratos
+→ motores independentes/adversariais quando aplicáveis
 → reparar/fallback se necessário
 → revisão independente ou clean-context quando exigida
 → entregar
@@ -73,7 +76,34 @@ Modos:
 
 A Factory não força REST/OpenAPI em todo backend. Conforme o caso pode usar HTTP/OpenAPI, GraphQL, gRPC/Protobuf, AsyncAPI ou Arazzo. Para OpenAPI, Redocly CLI, oasdiff e Schemathesis são ferramentas preferidas de lint/compatibilidade/teste gerado quando o projeto justificar; Pact entra condicionalmente em consumer/provider contracts.
 
-`API_ENGINEERING` define desenho/governança da interface; `SEMANTIC_VERIFICATION` prova os comportamentos; `DEFINITION_OF_DONE` exige os gates que realmente se aplicam.
+`API_ENGINEERING` define desenho/governança da interface; `SEMANTIC_VERIFICATION` prova os comportamentos; `INDEPENDENT_VERIFICATION` pode executar gates adversariais externos; `DEFINITION_OF_DONE` exige os gates que realmente se aplicam.
+
+## Camada de Independent Verification
+
+`core/INDEPENDENT_VERIFICATION.md` fecha outro gap: **testes escritos pela mesma IA que implementou o código podem compartilhar o mesmo erro de raciocínio**.
+
+A Factory deriva automaticamente um dos modos:
+
+- `baseline` — projeto/alteração simples; não adiciona scanner pesado por checklist;
+- `independent` — adiciona evidências independentes de baixo/médio custo quando aplicáveis;
+- `adversarial` — tenta quebrar sistemas multiusuário/APIs/alto risco com métodos diferentes;
+- `release` — amplia a matriz antes de release de produção/alto impacto.
+
+A política é **`free-only` por padrão**. Não exige segunda IA paga nem SaaS comercial.
+
+Ferramentas preferidas conforme a stack/risco:
+
+- **Trivy** — dependências, secrets e misconfiguration;
+- **Semgrep Community Edition** — SAST;
+- **StrykerJS / mutmut** — mutation testing para verificar se os próprios testes detectam defeitos deliberados;
+- **Schemathesis** — property/fuzz/stateful testing de OpenAPI/GraphQL quando API Engineering selecionar;
+- **OWASP ZAP** — DAST baseline/active somente em alvo efêmero ou explicitamente autorizado;
+- **axe-core + Playwright** — acessibilidade automatizada;
+- **Lighthouse CI** — performance/qualidade quando houver baseline estável.
+
+`engine/independent_verification.py` é um planner determinístico: detecta linguagem, UI, testes e contrato API e combina isso com risco/nível do sistema/API mode. Ele não depende da opinião da IA atual para decidir se um projeto simples deve ficar leve ou se um sistema robusto precisa de matriz adversarial.
+
+Esses motores são independentes do raciocínio implementador, mas não entendem sozinhos a intenção do produto. Portanto não substituem a revisão `independent-agent`/`clean-context` exigida por Semantic Verification quando aplicável.
 
 ## V1.1 — Context + Autonomy
 
@@ -100,6 +130,8 @@ Backend incapaz nunca é escolhido. Falhas da tarefa atual podem causar fallback
 
 `engine/ci_executor.py` usa apenas gates declarados/allowlisted, argumentos estruturados, `shell=False`, sem comandos livres de prompt e sem secrets por padrão. Instalação reproduzível exige lockfile compatível.
 
+GitHub CI também é o executor preferido da Independent Verification porque pode subir banco/app efêmeros e executar scanners determinísticos sem depender do ambiente mental da IA que escreveu o código.
+
 ## V1.3 — Learning Engine
 
 `engine/learning_engine.py` aprende somente com metadados técnicos locais e allowlisted:
@@ -118,7 +150,7 @@ A ordem de autoridade é:
 1. capacidade;
 2. disponibilidade/permissão;
 3. fallback da tarefa atual;
-4. segurança, risco, contratos arquiteturais/semânticos e Definition of Done;
+4. segurança, risco, contratos arquiteturais/semânticos, Independent Verification e Definition of Done;
 5. aprendizado local;
 6. ordem baseline.
 
@@ -143,6 +175,7 @@ semantic-contract
 → verification-plan
 → implementação
 → gates/testes executáveis
+→ Independent Verification proporcional
 → review-packet (spec + diff atual)
 → independent-agent ou clean-context review
 → review-evidence
@@ -178,6 +211,7 @@ python scripts/factory.py --root <projeto> execution-status
 python scripts/factory.py --root <projeto> learning-status
 python scripts/factory.py --root <projeto> learning-recommend verify
 python scripts/factory.py --root <projeto> gates
+python scripts/independent_verification.py --root <projeto> --risk high --system-level multi-user-system --api-mode contract
 ```
 
 ## Comece por aqui
@@ -186,19 +220,20 @@ python scripts/factory.py --root <projeto> gates
 2. `core/ENTRYPOINT.md` — ativação por intenção.
 3. `core/SYSTEM_ENGINEERING.md` — profundidade arquitetural mínima do produto.
 4. `core/API_ENGINEERING.md` — governança condicional de APIs/integrações.
-5. `core/CONTEXT_ENGINE.md` — recuperação incremental.
-6. `core/AUTONOMY_ENGINE.md` — estado e próxima ação.
-7. `core/SEMANTIC_VERIFICATION.md` — contrato, rastreabilidade e revisão semântica proporcional.
-8. `core/EXECUTION_FABRIC.md` — seleção e fallback de backends.
-9. `core/LEARNING_ENGINE.md` — aprendizado local, confiança e privacidade.
-10. `core/TASK_ROUTER.md` — ordem de decisão do executor.
-11. `skills/factory-router/SKILL.md`, `skills/api-engineering/SKILL.md`, `skills/semantic-verification/SKILL.md`, `skills/execution-router/SKILL.md` e `skills/learning-engine/SKILL.md`.
-12. `profiles/README.md` e `profiles/*/PROFILE.md` — defaults condicionais comprovados.
-13. `ui/UI_POLICY.md` e `ui/MOTION_POLICY.md` — interface e Living UI.
-14. `core/HUMAN_INTERACTION.md` — limites da intervenção humana.
-15. `core/DEFINITION_OF_DONE.md` — prova de conclusão.
-16. `PORTABILITY.md` — continuidade entre agentes.
-17. `docs/CODEX_PLUGIN.md` — adaptador Codex.
+5. `core/INDEPENDENT_VERIFICATION.md` — matriz gratuita de verificadores independentes/adversariais.
+6. `core/CONTEXT_ENGINE.md` — recuperação incremental.
+7. `core/AUTONOMY_ENGINE.md` — estado e próxima ação.
+8. `core/SEMANTIC_VERIFICATION.md` — contrato, rastreabilidade e revisão semântica proporcional.
+9. `core/EXECUTION_FABRIC.md` — seleção e fallback de backends.
+10. `core/LEARNING_ENGINE.md` — aprendizado local, confiança e privacidade.
+11. `core/TASK_ROUTER.md` — ordem de decisão do executor.
+12. `skills/factory-router/SKILL.md`, `skills/api-engineering/SKILL.md`, `skills/independent-verification/SKILL.md`, `skills/semantic-verification/SKILL.md`, `skills/execution-router/SKILL.md` e `skills/learning-engine/SKILL.md`.
+13. `profiles/README.md` e `profiles/*/PROFILE.md` — defaults condicionais comprovados.
+14. `ui/UI_POLICY.md` e `ui/MOTION_POLICY.md` — interface e Living UI.
+15. `core/HUMAN_INTERACTION.md` — limites da intervenção humana.
+16. `core/DEFINITION_OF_DONE.md` — prova de conclusão.
+17. `PORTABILITY.md` — continuidade entre agentes.
+18. `docs/CODEX_PLUGIN.md` — adaptador Codex.
 
 ## Perfis
 
@@ -215,6 +250,7 @@ app-factory/
 ├── core/
 │   ├── SYSTEM_ENGINEERING.md
 │   ├── API_ENGINEERING.md
+│   ├── INDEPENDENT_VERIFICATION.md
 │   ├── CONTEXT_ENGINE.md
 │   ├── AUTONOMY_ENGINE.md
 │   ├── SEMANTIC_VERIFICATION.md
@@ -224,24 +260,30 @@ app-factory/
 │   ├── context_engine.py
 │   ├── autonomy_engine.py
 │   ├── semantic_verification.py
+│   ├── independent_verification.py
 │   ├── review_packet.py
 │   ├── execution_engine.py
 │   ├── ci_executor.py
 │   └── learning_engine.py
 ├── skills/
-│   └── api-engineering/
+│   ├── api-engineering/
+│   └── independent-verification/
 ├── profiles/
 ├── templates/
 │   ├── api/
-│   └── project/API.md
+│   ├── verification/
+│   ├── project/API.md
+│   └── project/VERIFICATION.md
 ├── starters/
 ├── ui/
 ├── audits/
 ├── research/
 └── scripts/
     ├── factory.py
+    ├── independent_verification.py
     ├── validate_system_engineering.py
     ├── validate_api_engineering.py
+    ├── validate_independent_verification.py
     ├── validate_v1_1.py
     ├── validate_v1_2.py
     ├── validate_v1_3.py
@@ -255,8 +297,12 @@ app-factory/
 - o agente faz sozinho decisões técnicas rotineiras e grandes blocos seguros;
 - System Engineering impede que demo local seja rotulada como sistema real;
 - API Engineering só entra quando existe interface real e usa governança proporcional;
+- Independent Verification adiciona motores determinísticos gratuitos/open source somente quando risco/arquitetura justificarem;
 - contrato machine-readable é fonte de verdade para API `contract`/`governed`, sem duplicar a spec semântica;
 - OpenAPI não é obrigatório para todo backend; protocolo é escolhido pelo problema;
+- scanners/mutation/fuzz/DAST não substituem Semantic Verification nem contam como segundo agente;
+- ZAP/Schemathesis destrutivos nunca apontam para produção por inferência;
+- check não executado não vira `pass`;
 - Context Engine reduz releitura sem substituir arquivos reais;
 - Autonomy Engine decide continuidade técnica;
 - trabalho funcional relevante ganha contrato semântico antes do código;
@@ -271,10 +317,10 @@ app-factory/
 - falhas entram em repair/fallback limitados;
 - pesquisar/reutilizar precede construir do zero;
 - baseline/diff/rollback permanecem centrais em manutenção;
-- teste local não substitui instalação limpa e CI reproduzível.
+- teste local não substitui instalação limpa, CI reproduzível e, quando aplicável, verificação independente.
 
 ## Estado
 
 Versão estável dos engines: **`1.4.0` — App Factory V1.4**.
 
-Os hardenings de **System Engineering** e **API Engineering** evoluem a governança arquitetural sobre essa baseline sem alterar os engines V1.1–V1.4. A V1.4 continua preservando os gates V1.0–V1.3 e a prova semântica proporcional, enquanto os novos contratos impedem simplificação arquitetural indevida e APIs sem governança quando o produto realmente exigir essas capacidades.
+Os hardenings de **System Engineering**, **API Engineering** e **Independent Verification** evoluem a governança sobre essa baseline sem alterar os engines V1.1–V1.4. A V1.4 continua preservando os gates V1.0–V1.3 e a prova semântica proporcional, enquanto os contratos adicionais impedem simplificação arquitetural indevida, APIs sem governança e confiança excessiva apenas nos testes escritos pelo mesmo raciocínio que implementou o código.

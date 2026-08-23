@@ -24,7 +24,7 @@ Também ative quando o usuário expressar apenas o resultado, por exemplo:
 - "Quero automatizar este processo."
 - "Continue o projeto X."
 
-O usuário não precisa conhecer stack, arquitetura, perfis, Skills, estados internos, semantic-spec ou agentes.
+O usuário não precisa conhecer stack, arquitetura, perfis, Skills, estados internos, semantic-spec, scanners ou agentes.
 
 ## Primeira passagem obrigatória
 
@@ -39,14 +39,15 @@ O usuário não precisa conhecer stack, arquitetura, perfis, Skills, estados int
 9. Classifique se o trabalho exige Semantic Verification:
    - **sim** para funcionalidade nova, bugfix relevante, regra de negócio, contrato de dados/API ou mudança estrutural de médio/alto risco;
    - **não por padrão** para documentação/chore e refactor pequeno que não muda comportamento observável.
-10. Se existir `.factory/state.json`, use o Autonomy Engine para retomar. Se não existir, inicialize/infera o objetivo; quando a classificação anterior exigir prova semântica, crie o novo estado com `require_spec` sem perguntar ao usuário por essa decisão técnica.
-11. Verifique `profiles/` e selecione um perfil validado quando o produto corresponder claramente; não force perfil quando nenhum servir. Nenhum perfil pode reduzir requisitos mínimos de `core/SYSTEM_ENGINEERING.md` nem de `core/API_ENGINEERING.md` quando este se aplicar.
-12. Quando Semantic Verification se aplicar, carregue `semantic-verification` e materialize o contrato estruturado antes da implementação. O agente preenche a spec; o usuário só entra se faltar uma regra genuinamente humana.
-13. Escolha o executor com `core/TASK_ROUTER.md`, priorizando as capacidades do agente atual + GitHub/CI antes de handoff.
-14. Carregue apenas as demais Skills necessárias.
-15. Pesquise solução existente antes de construir equivalente do zero quando houver ganho real.
-16. Defina o próximo bloco funcional completo e, quando aplicável, seus critérios `given/when/then` antes do código.
-17. Execute imediatamente tudo que o ambiente atual permitir com segurança e continue o loop técnico sem pedir ao usuário o próximo passo rotineiro.
+10. Derive o modo de `core/INDEPENDENT_VERIFICATION.md` a partir do risco, nível do sistema, API mode e sinais técnicos do projeto. Use `baseline`, `independent`, `adversarial` ou `release` sem pedir ao usuário para escolher scanners. Carregue `independent-verification` somente quando o modo ficar acima de `baseline`.
+11. Se existir `.factory/state.json`, use o Autonomy Engine para retomar. Se não existir, inicialize/infera o objetivo; quando a classificação anterior exigir prova semântica, crie o novo estado com `require_spec` sem perguntar ao usuário por essa decisão técnica.
+12. Verifique `profiles/` e selecione um perfil validado quando o produto corresponder claramente; não force perfil quando nenhum servir. Nenhum perfil pode reduzir requisitos mínimos de `core/SYSTEM_ENGINEERING.md`, `core/API_ENGINEERING.md` nem `core/INDEPENDENT_VERIFICATION.md` quando estes se aplicarem.
+13. Quando Semantic Verification se aplicar, carregue `semantic-verification` e materialize o contrato estruturado antes da implementação. O agente preenche a spec; o usuário só entra se faltar uma regra genuinamente humana.
+14. Escolha o executor com `core/TASK_ROUTER.md`, priorizando as capacidades do agente atual + GitHub/CI antes de handoff. Para verificadores independentes determinísticos, prefira `github_ci` ou runner gratuito/equivalente capaz.
+15. Carregue apenas as demais Skills necessárias.
+16. Pesquise solução existente antes de construir equivalente do zero quando houver ganho real.
+17. Defina o próximo bloco funcional completo e, quando aplicável, seus critérios `given/when/then` antes do código.
+18. Execute imediatamente tudo que o ambiente atual permitir com segurança e continue o loop técnico sem pedir ao usuário o próximo passo rotineiro.
 
 ## Contexto incremental
 
@@ -89,6 +90,29 @@ Aplique quando existir API compartilhada, integração externa, múltiplos consu
 
 Quando a interface for `contract`/`governed`, preserve uma fonte de verdade machine-readable adequada ao protocolo e gates proporcionais de lint, compatibilidade, runtime e segurança. OpenAPI, GraphQL, gRPC/Protobuf, AsyncAPI e Arazzo são opções condicionais, não tecnologias obrigatórias universais.
 
+## Verificação independente
+
+`core/INDEPENDENT_VERIFICATION.md` governa **evidência técnica independente do raciocínio da IA implementadora**.
+
+Ela não adiciona outra IA paga. Por padrão é `free-only` e usa ferramentas open source/determinísticas executáveis em GitHub Actions, runner próprio ou ambiente equivalente.
+
+Modos:
+
+- `baseline` — alteração/projeto simples, sem scanners pesados por checklist;
+- `independent` — adiciona verificadores independentes de baixo/médio custo quando aplicáveis;
+- `adversarial` — adiciona mutation testing, fuzz/property testing, DAST e outras tentativas de quebrar sistemas/APIs de maior risco quando houver pré-condições;
+- `release` — amplia a matriz em release de produção/alto impacto.
+
+A matriz pode escolher, conforme stack/risco, Trivy, Semgrep Community Edition, StrykerJS/mutmut, Schemathesis, OWASP ZAP, axe-core + Playwright e Lighthouse CI. Ferramenta equivalente gratuita pode substituir um default quando tecnicamente melhor.
+
+Regras fortes:
+
+- scanner não executado/indisponível não conta como `pass`;
+- DAST ativo/fuzz destrutivo nunca aponta para produção por inferência;
+- ferramentas de CI usam versões/commits reproduzíveis e permissões mínimas;
+- projetos simples não recebem toda a matriz;
+- esses motores não contam como `independent-agent` semântico: eles não entendem sozinhos a intenção do produto.
+
 ## Prova semântica
 
 `core/SEMANTIC_VERIFICATION.md` define quando a intenção precisa virar alvo estruturado e verificável.
@@ -101,15 +125,15 @@ Quando aplicável:
 - `specs/review-evidence.json` fica ligado por fingerprints àquilo que foi realmente revisado;
 - código/spec/plano alterados depois tornam a revisão anterior stale.
 
-Deterministic CI continua obrigatório quando aplicável, mas não é sozinho um reviewer semântico para risco médio/alto.
+Deterministic CI e Independent Verification continuam evidências importantes, mas não são sozinhos reviewers semânticos para risco médio/alto.
 
 ## Regra de perfis
 
-Perfis transformam evidência real em defaults condicionais. Eles não substituem entendimento do produto, `core/SYSTEM_ENGINEERING.md` nem `core/API_ENGINEERING.md` quando houver interface relevante.
+Perfis transformam evidência real em defaults condicionais. Eles não substituem entendimento do produto, `core/SYSTEM_ENGINEERING.md`, `core/API_ENGINEERING.md` nem `core/INDEPENDENT_VERIFICATION.md` quando aplicáveis.
 
-Exemplo: um sistema de patrimônio com login, CRUD, filtros e dashboard provavelmente corresponde a `profiles/web-admin/PROFILE.md`. A Factory pode usar os defaults comprovados desse perfil e deve ativar persistência, autenticação/autorização, API/integração ou outros módulos quando o nível do sistema e o produto exigirem.
+Exemplo: um sistema de patrimônio com login, CRUD, filtros e dashboard provavelmente corresponde a `profiles/web-admin/PROFILE.md`. A Factory pode usar os defaults comprovados desse perfil e deve ativar persistência, autenticação/autorização, API/integração ou verificadores independentes quando o nível do sistema, risco e produto exigirem.
 
-Requisitos específicos do projeto têm precedência sobre defaults do perfil, salvo conflito de segurança ou redução indevida dos requisitos mínimos do nível de sistema/interface.
+Requisitos específicos do projeto têm precedência sobre defaults do perfil, salvo conflito de segurança ou redução indevida dos requisitos mínimos do nível de sistema/interface/verificação.
 
 ## Regra de GitHub
 
@@ -126,6 +150,7 @@ Quando o projeto ganhar repositório próprio, grave nele pelo menos:
 - nível de sistema e fonte autoritativa dos dados quando `persistent-app` ou superior;
 - modo/fonte de verdade da API quando `contract`/`governed` se aplicar;
 - `specs/` semânticos quando a mudança exigir esse nível de prova;
+- `VERIFICATION.md` e workflows/configs de verificação quando Independent Verification ficar acima de `baseline`;
 - perfil selecionado e desvios relevantes quando aplicável;
 - testes/CI quando aplicáveis.
 
@@ -139,7 +164,7 @@ Se o `AGENTS.md` do projeto indicar App Factory, use o plugin/Skills instalados 
 
 ## Regra de interação
 
-Não pergunte ao usuário qual framework, ORM, linter, biblioteca, protocolo ou modo interno de verificação usar quando isso for uma decisão técnica rotineira que o agente consegue avaliar.
+Não pergunte ao usuário qual framework, ORM, linter, biblioteca, protocolo, scanner ou modo interno de verificação usar quando isso for uma decisão técnica rotineira que o agente consegue avaliar.
 
 Pergunte quando faltar:
 
@@ -151,6 +176,8 @@ Pergunte quando faltar:
 - credencial ou dado externo indisponível;
 - decisão legal/organizacional.
 
+Ferramenta paga é uma decisão de custo e nunca entra por inferência. Independent Verification permanece gratuita por padrão.
+
 ## Saída da primeira passagem
 
 O agente deve saber, mesmo que não exponha todos os detalhes:
@@ -160,6 +187,7 @@ O agente deve saber, mesmo que não exponha todos os detalhes:
 - **nível do sistema**;
 - fonte autoritativa dos dados quando aplicável;
 - modo de governança da API e contrato autoritativo quando aplicável;
+- modo de Independent Verification e checks `required/advisory` quando acima de `baseline`;
 - perfil selecionado, se houver;
 - risco;
 - se Semantic Verification é exigida;

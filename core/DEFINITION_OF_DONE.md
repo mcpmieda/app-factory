@@ -51,6 +51,27 @@ Quando `core/API_ENGINEERING.md` se aplicar:
 
 Redocly CLI, oasdiff, Schemathesis, Pact, AsyncAPI e Arazzo são defaults/opções preferidas conforme `core/API_ENGINEERING.md`, não gates obrigatórios universais.
 
+## Independent Verification
+
+Quando `core/INDEPENDENT_VERIFICATION.md` selecionar modo acima de `baseline`:
+
+- existe uma matriz proporcional de checks independentes, sem instalar scanners só para cumprir checklist;
+- a política permanece `free-only` salvo autorização explícita de gasto;
+- checks `required` executaram com sucesso ou possuem exceção explícita, pequena e versionada;
+- scanner indisponível/não executado não foi contado como `pass`;
+- SAST/supply-chain/accessibility foram aplicados quando selecionados;
+- mutation testing foi usado nos domínios/linguagens aplicáveis quando o modo/risco exigir, verificando se os próprios testes detectam defeitos deliberados;
+- Schemathesis/property/fuzz/stateful testing foi usado quando API Engineering e a matriz selecionarem esse gate;
+- OWASP ZAP baseline/active foi executado somente contra ambiente efêmero/autorizado; produção nunca foi inferida como alvo ativo;
+- Lighthouse CI só bloqueia por budget quando existe baseline estável e política explícita;
+- findings críticos/altos materiais não foram silenciados por suppressions globais;
+- logs/artefatos não expõem secrets ou dados pessoais reais;
+- ferramentas e actions usadas como gate possuem versão/commit reproduzível no projeto real.
+
+Semgrep Community Edition, Trivy, StrykerJS/mutmut, Schemathesis, OWASP ZAP, axe-core e Lighthouse CI são defaults preferidos, não dependências universais. Ferramenta gratuita equivalente pode substituí-los quando tecnicamente melhor.
+
+Independent Verification fornece evidência técnica independente da IA implementadora, mas **não substitui** revisão semântica desacoplada de risco médio/alto.
+
 ## Implementação
 
 - comportamento solicitado existe;
@@ -103,7 +124,7 @@ Quando relevante:
 - para `production-system` ou superior, backup/restore ou recuperação compatível com o provedor foi definido quando perda de dados for material;
 - logs/auditoria/observabilidade existem no nível necessário para diagnosticar operações e falhas relevantes.
 
-API Security específica fica detalhada em `core/API_ENGINEERING.md` + `skills/security-review`; não duplicar aqui o catálogo de ameaças OWASP.
+API Security específica fica detalhada em `core/API_ENGINEERING.md` + `skills/security-review`; Independent Verification executa scanners/gates proporcionais sem duplicar o catálogo de ameaças.
 
 ## Entrega
 
@@ -112,6 +133,7 @@ API Security específica fica detalhada em `core/API_ENGINEERING.md` + `skills/s
 - documentação/PROJECT_STATE é atualizada apenas quando o estado vigente realmente mudou;
 - nível do sistema e decisões de persistência/identidade/recovery ficam recuperáveis no repositório quando relevantes;
 - modo/fonte de verdade da API e baseline de compatibilidade ficam recuperáveis quando `contract`/`governed` se aplicar;
+- modo/checks/exceções de Independent Verification ficam recuperáveis quando acima de `baseline`, preferencialmente em `VERIFICATION.md` e workflows/configs;
 - limitações ou testes impossíveis de executar são declarados explicitamente.
 
 ## Regra final
@@ -123,3 +145,5 @@ Para trabalho funcional com spec aplicável, `lint + typecheck + build + testes 
 Para `multi-user-system` ou superior, UI completa + CRUD visual + dados no navegador também não são Definition of Done de produção sem a arquitetura compartilhada e os gates exigidos por `core/SYSTEM_ENGINEERING.md`.
 
 Para API `contract`/`governed`, endpoint funcionando sem contrato/gates de compatibilidade e comportamento exigidos por `core/API_ENGINEERING.md` também não constitui Definition of Done completa.
+
+Para Independent Verification `adversarial`/`release`, testes primários verdes sem os checks `required` selecionados também não constituem Definition of Done completa.

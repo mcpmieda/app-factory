@@ -61,6 +61,17 @@ Quando o produto expuser/consumir API relevante, tiver web + mobile/extensão, i
 - GraphQL, gRPC, AsyncAPI e Arazzo entram somente quando o comportamento do produto justificar;
 - Redocly/oasdiff/Schemathesis/Pact são ferramentas condicionais, não parte obrigatória do bootstrap mínimo.
 
+### Independent Verification
+
+Este perfil não instala scanners no bootstrap. A profundidade vem de `core/INDEPENDENT_VERIFICATION.md`.
+
+- admin simples/baixo risco pode permanecer `baseline` ou `independent`;
+- sistema administrativo multiusuário real tende a `adversarial` quando autenticação, dados compartilhados ou API/superfície web justificarem;
+- release de produção/alto risco pode elevar para `release`;
+- Trivy/Semgrep/axe, mutation testing, Schemathesis, ZAP e Lighthouse são selecionados somente quando aplicáveis;
+- GitHub CI é preferido para a matriz independente quando capaz;
+- scanners não substituem testes de autorização, persistência nem revisão semântica.
+
 ### ReUI
 
 **Opcional e seletivo.** Usar quando um componente avançado, como Data Grid, filtros complexos, Kanban, calendário ou outro padrão administrativo, reduzir trabalho de forma clara.
@@ -121,7 +132,7 @@ Atenuar automaticamente para comportamento `subtle` em tabelas, leitura prolonga
 
 Preferir Server Components/Server Actions e estado local simples quando suficientes.
 
-Adicionar camadas somente quando o comportamento do produto exigir. `core/SYSTEM_ENGINEERING.md` define a profundidade mínima do sistema; `core/API_ENGINEERING.md` define a profundidade da interface quando houver uma API/integração real.
+Adicionar camadas somente quando o comportamento do produto exigir. `core/SYSTEM_ENGINEERING.md` define a profundidade mínima do sistema; `core/API_ENGINEERING.md` define a profundidade da interface quando houver uma API/integração real; `core/INDEPENDENT_VERIFICATION.md` define a profundidade da prova externa.
 
 Estrutura inicial sugerida:
 
@@ -142,7 +153,7 @@ src/
 └── types/
 ```
 
-A estrutura pode ser simplificada para apps menores. Se houver contrato formal de API, use diretório `api/` ou equivalente adequado ao stack sem forçar essa pasta a projetos sem contrato independente.
+A estrutura pode ser simplificada para apps menores. Se houver contrato formal de API, use diretório `api/` ou equivalente adequado ao stack sem forçar essa pasta a projetos sem contrato independente. `VERIFICATION.md` entra somente quando Independent Verification ficar acima de `baseline`.
 
 ## Gate mínimo de qualidade
 
@@ -160,7 +171,8 @@ Quando os scripts existirem:
 10. desktop e viewport móvel;
 11. console sem erro relevante;
 12. motion coerente com o perfil e `prefers-reduced-motion` quando UI relevante for alterada;
-13. para API `contract`/`governed`, gates de contrato/compatibilidade/runtime/security definidos em `core/API_ENGINEERING.md`.
+13. para API `contract`/`governed`, gates de contrato/compatibilidade/runtime/security definidos em `core/API_ENGINEERING.md`;
+14. para Independent Verification acima de `baseline`, checks `required` selecionados em `core/INDEPENDENT_VERIFICATION.md`.
 
 Mudanças de recipe também exigem geração limpa direta de cada caminho de provider/dependência. PostgreSQL/Auth deve exercitar serviço PostgreSQL efêmero real, login/sessão, migration/query e smoke de produção com `next start`.
 
@@ -169,7 +181,7 @@ Mudanças de recipe também exigem geração limpa direta de cada caminho de pro
 - package manager/linha relevante deve ser consistente entre lockfile, desenvolvimento e CI;
 - CI deve usar instalação limpa, não instalação permissiva para esconder lockfile inconsistente;
 - typecheck e testes não podem depender silenciosamente de artefatos gerados por execução anterior;
-- ferramentas de API usadas como gate devem ter versão fixada, não depender de `latest` em CI.
+- ferramentas de API e Independent Verification usadas como gate devem ter versão/commit fixado, não depender de `latest` em CI.
 
 ## Segurança mínima
 
@@ -179,7 +191,8 @@ Mudanças de recipe também exigem geração limpa direta de cada caminho de pro
 - operações destrutivas protegidas por estado/regra de negócio e confirmação quando apropriado;
 - migrations versionadas;
 - excluir permanentemente apenas quando o domínio permitir e o comportamento estiver testado;
-- APIs expostas seguem `core/API_ENGINEERING.md` + `skills/security-review` em vez de duplicar um checklist específico neste perfil.
+- APIs expostas seguem `core/API_ENGINEERING.md` + `skills/security-review` em vez de duplicar um checklist específico neste perfil;
+- scanners independentes seguem `core/INDEPENDENT_VERIFICATION.md`; ZAP/fuzz ativo usa apenas alvo efêmero/autorizado.
 
 ## Evidência de origem
 

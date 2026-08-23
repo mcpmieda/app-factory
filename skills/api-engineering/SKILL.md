@@ -28,9 +28,10 @@ Use `core/API_ENGINEERING.md` as the source of truth. This Skill operationalizes
    - Schemathesis or equivalent for generated negative/property/stateful testing when useful;
    - Pact or equivalent only when independent consumer/provider evolution justifies it;
    - integration/smoke tests against real or equivalent runtime.
-10. If the change is behaviorally relevant, update `core/SEMANTIC_VERIFICATION.md` artifacts before implementation and map API criteria to executable evidence.
-11. Run `skills/security-review` for exposed/protected/production API surfaces as risk requires, using OWASP API Security as the API threat reference.
-12. Record durable decisions in `ARCHITECTURE.md` or `API.md` without copying generic Factory guidance into the project.
+10. If API risk/exposure justifies independent/adversarial proof, load `independent-verification`; API Engineering decides **which API behaviors/gates are needed**, while Independent Verification decides how Schemathesis/DAST/security tooling is combined and executed safely in CI.
+11. If the change is behaviorally relevant, update `core/SEMANTIC_VERIFICATION.md` artifacts before implementation and map API criteria to executable evidence.
+12. Run `skills/security-review` for exposed/protected/production API surfaces as risk requires, using OWASP API Security as the API threat reference.
+13. Record durable decisions in `ARCHITECTURE.md` or `API.md` without copying generic Factory guidance into the project.
 
 ## Contract rules
 
@@ -54,11 +55,14 @@ For `contract`/`governed`, require evidence proportional to risk that:
 - external dependencies fail within bounded time and controlled recovery behavior;
 - webhook duplicates/replays are safe when applicable.
 
+When `core/INDEPENDENT_VERIFICATION.md` selects an adversarial API check, execute it in an isolated/authorized environment. Schemathesis/fuzz/OWASP ZAP do not replace the contract or semantic criteria; they are independent evidence attempting to break the implementation.
+
 ## Relationship to other Skills
 
 - `architecture`: chooses system boundaries; this Skill owns API-specific contract choices.
 - `security-review`: owns security analysis; this Skill supplies API-specific threat/gate requirements.
 - `semantic-verification`: owns intention → executable evidence traceability.
+- `independent-verification`: owns the proportional execution matrix of external deterministic/adversarial motors; it does not redefine the API contract.
 - `database`: owns persistence/schema decisions behind the API.
 - `deployment`: owns runtime/release environment.
 
