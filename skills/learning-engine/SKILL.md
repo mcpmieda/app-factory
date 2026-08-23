@@ -36,6 +36,21 @@ A learned preference may reorder already-capable lightweight backends. It must n
 - promote `local_full` over an eligible lighter backend only because of historical score;
 - reduce verification to improve speed.
 
+## Skill Routing Telemetry
+
+Skill routing is separate from backend learning. Record only installed Skill slugs that the routing decision explicitly selected; do not claim this proves the model read or cognitively used a Markdown Skill.
+
+The local `.factory/skill-routing.json` contains aggregate counters only. It does not contain prompts, task text, code, files, logs, names, URLs or external telemetry.
+
+Commands:
+
+```text
+python scripts/skill_routing.py --root <project> record --skill <slug> [--skill <slug> ...]
+python scripts/skill_routing.py --root <project> report
+```
+
+The report is advisory. A low/zero count never authorizes automatic Skill removal and does not feed backend selection automatically.
+
 ## Commands
 
 Agents may use:
