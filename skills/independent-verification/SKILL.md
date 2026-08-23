@@ -24,7 +24,7 @@ Esta Skill **não** decide sozinha a intenção do produto, o contrato de API ou
 ## Procedimento
 
 1. Recupere risco, nível de sistema e API mode já classificados.
-2. Rode/derive o plano determinístico com `engine/independent_verification.py` ou `factory.py independent-plan` quando disponível.
+2. Rode/derive o plano determinístico com `python scripts/independent_verification.py --root <projeto> ...` quando o runtime estiver disponível.
 3. Confirme sinais técnicos: UI web, OpenAPI/GraphQL, testes existentes e linguagem.
 4. Escolha o menor modo suficiente: `baseline`, `independent`, `adversarial` ou `release`.
 5. Materialize somente os checks aplicáveis no workflow/config do projeto.
