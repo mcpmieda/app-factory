@@ -64,7 +64,7 @@ def main() -> int:
         [
             "name: api-engineering",
             "core/API_ENGINEERING.md",
-            "none`, `lightweight`, `contract` ou `governed",
+            "`none`, `lightweight`, `contract` or `governed`",
             "Redocly",
             "oasdiff",
             "Schemathesis",
