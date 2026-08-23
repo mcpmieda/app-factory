@@ -3,9 +3,14 @@ from __future__ import annotations
 
 import argparse
 import json
+import sys
 from pathlib import Path
 
-from engine.semantic_assurance import (
+ROOT = Path(__file__).resolve().parents[1]
+if str(ROOT) not in sys.path:
+    sys.path.insert(0, str(ROOT))
+
+from engine.semantic_assurance import (  # noqa: E402
     analyze_assurance,
     load_json,
     new_assurance,
@@ -13,7 +18,7 @@ from engine.semantic_assurance import (
     semantic_diff,
     write_assurance,
 )
-from engine.semantic_verification import read_spec
+from engine.semantic_verification import read_spec  # noqa: E402
 
 
 def command_init(args: argparse.Namespace) -> int:
