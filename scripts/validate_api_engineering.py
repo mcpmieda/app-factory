@@ -54,7 +54,7 @@ def main() -> int:
             "breaking",
             "timeout",
             "retry",
-            "contract-first",
+            "Contract-first",
             "não cria uma API onde o produto não precisa",
         ],
     )
