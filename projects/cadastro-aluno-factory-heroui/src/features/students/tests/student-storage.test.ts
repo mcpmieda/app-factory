@@ -3,6 +3,7 @@ import { describe, expect, it } from "vitest";
 import {
   createStudentBackup,
   migrateLegacyStudents,
+  parseStoredStudents,
   parseStudentBackup,
   studentsToCsv,
 } from "@/features/students/data/student-storage";
@@ -24,6 +25,12 @@ const record: StudentRecord = {
   status: "active",
   createdAt: "2026-08-20T10:00:00.000Z",
   updatedAt: "2026-08-21T10:00:00.000Z",
+};
+
+const duplicateRecord: StudentRecord = {
+  ...record,
+  id: "student-2",
+  registration: " 202600123 ",
 };
 
 describe("student storage contracts", () => {
@@ -52,6 +59,10 @@ describe("student storage contracts", () => {
     });
   });
 
+  it("rejeita coleção v2 com matrículas equivalentes duplicadas ao ler", () => {
+    expect(parseStoredStudents([record, duplicateRecord])).toBeNull();
+  });
+
   it("faz round-trip de backup versionado", () => {
     const backup = createStudentBackup([record]);
     const parsed = parseStudentBackup(JSON.stringify(backup));
@@ -62,12 +73,20 @@ describe("student storage contracts", () => {
     }
   });
 
-  it("rejeita backup com matrículas equivalentes duplicadas", () => {
-    const backup = createStudentBackup([
-      record,
-      { ...record, id: "student-2", registration: " 202600123 " },
-    ]);
-    const parsed = parseStudentBackup(JSON.stringify(backup));
+  it("não cria backup de uma coleção com matrículas duplicadas", () => {
+    expect(() => createStudentBackup([record, duplicateRecord])).toThrow(
+      "A coleção não pode ser exportada porque é inválida.",
+    );
+  });
+
+  it("rejeita backup recebido com matrículas equivalentes duplicadas", () => {
+    const parsed = parseStudentBackup(
+      JSON.stringify({
+        version: 2,
+        exportedAt: "2026-08-22T12:00:00.000Z",
+        students: [record, duplicateRecord],
+      }),
+    );
 
     expect(parsed.ok).toBe(false);
   });
