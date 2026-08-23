@@ -26,6 +26,20 @@ This project follows **App Factory** (`mcpmieda/app-factory`).
 20. For medium/high-risk semantic work, prefer a separate reviewer/context; when unavailable use a clean-context review that only receives the spec, current content/diff needed and executable evidence, not the implementation reasoning. Deterministic scanners/model checkers do not count as this reviewer.
 21. Keep durable state recoverable from GitHub so another agent can continue without the previous chat. `.factory/state.json` may be versioned at important handoffs; `.factory/context/`, `.factory/execution.json` and `.factory/learning.json` are local/regenerable operational data and should stay outside Git by default. Semantic artifacts under `specs/` are durable/versionable when applicable. System level and authoritative data/persistence/identity/recovery decisions should also be recoverable when relevant; API mode/contract/baseline should be recoverable when `contract`/`governed` applies; semantic depth/assurance should be recoverable for `domain`/`formal`; Independent Verification mode/checks/exceptions should be recoverable when above `baseline`; UI projects should keep design system, Professional UI Profile/exceção and Motion Profile recoverable in product/architecture state.
 
+## Change Hygiene for existing code
+
+Whenever this project is maintained, repaired, modernized or reviewed, follow App Factory `core/CHANGE_HYGIENE.md` whether the project was originally created by App Factory or imported later.
+
+- preserve stable behavior, not obsolete implementation;
+- prefer one active source of truth per responsibility;
+- do not leave `old/new/fixed/final/copy/v2` shadow implementations without a real compatibility boundary;
+- after repair/debug loops, consolidate the working solution and remove discarded attempts, dead code, orphan imports/dependencies, temporary files, unnecessary suppressions and CSS override layers;
+- dual paths are allowed only for real compatibility/migration and must have an objective removal condition plus transition tests;
+- run `scripts/change_hygiene.py` from the App Factory when available; objective blockers must be resolved and advisories reviewed contextually;
+- run regression checks again after consolidation, because cleanup is part of the delivered implementation.
+
+The final tree should look like the implementation we would have chosen if we had known the successful solution from the start; the Git history/PR stores the attempts.
+
 ## Project-specific rules
 
 Add only rules that are specific to this project below. Do not duplicate the entire App Factory.
@@ -34,4 +48,4 @@ Add only rules that are specific to this project below. Do not duplicate the ent
 
 ## Factory fallback
 
-If the App Factory plugin is unavailable but the agent has GitHub access, consult `mcpmieda/app-factory` starting from `AGENTS.md` and `core/ENTRYPOINT.md`. For architecture/autonomy/execution/learning/semantic/API/independent verification also consult `core/SYSTEM_ENGINEERING.md`, `core/API_ENGINEERING.md`, `core/SEMANTIC_ASSURANCE.md`, `core/INDEPENDENT_VERIFICATION.md`, `core/CONTEXT_ENGINE.md`, `core/AUTONOMY_ENGINE.md`, `core/EXECUTION_FABRIC.md`, `core/LEARNING_ENGINE.md`, `core/SEMANTIC_VERIFICATION.md` and `core/TASK_ROUTER.md`. For `domain`/`formal`, use `SEMANTICS.md` as the project-specific semantic note. For UI work also consult `ui/UI_POLICY.md`, `ui/PROFESSIONAL_UI_PROFILE.md` and `ui/MOTION_POLICY.md`. Do not require the user to restate the Factory rules manually.
+If the App Factory plugin is unavailable but the agent has GitHub access, consult `mcpmieda/app-factory` starting from `AGENTS.md` and `core/ENTRYPOINT.md`. For maintenance/review also consult `core/CHANGE_HYGIENE.md`. For architecture/autonomy/execution/learning/semantic/API/independent verification also consult `core/SYSTEM_ENGINEERING.md`, `core/API_ENGINEERING.md`, `core/SEMANTIC_ASSURANCE.md`, `core/INDEPENDENT_VERIFICATION.md`, `core/CONTEXT_ENGINE.md`, `core/AUTONOMY_ENGINE.md`, `core/EXECUTION_FABRIC.md`, `core/LEARNING_ENGINE.md`, `core/SEMANTIC_VERIFICATION.md` and `core/TASK_ROUTER.md`. For `domain`/`formal`, use `SEMANTICS.md` as the project-specific semantic note. For UI work also consult `ui/UI_POLICY.md`, `ui/PROFESSIONAL_UI_PROFILE.md` and `ui/MOTION_POLICY.md`. Do not require the user to restate the Factory rules manually.
