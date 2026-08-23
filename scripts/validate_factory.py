@@ -41,6 +41,18 @@ REQUIRED = [
     "scripts/factory.py",
     "scripts/semantic_assurance.py",
     "scripts/independent_verification.py",
+    "scripts/agent_conformance.py",
+    "scripts/validate_agent_conformance.py",
+    "scripts/skill_routing.py",
+    "evals/agent-conformance/README.md",
+    "evals/agent-conformance/cases/functional-spec-and-plan.json",
+    "evals/agent-conformance/cases/docs-change-stays-light.json",
+    "tests/agent_conformance/test_agent_conformance.py",
+    "research/EVALUATION_EVIDENCE_RESEARCH.md",
+    ".coveragerc",
+    "requirements/ci-evidence.txt",
+    ".github/workflows/validate-agent-conformance.yml",
+    ".github/workflows/validate-python-evidence.yml",
     "ui/UI_POLICY.md",
     "ui/PROFESSIONAL_UI_PROFILE.md",
     "ui/MOTION_POLICY.md",
@@ -198,6 +210,63 @@ def validate_professional_ui() -> None:
     )
 
 
+def validate_evaluation_evidence() -> None:
+    require_markers(
+        "research/EVALUATION_EVIDENCE_RESEARCH.md",
+        [
+            "Agent Conformance Corpus",
+            "SWE-bench",
+            "Inspect AI",
+            "coverage.py",
+            "diff-cover",
+            "Skill Routing Telemetry",
+            "OpenTelemetry",
+        ],
+    )
+    require_markers(
+        "scripts/agent_conformance.py",
+        [
+            "ACTION_KINDS",
+            "BEHAVIORAL_ASSERTIONS",
+            "safe_relative_path",
+            "run_reference_case",
+            "score_workspace",
+            "shell=False",
+        ],
+    )
+    require_markers(
+        ".coveragerc",
+        ["branch = True", "source = engine"],
+    )
+    require_markers(
+        ".github/workflows/validate-python-evidence.yml",
+        [
+            "fetch-depth: 0",
+            "coverage run --parallel-mode",
+            "diff-cover coverage.xml",
+            "--fail-under=100",
+            "Upload evidence artifacts",
+        ],
+    )
+    require_markers(
+        "core/LEARNING_ENGINE.md",
+        [
+            "Skill Routing Telemetry",
+            ".factory/skill-routing.json",
+            "não afirma saber se um modelo leu",
+            "nunca remove ou desativa Skill automaticamente",
+        ],
+    )
+    require_markers(
+        "skills/factory-router/SKILL.md",
+        [
+            "scripts/skill_routing.py",
+            "advisory aggregate telemetry",
+            "never include prompt/task text",
+        ],
+    )
+
+
 def main() -> int:
     missing = [path for path in REQUIRED if not (ROOT / path).is_file()]
     if missing:
@@ -213,9 +282,10 @@ def main() -> int:
             fail(f"Frontmatter inválido ou incompleto: {skill.relative_to(ROOT)}")
 
     validate_professional_ui()
+    validate_evaluation_evidence()
 
     print(
-        f"OK: {len(REQUIRED)} arquivos obrigatórios, {len(skill_files)} Skills e Professional UI validados."
+        f"OK: {len(REQUIRED)} arquivos obrigatórios, {len(skill_files)} Skills, Professional UI e Evaluation Evidence validados."
     )
     return 0
 
