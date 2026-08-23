@@ -7,13 +7,14 @@ Use este diretório como referência para materializar workflows de verificaçã
 Não copie todas as ferramentas para todo projeto. Rode primeiro o planner determinístico e materialize somente o que for aplicável:
 
 ```bash
-python scripts/factory.py --root <projeto> independent-plan \
+python scripts/independent_verification.py \
+  --root <projeto> \
   --risk medium \
   --system-level multi-user-system \
   --api-mode contract
 ```
 
-Quando a CLI central não estiver disponível no repositório do produto, use `VERIFICATION.md` + `core/INDEPENDENT_VERIFICATION.md` como contrato de seleção.
+Quando a CLI central da Factory não estiver disponível no repositório do produto, use `VERIFICATION.md` + `core/INDEPENDENT_VERIFICATION.md` como contrato de seleção.
 
 ## Ferramentas default gratuitas/open source
 
