@@ -19,6 +19,7 @@ URL de produção registrada no repositório: `https://cadastroaluno-ecru.vercel
 - restauração de backup com validação e confirmação;
 - exportação em CSV;
 - migração automática dos cadastros da versão antiga `v1` para `v2`;
+- validação da unicidade de matrícula no conjunto de registros, inclusive ao ler/restaurar dados;
 - interface responsiva e `prefers-reduced-motion`.
 
 ## Arquitetura — importante
@@ -59,7 +60,7 @@ O conjunto cobre:
 
 1. ESLint;
 2. TypeScript;
-3. 15 testes unitários;
+3. 17 testes unitários;
 4. build Next.js;
 5. 10 testes Playwright em desktop/mobile Chromium;
 6. auditoria completa das dependências;
