@@ -18,12 +18,26 @@ A especificação semântica é exigida por padrão para:
 
 Pode ser dispensada para documentação, chores e refactors pequenos que não mudam comportamento observável.
 
+## Semantic Assurance antes da verificação
+
+`core/SEMANTIC_ASSURANCE.md` complementa esta camada e cuida da **qualidade da própria especificação** antes da implementação.
+
+A divisão é:
+
+- Semantic Assurance: requisitos estão claros, coerentes, suficientemente completos e rastreáveis?
+- Semantic Verification: a implementação satisfaz a especificação atual?
+
+Para profundidade `scenario`, o contrato semântico abaixo pode ser suficiente. Para `domain`/`formal`, `specs/semantic-assurance.json` adiciona vocabulário, domínio, requisitos normalizados, restrições, consistência, cobertura e semantic diff sem duplicar os critérios deste arquivo.
+
+Uma spec estruturalmente válida ainda pode conter interpretação humana errada. Por isso Semantic Assurance pode gerar perguntas e formalizações, mas não substitui decisão de domínio nem revisão desacoplada.
+
 ## Artefatos
 
 Quando aplicável, usar artefatos versionáveis no projeto:
 
 ```text
 specs/semantic-contract.json
+specs/semantic-assurance.json   # somente em depth domain/formal
 specs/verification-plan.json
 specs/review-evidence.json
 ```
@@ -45,6 +59,12 @@ Critérios `must` são obrigatórios para a entrega.
 
 Quando houver API `contract`/`governed`, não copie o OpenAPI/GraphQL/Protobuf/AsyncAPI inteiro para a spec semântica. O contrato machine-readable continua sendo autoridade da interface conforme `core/API_ENGINEERING.md`; a spec semântica registra somente os comportamentos e invariantes que precisam de prova, como autorização, compatibilidade, paginação, idempotência, retry, erro ou workflow crítico.
 
+### semantic-assurance.json
+
+Quando `core/SEMANTIC_ASSURANCE.md` selecionar profundidade `domain` ou `formal`, este artefato liga requisitos estruturados aos critérios/invariantes deste contrato e ao modelo de domínio relevante.
+
+Ele não substitui `semantic-contract.json`, banco/schema, OpenAPI ou arquitetura. Seu propósito é eliminar ambiguidade evitável, detectar referências/contradições estruturadas, medir cobertura de rastreabilidade e calcular impacto semântico.
+
 ### verification-plan.json
 
 É derivado da spec, não inventado depois da implementação. Cada critério de aceite recebe uma linha de rastreabilidade.
@@ -54,9 +74,11 @@ Todo critério `must` precisa apontar para pelo menos uma evidência executável
 - teste unitário/integrado;
 - E2E/browser;
 - gate funcional;
+- property/stateful test quando aplicável;
 - lint/compatibility/contract test de API quando aplicável;
 - visual regression quando aplicável;
-- evidência de Independent Verification quando um motor externo provar o critério ou risco relacionado.
+- evidência de Independent Verification quando um motor externo provar o critério ou risco relacionado;
+- gate formal selecionado por Semantic Assurance quando a propriedade realmente depender dele.
 
 O plano não substitui a execução dos testes. Ele liga intenção → teste/gate para reduzir testes que apenas confirmam uma implementação errada.
 
@@ -71,12 +93,15 @@ Para risco médio/alto, `deterministic-ci` sozinho não basta. É exigido um mod
 
 O registro fica amarrado por fingerprints à spec, ao plano e ao conteúdo revisado. Se código/spec/plano mudarem depois, a revisão fica stale.
 
+Quando Semantic Assurance detectar semantic diff material, os critérios/invariantes/gates impactados também precisam ser considerados stale até nova prova.
+
 ## Fluxo
 
 Para trabalho funcional relevante:
 
 ```text
 planning
+→ semantic assurance proporcional
 → specification
 → implementation
 → verification
@@ -84,9 +109,15 @@ planning
 → delivery
 ```
 
-A fase `specification` deve terminar antes da implementação.
+A fase `specification` deve terminar antes da implementação. Em `domain`/`formal`, isso inclui resolver erros determinísticos e perguntas `blocking` de Semantic Assurance.
 
 Para APIs com contrato formal, a definição/alteração do contrato de interface faz parte da especificação e deve preceder consumidores que dependam do novo comportamento. `core/API_ENGINEERING.md` define a forma desse contrato; este módulo define a prova de que a intenção foi atendida.
+
+## Model/property-based evidence
+
+`given/when/then` continua sendo a forma legível principal dos critérios. Quando o domínio tiver ranges, invariantes, decisões combinatórias ou máquina de estados, `core/SEMANTIC_ASSURANCE.md` pode recomendar property-based/stateful/model-based testing para explorar casos que os exemplos manuais não cobrem.
+
+Contraexemplo encontrado por esses motores deve virar regressão reproduzível quando material.
 
 ## Independent Verification
 
@@ -96,7 +127,8 @@ Ele adiciona motores determinísticos que podem tentar reprovar a implementaçã
 
 A divisão de responsabilidade é:
 
-- Semantic Verification responde **"isso corresponde ao que foi pedido?"**;
+- Semantic Assurance responde **"a especificação está suficientemente boa para implementar?"**;
+- Semantic Verification responde **"isso corresponde ao que foi especificado?"**;
 - Independent Verification responde **"motores externos conseguem encontrar falhas que os testes/implementação podem ter deixado passar?"**.
 
 Resultados de scanners podem ser ligados a critérios `must` quando realmente provarem parte deles, mas não devem ser usados como substituto genérico da revisão semântica.
@@ -133,8 +165,10 @@ Consulta externa de documentação não é gate universal porque pode introduzir
 
 O mapa atual de imports é deliberadamente leve. Não fingir precisão de call graph universal com regex. Grafo semântico profundo deve ser promovido somente após pilotos por linguagem/stack provarem baixo falso-positivo e utilidade real.
 
+`engine/semantic_assurance.py` mantém um grafo semântico **explícito** por IDs/referências de domínio e pode calcular impacto requisito → AC/invariante → gate. Isso é diferente de inferir automaticamente todo o call graph do código.
+
 ## Regra final
 
 `lint + typecheck + build + testes verdes` não é suficiente para declarar sucesso funcional quando existe uma spec semântica aplicável. A entrega precisa também demonstrar rastreabilidade dos critérios `must` e revisão válida contra o contrato atual.
 
-Da mesma forma, uma API com spec válida mas sem evidência de comportamento crítico não está semanticamente provada; contrato de interface, comportamento executável e verificação independente proporcional se complementam.
+Da mesma forma, uma API com spec válida mas sem evidência de comportamento crítico não está semanticamente provada; contrato de interface, Semantic Assurance proporcional, comportamento executável e verificação independente se complementam.
