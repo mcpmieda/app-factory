@@ -17,6 +17,9 @@
 - API/integracao: [não aplicável / `none` / `lightweight` / `contract` / `governed`]
 - contrato autoritativo da API: [não aplicável / caminho + protocolo]
 - baseline/compatibilidade da API: [não aplicável / estratégia vigente]
+- Independent Verification: `baseline` / `independent` / `adversarial` / `release`
+- checks independentes obrigatórios: [não aplicável / IDs ou resumo]
+- checks independentes advisory/exceções: [não aplicável / resumo + referência em VERIFICATION.md]
 - funcionalidades validadas:
 - limitações conhecidas:
 
@@ -35,16 +38,18 @@
 [Uma ação concreta]
 
 ## Ambiente recomendado
-- ChatGPT / Codex / outro
+- ChatGPT / Codex / GitHub CI / outro
 - motivo:
 
 ## Links internos
 - produto: `PRODUCT.md`
 - arquitetura: `ARCHITECTURE.md`
 - API: `API.md` quando existir contrato relevante
+- verificação independente: `VERIFICATION.md` quando o modo for acima de `baseline`
 - decisões: `docs/decisions/` quando existir
 - contrato de engenharia: App Factory `core/SYSTEM_ENGINEERING.md`
 - contrato de APIs: App Factory `core/API_ENGINEERING.md` quando aplicável
+- contrato de Independent Verification: App Factory `core/INDEPENDENT_VERIFICATION.md` quando aplicável
 
 ## Regra
 Atualize apenas quando o estado vigente mudar de forma útil para a próxima sessão. Histórico detalhado pertence ao Git, PRs, Issues e changelog quando necessário.
@@ -52,3 +57,5 @@ Atualize apenas quando o estado vigente mudar de forma útil para a próxima ses
 Para `persistent-app` ou superior, mantenha nível do sistema e fonte autoritativa dos dados preenchidos. Para `multi-user-system` ou superior, mantenha também as decisões vigentes de identidade/autorização, persistência e recovery quando relevantes.
 
 Para API `contract`/`governed`, mantenha modo, fonte de verdade e estratégia/baseline de compatibilidade recuperáveis. Para `none`/`lightweight`, não crie documentação adicional sem necessidade.
+
+Para Independent Verification acima de `baseline`, mantenha modo, checks `required/advisory`, ambiente de teste e exceções recuperáveis em `VERIFICATION.md`/workflow. Não trate check indisponível como `pass`.
