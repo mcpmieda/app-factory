@@ -1,5 +1,6 @@
 {
   "profile": "web-admin",
+  "professionalUiProfile": "professional-default",
   "motionProfile": "ambient",
   "factoryBaseline": "v1.4.0",
   "optionalModules": [
