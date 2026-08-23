@@ -22,6 +22,7 @@ REQUIRED = [
     "core/DEFINITION_OF_DONE.md",
     "core/SYSTEM_ENGINEERING.md",
     "core/API_ENGINEERING.md",
+    "core/INDEPENDENT_VERIFICATION.md",
     "core/CONTEXT_ENGINE.md",
     "core/AUTONOMY_ENGINE.md",
     "core/EXECUTION_FABRIC.md",
@@ -33,12 +34,15 @@ REQUIRED = [
     "engine/ci_executor.py",
     "engine/learning_engine.py",
     "engine/semantic_verification.py",
+    "engine/independent_verification.py",
     "engine/review_packet.py",
     "scripts/factory.py",
+    "scripts/independent_verification.py",
     "ui/UI_POLICY.md",
     "ui/MOTION_POLICY.md",
     "skills/factory-router/SKILL.md",
     "skills/api-engineering/SKILL.md",
+    "skills/independent-verification/SKILL.md",
     "skills/context-engine/SKILL.md",
     "skills/autonomy-engine/SKILL.md",
     "skills/execution-router/SKILL.md",
@@ -46,6 +50,7 @@ REQUIRED = [
     "skills/semantic-verification/SKILL.md",
     "skills/ui-builder/SKILL.md",
     "templates/project/AGENTS.md",
+    "templates/project/VERIFICATION.md",
 ]
 
 SKILL_HEADER = re.compile(
