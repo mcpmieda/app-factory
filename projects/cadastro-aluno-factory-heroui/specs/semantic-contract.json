@@ -1,0 +1,141 @@
+{
+  "schema_version": 1,
+  "goal": "Evoluir o cadastro local de alunos para uma gestão completa no dispositivo, preservando automaticamente os dados existentes e mantendo explícito que a hospedagem online não cria compartilhamento entre dispositivos.",
+  "change_type": "functional",
+  "risk": "low",
+  "scope": {
+    "in": [
+      "cadastro e edição de alunos",
+      "busca, filtros, ordenação e visualização de detalhes",
+      "status de aluno com arquivamento e reativação",
+      "migração automática dos registros locais v1 para o contrato v2",
+      "backup e restauração em JSON com confirmação explícita",
+      "exportação dos registros em CSV",
+      "painel-resumo responsivo mantendo HeroUI e Semantic Motion"
+    ],
+    "out": [
+      "backend compartilhado, banco remoto ou sincronização entre dispositivos",
+      "autenticação, autorização por usuário ou perfis institucionais",
+      "API pública ou integração externa",
+      "uso dos dados locais como cadastro oficial multiusuário"
+    ]
+  },
+  "assumptions": [
+    "O produto permanece um local-app: o navegador é a fonte autoritativa dos registros desta demonstração.",
+    "O app já pode conter registros no storage v1 e esses registros precisam continuar acessíveis após a evolução.",
+    "A publicação no Vercel distribui a aplicação, mas não altera a natureza local da persistência."
+  ],
+  "invariants": [
+    {
+      "id": "INV-001",
+      "statement": "Duas matrículas equivalentes após normalização nunca podem coexistir no conjunto de alunos."
+    },
+    {
+      "id": "INV-002",
+      "statement": "A migração v1 para v2 preserva identidade e dados existentes e representa turno desconhecido como não informado, sem inventar informação."
+    },
+    {
+      "id": "INV-003",
+      "statement": "Um arquivo de backup inválido nunca substitui os registros locais atuais."
+    },
+    {
+      "id": "INV-004",
+      "statement": "A interface continua informando que os dados pertencem somente ao navegador atual e não são compartilhados."
+    }
+  ],
+  "data_contracts": [
+    {
+      "name": "student-storage-v2",
+      "authority": "localStorage do navegador",
+      "migration_from": "app-factory.student-registration.v1",
+      "current_key": "app-factory.student-registration.v2"
+    },
+    {
+      "name": "student-backup-v2",
+      "format": "JSON versionado",
+      "replace_semantics": "somente após validação e confirmação explícita"
+    }
+  ],
+  "interfaces": [],
+  "acceptance_criteria": [
+    {
+      "id": "AC-001",
+      "priority": "must",
+      "given": "dados válidos de um novo aluno",
+      "when": "o usuário conclui o cadastro e recarrega a página",
+      "then": [
+        "o aluno aparece na gestão",
+        "os dados continuam disponíveis após o recarregamento"
+      ],
+      "verification": ["browser"]
+    },
+    {
+      "id": "AC-002",
+      "priority": "must",
+      "given": "uma matrícula já existente",
+      "when": "o usuário tenta cadastrar ou editar outro aluno com matrícula equivalente",
+      "then": [
+        "a operação é rejeitada",
+        "nenhum registro duplicado é persistido"
+      ],
+      "verification": ["browser", "test"]
+    },
+    {
+      "id": "AC-003",
+      "priority": "must",
+      "given": "um aluno já cadastrado",
+      "when": "o usuário edita seus dados ou altera seu status",
+      "then": [
+        "o mesmo registro é atualizado sem criar duplicata",
+        "a lista e os indicadores refletem o novo estado"
+      ],
+      "verification": ["browser"]
+    },
+    {
+      "id": "AC-004",
+      "priority": "must",
+      "given": "múltiplos alunos cadastrados",
+      "when": "o usuário pesquisa, filtra por status/turma ou altera a ordenação",
+      "then": [
+        "somente os registros correspondentes são exibidos",
+        "o contador de resultados corresponde à lista visível"
+      ],
+      "verification": ["browser", "test"]
+    },
+    {
+      "id": "AC-005",
+      "priority": "must",
+      "given": "registros válidos no storage v1 e nenhum storage v2",
+      "when": "a nova versão é aberta pela primeira vez",
+      "then": [
+        "os registros antigos são migrados automaticamente",
+        "dados existentes são preservados",
+        "turno desconhecido aparece como não informado"
+      ],
+      "verification": ["browser", "test"]
+    },
+    {
+      "id": "AC-006",
+      "priority": "must",
+      "given": "um backup JSON v2 válido ou inválido",
+      "when": "o usuário tenta restaurar seus dados",
+      "then": [
+        "backup válido só substitui dados após confirmação",
+        "backup inválido não altera os dados atuais"
+      ],
+      "verification": ["browser", "test"]
+    },
+    {
+      "id": "AC-007",
+      "priority": "must",
+      "given": "registros locais com caracteres que exigem escape",
+      "when": "o usuário exporta CSV ou cria backup JSON",
+      "then": [
+        "o arquivo exportado preserva os campos do cadastro",
+        "o CSV permanece estruturalmente válido",
+        "o backup pode ser validado pelo contrato v2"
+      ],
+      "verification": ["test"]
+    }
+  ]
+}

@@ -10,11 +10,27 @@ const validStudent = {
   phone: "(71) 99999-9999",
   course: "Ensino Médio",
   classroom: "3º A",
+  shift: "morning" as const,
+  guardianName: "Maria Souza",
+  guardianPhone: "(71) 98888-7777",
+  notes: "Alergia registrada no prontuário físico.",
 };
 
 describe("studentSchema", () => {
   it("aceita um cadastro válido", () => {
     const result = studentSchema.safeParse(validStudent);
+    expect(result.success).toBe(true);
+  });
+
+  it("aceita responsável e observações vazios", () => {
+    const result = studentSchema.safeParse({
+      ...validStudent,
+      guardianName: "",
+      guardianPhone: "",
+      notes: "",
+      shift: "not_informed",
+    });
+
     expect(result.success).toBe(true);
   });
 
@@ -40,6 +56,15 @@ describe("studentSchema", () => {
     const result = studentSchema.safeParse({
       ...validStudent,
       registration: "ABC 123",
+    });
+
+    expect(result.success).toBe(false);
+  });
+
+  it("rejeita telefone inválido do responsável", () => {
+    const result = studentSchema.safeParse({
+      ...validStudent,
+      guardianPhone: "123",
     });
 
     expect(result.success).toBe(false);

@@ -1,70 +1,78 @@
-# Cadastro de Aluno — App Factory + HeroUI
+# Gestão de Alunos — App Factory + HeroUI
 
-Aplicativo de cadastro de aluno em **uma única etapa**, construído segundo a App Factory e usando **HeroUI v3** como design system.
+Aplicativo local de gestão de alunos construído com **Next.js 16 + HeroUI v3** e usado como teste de campo da App Factory.
 
-## Teste mais fácil: GitHub Codespaces
+URL de produção registrada no repositório: `https://cadastroaluno-ecru.vercel.app`
 
-Este projeto já contém `.devcontainer/devcontainer.json`.
+> A URL está registrada como homepage do repositório. O conector Vercel disponível durante este field test não conseguiu confirmar o deploy ao vivo, portanto este documento não transforma esse registro em prova de disponibilidade.
 
-Depois de colocar os arquivos em um repositório no GitHub:
+## O que esta versão faz
 
-1. abra o repositório;
-2. clique em **Code**;
-3. abra a aba **Codespaces**;
-4. clique em **Create codespace on main**.
+- cadastro e edição de alunos;
+- status `Ativo`, `Arquivado` e `Transferido`;
+- pesquisa por nome, matrícula, e-mail, telefone, curso, turma ou responsável;
+- filtros por status e turma;
+- ordenação por atualização, nome ou turma;
+- visão detalhada de cada aluno;
+- painel com total, ativos, turmas e arquivados;
+- backup completo em JSON versionado;
+- restauração de backup com validação e confirmação;
+- exportação em CSV;
+- migração automática dos cadastros da versão antiga `v1` para `v2`;
+- validação da unicidade de matrícula no conjunto de registros, inclusive ao ler/restaurar dados;
+- interface responsiva e `prefers-reduced-motion`.
 
-O Codespaces irá automaticamente:
+## Arquitetura — importante
 
-- instalar as dependências;
-- instalar o Chromium do Playwright;
-- iniciar o Next.js;
-- encaminhar a porta `3000`;
-- abrir o app no navegador.
+Este produto continua classificado como **`local-app`**.
 
-Você não precisa executar `npm install` manualmente.
+O Vercel hospeda e distribui a aplicação, mas os registros são guardados no `localStorage` do navegador atual. Portanto:
 
-## Abrir online com Vercel
+- cada navegador/dispositivo possui seus próprios dados;
+- não há banco compartilhado;
+- não há login nem perfis de acesso;
+- não existe sincronização entre computadores;
+- esta versão não deve ser usada como cadastro institucional multiusuário.
 
-Este projeto está pronto para ser publicado como um site Next.js sem variáveis de ambiente.
+Essa escolha é intencional para este teste: a evolução aumenta bastante o produto sem introduzir backend apenas por sofisticação.
 
-Quando ele estiver dentro do repositório `mcpmieda/app-factory`, use como **Root Directory** no Vercel:
+## Compatibilidade com a versão anterior
 
-```text
-projects/cadastro-aluno-factory-heroui
-```
+A versão anterior utilizava:
 
-Depois basta clicar em **Deploy**. O Vercel instala as dependências, executa `next build` e fornece um endereço `*.vercel.app`.
+`app-factory.student-registration.v1`
 
-Os dados cadastrados continuam no `localStorage` do navegador. Portanto, esta publicação é uma demonstração funcional, não um cadastro compartilhado entre computadores.
+A versão atual utiliza:
 
-## Testar toda a estrutura
+`app-factory.student-registration.v2`
 
-No terminal do Codespaces:
+Quando o `v2` ainda não existe e o navegador contém registros válidos no `v1`, a aplicação migra automaticamente os registros. Campos que não existiam antes não recebem dados inventados; por exemplo, o turno passa a `Não informado`.
+
+## Verificação
 
 ```bash
+npm ci
 npm run test:all
+npm audit
 ```
 
-Esse único comando executa:
+O conjunto cobre:
 
 1. ESLint;
-2. TypeScript typecheck;
-3. testes unitários com Vitest;
-4. build do Next.js;
-5. testes E2E com Playwright em desktop e mobile.
+2. TypeScript;
+3. 17 testes unitários;
+4. build Next.js;
+5. 10 testes Playwright em desktop/mobile Chromium;
+6. auditoria completa das dependências;
+7. contrato semântico, Semantic Assurance e revisão por fingerprint no CI.
 
-Também é possível usar no VS Code/Codespaces:
-
-**Terminal → Run Task → ✅ Verificar app completo**
-
-## Rodar localmente
+Scripts individuais:
 
 ```bash
-bash scripts/bootstrap.sh
-npm run dev
+npm run test
+npm run e2e
+npm run verify
 ```
-
-Abra `http://localhost:3000`.
 
 ## Stack
 
@@ -81,10 +89,23 @@ Abra `http://localhost:3000`.
 
 Motion Profile: `ambient`.
 
-Em áreas de dados, o movimento é atenuado para `subtle`.
-`prefers-reduced-motion` é respeitado para movimento não essencial.
+Em superfícies densas de dados, o movimento é reduzido para `subtle`. `prefers-reduced-motion` desativa movimento não essencial.
 
-## Persistência
+## Desenvolvimento local
 
-Esta baseline usa `localStorage`, adequada para demonstração e teste local.
-Ela não deve ser confundida com uma solução multiusuário de produção.
+```bash
+bash scripts/bootstrap.sh
+npm run dev
+```
+
+Abra `http://localhost:3000`.
+
+## Vercel
+
+Root Directory:
+
+```text
+projects/cadastro-aluno-factory-heroui
+```
+
+A integração Git/Vercel pode continuar publicando alterações de `main`; nenhuma variável de ambiente é necessária nesta arquitetura local.

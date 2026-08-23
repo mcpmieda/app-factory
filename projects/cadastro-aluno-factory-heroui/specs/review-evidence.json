@@ -1,0 +1,21 @@
+{
+  "schema_version": 1,
+  "created_at": "2026-08-23T04:18:06+00:00",
+  "mode": "deterministic-ci",
+  "verdict": "pass",
+  "spec_fingerprint": "a6daa73079038a744f1732d094c0ccb95801229055dc337efb1f97a10c40490e",
+  "verification_plan_fingerprint": "49d4cd429c3cf22d3e0a2625cbe4d374e99f106a2ca4024fed87591295b129ec",
+  "subject_fingerprint": "8fd47007e9779547cd9d67be96501b2aedb92e1f986e47752871392475c62eb4",
+  "criteria": {
+    "AC-001": "pass",
+    "AC-002": "pass",
+    "AC-003": "pass",
+    "AC-004": "pass",
+    "AC-005": "pass",
+    "AC-006": "pass",
+    "AC-007": "pass"
+  },
+  "findings": [
+    "Required field-test gates passed in clean GitHub CI with frozen dependencies."
+  ]
+}

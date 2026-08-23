@@ -1,6 +1,6 @@
 {
   "name": "cadastro-aluno-factory-heroui",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "private": true,
   "type": "module",
   "packageManager": "npm@11.5.2",
@@ -10,12 +10,14 @@
     "start": "next start",
     "lint": "eslint . --max-warnings=0",
     "typecheck": "tsc --noEmit",
+    "test": "vitest run",
     "test:unit": "vitest run",
     "test:unit:watch": "vitest",
+    "e2e": "playwright test",
     "test:e2e": "playwright test",
     "test:e2e:ui": "playwright test --ui",
-    "verify": "npm run lint && npm run typecheck && npm run test:unit && npm run build",
-    "test:all": "npm run verify && npm run test:e2e"
+    "verify": "npm run lint && npm run typecheck && npm run test && npm run build",
+    "test:all": "npm run verify && npm run e2e"
   },
   "dependencies": {
     "@heroui/react": "3.2.4",
@@ -31,7 +33,7 @@
     "@types/node": "22.15.30",
     "@types/react": "19.2.14",
     "@types/react-dom": "19.2.3",
-    "eslint": "9.25.1",
+    "eslint": "9.39.5",
     "eslint-config-next": "16.3.1",
     "tailwindcss": "4.1.11",
     "typescript": "5.6.3",

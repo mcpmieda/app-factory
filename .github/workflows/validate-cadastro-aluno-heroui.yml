@@ -11,13 +11,13 @@ on:
       - "projects/cadastro-aluno-factory-heroui/**"
       - ".github/workflows/validate-cadastro-aluno-heroui.yml"
 
+permissions:
+  contents: read
+
 jobs:
   verify:
     runs-on: ubuntu-latest
-    timeout-minutes: 20
-    defaults:
-      run:
-        working-directory: projects/cadastro-aluno-factory-heroui
+    timeout-minutes: 25
 
     steps:
       - name: Checkout
@@ -27,21 +27,52 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: 22
+          cache: npm
+          cache-dependency-path: projects/cadastro-aluno-factory-heroui/package-lock.json
+
+      - name: Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
 
       - name: Use project npm version
         run: npm install --global npm@11.5.2
 
-      - name: Install dependencies
-        run: npm install
+      - name: Validate semantic specification
+        env:
+          PYTHONPATH: .
+        run: |
+          python scripts/factory.py --root projects/cadastro-aluno-factory-heroui spec-validate
+          python scripts/semantic_assurance.py --root projects/cadastro-aluno-factory-heroui analyze
+          python - <<'PY'
+          from engine.semantic_verification import validate_verification_plan
+          errors = validate_verification_plan("projects/cadastro-aluno-factory-heroui")
+          if errors:
+              raise SystemExit("\n".join(errors))
+          print("OK: semantic verification plan valid")
+          PY
+
+      - name: Frozen dependency install
+        working-directory: projects/cadastro-aluno-factory-heroui
+        run: npm ci
 
       - name: Lint, typecheck, unit tests and build
+        working-directory: projects/cadastro-aluno-factory-heroui
         run: npm run verify
 
       - name: Dependency audit
-        run: npm audit --audit-level=high
+        working-directory: projects/cadastro-aluno-factory-heroui
+        run: npm audit
 
       - name: Install Playwright Chromium
+        working-directory: projects/cadastro-aluno-factory-heroui
         run: npx playwright install --with-deps chromium
 
       - name: Browser E2E
-        run: npm run test:e2e
+        working-directory: projects/cadastro-aluno-factory-heroui
+        run: npm run e2e
+
+      - name: Validate semantic review freshness
+        env:
+          PYTHONPATH: .
+        run: python scripts/factory.py --root projects/cadastro-aluno-factory-heroui semantic-status
