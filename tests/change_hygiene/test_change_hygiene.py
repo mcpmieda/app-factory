@@ -61,6 +61,36 @@ class ChangeHygieneTests(unittest.TestCase):
         self.assertIn("css-important-added", kinds)
         self.assertIn("new-suppression", kinds)
 
+    def test_language_specific_suppressions_are_detected_in_comments(self) -> None:
+        advisories: list[dict[str, object]] = []
+        scan_added_risks(
+            "service.ts",
+            ["const value = call(); // eslint-disable-line no-warning-comments", "// @ts-ignore"],
+            advisories,
+        )
+        scan_added_risks("worker.py", ["import legacy  # noqa"], advisories)
+        markers = [item["message"] for item in advisories if item["kind"] == "new-suppression"]
+        self.assertTrue(any("eslint-disable" in message for message in markers))
+        self.assertTrue(any("@ts-ignore" in message for message in markers))
+        self.assertTrue(any("# noqa" in message for message in markers))
+
+    def test_documentation_and_string_literals_do_not_fake_suppressions(self) -> None:
+        advisories: list[dict[str, object]] = []
+        scan_added_risks(
+            "README.md",
+            ["Avoid `eslint-disable`, `@ts-ignore`, `# noqa` and temporary workarounds."],
+            advisories,
+        )
+        scan_added_risks(
+            "scanner.py",
+            [
+                'MARKERS = ("# noqa", "# type: ignore")',
+                'example = "# TODO: remove temporary workaround"',
+            ],
+            advisories,
+        )
+        self.assertEqual(advisories, [])
+
     def test_temporary_debt_marker_is_visible(self) -> None:
         advisories: list[dict[str, object]] = []
         scan_added_risks(
