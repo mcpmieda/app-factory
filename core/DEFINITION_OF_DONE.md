@@ -46,7 +46,7 @@ Quando `core/SYSTEM_ENGINEERING.md` se aplicar:
 - `persistent-app` ou superior possui fonte autoritativa durável;
 - `multi-user-system` ou superior não usa `localStorage`/mocks/JSON estático como persistência final compartilhada;
 - identidade/autenticação existe quando necessária;
-- autorização é server-side quando escopos diferem;
+- **autorização é aplicada server-side** quando escopos diferem;
 - mutações protegidas possuem validação server-side;
 - schema persistente usa migrations/versionamento equivalente;
 - concorrência, idempotência e recovery foram considerados quando materiais;
