@@ -3,6 +3,7 @@
 
 from __future__ import annotations
 
+import json
 import sys
 from pathlib import Path
 
@@ -77,7 +78,11 @@ def main() -> int:
         "README.md",
         "AGENTS.md",
         "PROJECT_STATE.md",
+        "APP_FACTORY_PLAN.md",
         "PORTABILITY.md",
+        "docs/DECISIONS.md",
+        "docs/CODEX_PLUGIN.md",
+        ".codex-plugin/plugin.json",
         "core/ENTRYPOINT.md",
         "core/SYSTEM_ENGINEERING.md",
         "core/SEMANTIC_VERIFICATION.md",
@@ -108,6 +113,48 @@ def main() -> int:
             "Validate API Engineering Contract",
         ],
     )
+    require_markers(
+        "APP_FACTORY_PLAN.md",
+        [
+            "System Engineering",
+            "API Engineering",
+            "Execution Fabric",
+            "Semantic Verification",
+            "Governance hardenings sobre V1.4",
+        ],
+    )
+    require_markers(
+        "docs/DECISIONS.md",
+        [
+            "D-035",
+            "D-037",
+            "D-039",
+            "D-042",
+            "D-044",
+        ],
+    )
+    require_markers(
+        "docs/CODEX_PLUGIN.md",
+        [
+            "1.4.0",
+            "17 Skills",
+            "api-engineering",
+            "System Engineering",
+            "API Engineering",
+            "validate_api_engineering.py",
+        ],
+    )
+
+    plugin = json.loads(read(".codex-plugin/plugin.json"))
+    if plugin.get("version") != "1.4.0":
+        fail("plugin baseline deve permanecer 1.4.0 neste governance hardening")
+    if plugin.get("skills") != "./skills/":
+        fail("plugin deve continuar usando skills/ como fonte única")
+    plugin_text = json.dumps(plugin, ensure_ascii=False)
+    for marker in ("system/API governance", "API governance"):
+        if marker not in plugin_text:
+            fail(f"plugin metadata sem marcador de governance: {marker}")
+
     require_markers(
         "templates/project/API.md",
         [
@@ -157,7 +204,7 @@ def main() -> int:
 
     print(
         "OK: API Engineering integrado de forma condicional a arquitetura, semântica, "
-        "segurança, perfis, templates e regressão dos engines/recipes existentes."
+        "segurança, perfis, templates, plugin/documentação e regressão dos engines/recipes existentes."
     )
     return 0
 
