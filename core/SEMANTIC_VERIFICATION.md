@@ -43,6 +43,8 @@ specs/review-evidence.json
 
 Critérios `must` são obrigatórios para a entrega.
 
+Quando houver API `contract`/`governed`, não copie o OpenAPI/GraphQL/Protobuf/AsyncAPI inteiro para a spec semântica. O contrato machine-readable continua sendo autoridade da interface conforme `core/API_ENGINEERING.md`; a spec semântica registra somente os comportamentos e invariantes que precisam de prova, como autorização, compatibilidade, paginação, idempotência, retry, erro ou workflow crítico.
+
 ### verification-plan.json
 
 É derivado da spec, não inventado depois da implementação. Cada critério de aceite recebe uma linha de rastreabilidade.
@@ -52,6 +54,7 @@ Todo critério `must` precisa apontar para pelo menos uma evidência executável
 - teste unitário/integrado;
 - E2E/browser;
 - gate funcional;
+- lint/compatibility/contract test de API quando aplicável;
 - visual regression quando aplicável.
 
 O plano não substitui a execução dos testes. Ele liga intenção → teste/gate para reduzir testes que apenas confirmam uma implementação errada.
@@ -82,6 +85,8 @@ planning
 
 A fase `specification` deve terminar antes da implementação.
 
+Para APIs com contrato formal, a definição/alteração do contrato de interface faz parte da especificação e deve preceder consumidores que dependam do novo comportamento. `core/API_ENGINEERING.md` define a forma desse contrato; este módulo define a prova de que a intenção foi atendida.
+
 ## Independência realista
 
 A Factory é provider-neutral. Não exigir API paga ou Codex somente para criar um segundo reviewer.
@@ -98,7 +103,11 @@ Screenshot diffing é uma evidência forte quando a UI já possui baseline visua
 
 ## APIs e bibliotecas
 
-Typecheck, build, lockfile e runtime/E2E continuam sendo a primeira defesa contra uso incorreto de APIs. Quando uma integração não é protegida por tipos ou só falha em runtime, a spec/verification plan deve exigir smoke/integration evidence específica. Consulta externa de documentação não é gate universal porque pode introduzir rede/instabilidade no CI.
+`core/API_ENGINEERING.md` é a fonte de verdade para desenho, protocolo, contrato, compatibilidade e gates específicos de APIs.
+
+Typecheck, build, lockfile e runtime/E2E continuam sendo a primeira defesa contra uso incorreto de bibliotecas/APIs. Quando uma integração não é protegida por tipos ou só falha em runtime, a spec/verification plan deve exigir smoke/integration evidence específica. Para APIs `contract`/`governed`, lint do contrato, compatibilidade, testes negativos/property-based ou consumer/provider contracts podem ser evidências executáveis conforme o risco.
+
+Consulta externa de documentação não é gate universal porque pode introduzir rede/instabilidade no CI. Referências externas orientam desenho; o projeto deve versionar o contrato e os gates que realmente precisa executar.
 
 ## Context Engine e impacto
 
@@ -107,3 +116,5 @@ O mapa atual de imports é deliberadamente leve. Não fingir precisão de call g
 ## Regra final
 
 `lint + typecheck + build + testes verdes` não é suficiente para declarar sucesso funcional quando existe uma spec semântica aplicável. A entrega precisa também demonstrar rastreabilidade dos critérios `must` e revisão válida contra o contrato atual.
+
+Da mesma forma, uma API com spec válida mas sem evidência de comportamento crítico não está semanticamente provada; contrato de interface e comportamento executável se complementam.

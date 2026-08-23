@@ -32,6 +32,25 @@ Quando `core/SYSTEM_ENGINEERING.md` se aplicar:
 - concorrência, repetição/idempotência e recovery foram considerados quando materiais;
 - um protótipo/demo não é rotulado como produção apenas porque a interface e o CRUD visual funcionam.
 
+## APIs e integrações
+
+Quando `core/API_ENGINEERING.md` se aplicar:
+
+- o modo de governança da interface foi classificado sem formalizar API desnecessária;
+- para `contract`/`governed`, existe uma fonte de verdade machine-readable adequada ao protocolo e ela está versionada;
+- contrato e implementação representam o mesmo comportamento no fluxo crítico;
+- lint/validação do contrato passou quando suportado;
+- breaking changes foram comparadas contra baseline conhecida quando consumidores dependem de compatibilidade;
+- autenticação/autorização de operações protegidas possui evidência de acesso permitido e negado;
+- inputs inválidos e erros esperados são controlados e não viram 500 acidental;
+- paginação, idempotência, concorrência, operações longas e rate limiting foram tratados somente quando materiais ao produto;
+- integrações externas relevantes possuem timeout e política de retry/falha limitada;
+- webhooks relevantes tratam autenticidade, duplicidade/replay e idempotência conforme risco;
+- testes negativos/property/fuzz ou consumer-provider contract tests foram executados quando o modo/risco justificar;
+- documentação/SDK gerado não promete comportamento divergente da implementação.
+
+Redocly CLI, oasdiff, Schemathesis, Pact, AsyncAPI e Arazzo são defaults/opções preferidas conforme `core/API_ENGINEERING.md`, não gates obrigatórios universais.
+
 ## Implementação
 
 - comportamento solicitado existe;
@@ -84,12 +103,15 @@ Quando relevante:
 - para `production-system` ou superior, backup/restore ou recuperação compatível com o provedor foi definido quando perda de dados for material;
 - logs/auditoria/observabilidade existem no nível necessário para diagnosticar operações e falhas relevantes.
 
+API Security específica fica detalhada em `core/API_ENGINEERING.md` + `skills/security-review`; não duplicar aqui o catálogo de ameaças OWASP.
+
 ## Entrega
 
 - diff revisado proporcionalmente ao risco;
 - estado do projeto continua recuperável pelo Git;
 - documentação/PROJECT_STATE é atualizada apenas quando o estado vigente realmente mudou;
 - nível do sistema e decisões de persistência/identidade/recovery ficam recuperáveis no repositório quando relevantes;
+- modo/fonte de verdade da API e baseline de compatibilidade ficam recuperáveis quando `contract`/`governed` se aplicar;
 - limitações ou testes impossíveis de executar são declarados explicitamente.
 
 ## Regra final
@@ -99,3 +121,5 @@ Nunca declarar "pronto" se houver erro conhecido que invalide o objetivo princip
 Para trabalho funcional com spec aplicável, `lint + typecheck + build + testes verdes` sem rastreabilidade e revisão semântica atual ainda não é Definition of Done completa.
 
 Para `multi-user-system` ou superior, UI completa + CRUD visual + dados no navegador também não são Definition of Done de produção sem a arquitetura compartilhada e os gates exigidos por `core/SYSTEM_ENGINEERING.md`.
+
+Para API `contract`/`governed`, endpoint funcionando sem contrato/gates de compatibilidade e comportamento exigidos por `core/API_ENGINEERING.md` também não constitui Definition of Done completa.

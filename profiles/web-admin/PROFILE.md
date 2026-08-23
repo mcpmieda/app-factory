@@ -48,6 +48,19 @@ O banco não é fixado universalmente. Escolher provider conforme deploy, volume
 - PostgreSQL: recipe de produção validado com `DATABASE_URL`, migrations versionadas e sem persistência no filesystem local;
 - outros destinos de produção/serverless: escolher provider apropriado ao ambiente antes de gerar a arquitetura definitiva.
 
+### APIs e integrações
+
+Next.js Server Components/Server Actions continuam sendo a opção simples quando frontend e backend pertencem à mesma aplicação e não existe consumidor independente.
+
+Quando o produto expuser/consumir API relevante, tiver web + mobile/extensão, integração externa, webhook, eventos ou evolução independente entre consumidor/provedor:
+
+- aplicar `core/API_ENGINEERING.md` e `api-engineering`;
+- classificar a interface como `none`, `lightweight`, `contract` ou `governed`;
+- não exigir OpenAPI apenas porque há backend;
+- para HTTP compartilhado `contract`/`governed`, preferir OpenAPI como fonte de verdade e gates proporcionais;
+- GraphQL, gRPC, AsyncAPI e Arazzo entram somente quando o comportamento do produto justificar;
+- Redocly/oasdiff/Schemathesis/Pact são ferramentas condicionais, não parte obrigatória do bootstrap mínimo.
+
 ### ReUI
 
 **Opcional e seletivo.** Usar quando um componente avançado, como Data Grid, filtros complexos, Kanban, calendário ou outro padrão administrativo, reduzir trabalho de forma clara.
@@ -108,7 +121,7 @@ Atenuar automaticamente para comportamento `subtle` em tabelas, leitura prolonga
 
 Preferir Server Components/Server Actions e estado local simples quando suficientes.
 
-Adicionar camadas somente quando o comportamento do produto exigir.
+Adicionar camadas somente quando o comportamento do produto exigir. `core/SYSTEM_ENGINEERING.md` define a profundidade mínima do sistema; `core/API_ENGINEERING.md` define a profundidade da interface quando houver uma API/integração real.
 
 Estrutura inicial sugerida:
 
@@ -129,7 +142,7 @@ src/
 └── types/
 ```
 
-A estrutura pode ser simplificada para apps menores.
+A estrutura pode ser simplificada para apps menores. Se houver contrato formal de API, use diretório `api/` ou equivalente adequado ao stack sem forçar essa pasta a projetos sem contrato independente.
 
 ## Gate mínimo de qualidade
 
@@ -146,7 +159,8 @@ Quando os scripts existirem:
 9. Playwright do fluxo crítico;
 10. desktop e viewport móvel;
 11. console sem erro relevante;
-12. motion coerente com o perfil e `prefers-reduced-motion` quando UI relevante for alterada.
+12. motion coerente com o perfil e `prefers-reduced-motion` quando UI relevante for alterada;
+13. para API `contract`/`governed`, gates de contrato/compatibilidade/runtime/security definidos em `core/API_ENGINEERING.md`.
 
 Mudanças de recipe também exigem geração limpa direta de cada caminho de provider/dependência. PostgreSQL/Auth deve exercitar serviço PostgreSQL efêmero real, login/sessão, migration/query e smoke de produção com `next start`.
 
@@ -154,7 +168,8 @@ Mudanças de recipe também exigem geração limpa direta de cada caminho de pro
 
 - package manager/linha relevante deve ser consistente entre lockfile, desenvolvimento e CI;
 - CI deve usar instalação limpa, não instalação permissiva para esconder lockfile inconsistente;
-- typecheck e testes não podem depender silenciosamente de artefatos gerados por execução anterior.
+- typecheck e testes não podem depender silenciosamente de artefatos gerados por execução anterior;
+- ferramentas de API usadas como gate devem ter versão fixada, não depender de `latest` em CI.
 
 ## Segurança mínima
 
@@ -163,7 +178,8 @@ Mudanças de recipe também exigem geração limpa direta de cada caminho de pro
 - autorização no servidor;
 - operações destrutivas protegidas por estado/regra de negócio e confirmação quando apropriado;
 - migrations versionadas;
-- excluir permanentemente apenas quando o domínio permitir e o comportamento estiver testado.
+- excluir permanentemente apenas quando o domínio permitir e o comportamento estiver testado;
+- APIs expostas seguem `core/API_ENGINEERING.md` + `skills/security-review` em vez de duplicar um checklist específico neste perfil.
 
 ## Evidência de origem
 

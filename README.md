@@ -9,6 +9,8 @@ Transformar uma ideia em software funcional usando um método reutilizável por 
 A App Factory combina:
 
 - entrada universal por intenção de software;
+- **System Engineering Contract** para impedir que sistemas reais sejam reduzidos a demos locais e para exigir persistência/backend/segurança proporcionais;
+- **API Engineering Contract** para governar APIs e integrações apenas quando elas realmente existirem, com contrato, compatibilidade, segurança e gates proporcionais;
 - **Context Engine** incremental para recuperar repositórios sem releitura integral desnecessária;
 - **Autonomy Engine** para calcular e registrar o próximo passo técnico;
 - **Semantic Verification** para transformar intenção funcional relevante em contrato, critérios de aceite e prova rastreável antes da entrega;
@@ -18,7 +20,7 @@ A App Factory combina:
 - seleção automática de perfil validado quando aplicável;
 - `AGENTS.md` como mapa operacional;
 - Core curto e modular;
-- **16 Skills** especializadas carregadas conforme a tarefa;
+- **17 Skills** especializadas carregadas conforme a tarefa;
 - templates e starters componíveis;
 - Living UI / Semantic Motion quando houver interface;
 - repair loop e fallback limitados;
@@ -35,13 +37,15 @@ Ele não precisa escolher framework, Skill, executor, ChatGPT/Codex, preencher u
 ```text
 pedido do usuário
 → recuperar contexto/estado
-→ classificar escala/risco e se prova semântica é necessária
+→ classificar escala/risco/nível do sistema
+→ decidir se existe API/integração relevante e seu modo de governança
 → planejar
 → criar spec + critérios observáveis quando aplicável
+→ definir contrato machine-readable quando API contract/governed exigir
 → filtrar executores por capacidade/segurança
 → consultar aprendizado local se houver evidência suficiente
 → implementar
-→ CI/verificar critérios
+→ CI/verificar critérios + arquitetura + contratos
 → reparar/fallback se necessário
 → revisão independente ou clean-context quando exigida
 → entregar
@@ -49,6 +53,27 @@ pedido do usuário
 ```
 
 O usuário volta ao loop somente quando existir decisão genuinamente humana, dado/credencial indisponível, custo ou risco relevante.
+
+## Camada de engenharia de sistemas
+
+`core/SYSTEM_ENGINEERING.md` classifica o produto como `website`, `local-app`, `persistent-app`, `multi-user-system`, `production-system` ou `critical-system`.
+
+Essa classificação impede falsa persistência: um sistema compartilhado/real não pode ser tratado como pronto se seus dados autoritativos ainda estiverem apenas em `localStorage`, mocks ou JSON estático. Backend, persistência, identidade, autorização, migrations e recovery entram somente no nível que o produto real exige.
+
+## Camada de engenharia de APIs
+
+`core/API_ENGINEERING.md` é independente do nível do produto e só entra quando existe uma interface relevante entre sistemas/consumidores.
+
+Modos:
+
+- `none` — sem fronteira de API relevante;
+- `lightweight` — interface interna pequena e coordenada;
+- `contract` — interface compartilhada ou com evolução independente;
+- `governed` — API pública/parceira/institucional/crítica ou com alto custo de incompatibilidade.
+
+A Factory não força REST/OpenAPI em todo backend. Conforme o caso pode usar HTTP/OpenAPI, GraphQL, gRPC/Protobuf, AsyncAPI ou Arazzo. Para OpenAPI, Redocly CLI, oasdiff e Schemathesis são ferramentas preferidas de lint/compatibilidade/teste gerado quando o projeto justificar; Pact entra condicionalmente em consumer/provider contracts.
+
+`API_ENGINEERING` define desenho/governança da interface; `SEMANTIC_VERIFICATION` prova os comportamentos; `DEFINITION_OF_DONE` exige os gates que realmente se aplicam.
 
 ## V1.1 — Context + Autonomy
 
@@ -93,7 +118,7 @@ A ordem de autoridade é:
 1. capacidade;
 2. disponibilidade/permissão;
 3. fallback da tarefa atual;
-4. segurança, risco, contrato semântico e Definition of Done;
+4. segurança, risco, contratos arquiteturais/semânticos e Definition of Done;
 5. aprendizado local;
 6. ordem baseline.
 
@@ -159,19 +184,21 @@ python scripts/factory.py --root <projeto> gates
 
 1. `AGENTS.md` — mapa para agentes.
 2. `core/ENTRYPOINT.md` — ativação por intenção.
-3. `core/CONTEXT_ENGINE.md` — recuperação incremental.
-4. `core/AUTONOMY_ENGINE.md` — estado e próxima ação.
-5. `core/SEMANTIC_VERIFICATION.md` — contrato, rastreabilidade e revisão semântica proporcional.
-6. `core/EXECUTION_FABRIC.md` — seleção e fallback de backends.
-7. `core/LEARNING_ENGINE.md` — aprendizado local, confiança e privacidade.
-8. `core/TASK_ROUTER.md` — ordem de decisão do executor.
-9. `skills/factory-router/SKILL.md`, `skills/semantic-verification/SKILL.md`, `skills/execution-router/SKILL.md` e `skills/learning-engine/SKILL.md`.
-10. `profiles/README.md` e `profiles/*/PROFILE.md` — defaults condicionais comprovados.
-11. `ui/UI_POLICY.md` e `ui/MOTION_POLICY.md` — interface e Living UI.
-12. `core/HUMAN_INTERACTION.md` — limites da intervenção humana.
-13. `core/DEFINITION_OF_DONE.md` — prova de conclusão.
-14. `PORTABILITY.md` — continuidade entre agentes.
-15. `docs/CODEX_PLUGIN.md` — adaptador Codex.
+3. `core/SYSTEM_ENGINEERING.md` — profundidade arquitetural mínima do produto.
+4. `core/API_ENGINEERING.md` — governança condicional de APIs/integrações.
+5. `core/CONTEXT_ENGINE.md` — recuperação incremental.
+6. `core/AUTONOMY_ENGINE.md` — estado e próxima ação.
+7. `core/SEMANTIC_VERIFICATION.md` — contrato, rastreabilidade e revisão semântica proporcional.
+8. `core/EXECUTION_FABRIC.md` — seleção e fallback de backends.
+9. `core/LEARNING_ENGINE.md` — aprendizado local, confiança e privacidade.
+10. `core/TASK_ROUTER.md` — ordem de decisão do executor.
+11. `skills/factory-router/SKILL.md`, `skills/api-engineering/SKILL.md`, `skills/semantic-verification/SKILL.md`, `skills/execution-router/SKILL.md` e `skills/learning-engine/SKILL.md`.
+12. `profiles/README.md` e `profiles/*/PROFILE.md` — defaults condicionais comprovados.
+13. `ui/UI_POLICY.md` e `ui/MOTION_POLICY.md` — interface e Living UI.
+14. `core/HUMAN_INTERACTION.md` — limites da intervenção humana.
+15. `core/DEFINITION_OF_DONE.md` — prova de conclusão.
+16. `PORTABILITY.md` — continuidade entre agentes.
+17. `docs/CODEX_PLUGIN.md` — adaptador Codex.
 
 ## Perfis
 
@@ -186,6 +213,8 @@ app-factory/
 ├── AGENTS.md
 ├── PROJECT_STATE.md
 ├── core/
+│   ├── SYSTEM_ENGINEERING.md
+│   ├── API_ENGINEERING.md
 │   ├── CONTEXT_ENGINE.md
 │   ├── AUTONOMY_ENGINE.md
 │   ├── SEMANTIC_VERIFICATION.md
@@ -200,14 +229,19 @@ app-factory/
 │   ├── ci_executor.py
 │   └── learning_engine.py
 ├── skills/
+│   └── api-engineering/
 ├── profiles/
 ├── templates/
+│   ├── api/
+│   └── project/API.md
 ├── starters/
 ├── ui/
 ├── audits/
 ├── research/
 └── scripts/
     ├── factory.py
+    ├── validate_system_engineering.py
+    ├── validate_api_engineering.py
     ├── validate_v1_1.py
     ├── validate_v1_2.py
     ├── validate_v1_3.py
@@ -219,6 +253,10 @@ app-factory/
 - intenção de software aciona a Factory sem palavra-chave manual;
 - GitHub é a fonte técnica de verdade;
 - o agente faz sozinho decisões técnicas rotineiras e grandes blocos seguros;
+- System Engineering impede que demo local seja rotulada como sistema real;
+- API Engineering só entra quando existe interface real e usa governança proporcional;
+- contrato machine-readable é fonte de verdade para API `contract`/`governed`, sem duplicar a spec semântica;
+- OpenAPI não é obrigatório para todo backend; protocolo é escolhido pelo problema;
 - Context Engine reduz releitura sem substituir arquivos reais;
 - Autonomy Engine decide continuidade técnica;
 - trabalho funcional relevante ganha contrato semântico antes do código;
@@ -237,6 +275,6 @@ app-factory/
 
 ## Estado
 
-Versão estável: **`1.4.0` — App Factory V1.4**.
+Versão estável dos engines: **`1.4.0` — App Factory V1.4**.
 
-A V1.4 preserva os gates V1.0–V1.3 e adiciona prova semântica proporcional sobre intenção → critérios → testes/gates → revisão atual, sem aumentar a dependência de Codex ou de um fornecedor específico.
+Os hardenings de **System Engineering** e **API Engineering** evoluem a governança arquitetural sobre essa baseline sem alterar os engines V1.1–V1.4. A V1.4 continua preservando os gates V1.0–V1.3 e a prova semântica proporcional, enquanto os novos contratos impedem simplificação arquitetural indevida e APIs sem governança quando o produto realmente exigir essas capacidades.

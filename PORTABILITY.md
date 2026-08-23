@@ -12,11 +12,20 @@ Estes elementos devem continuar independentes do agente:
 - Definition of Done;
 - Skills no padrão aberto quando possível;
 - Context/Autonomy/Execution/Learning contracts;
+- System Engineering e API Engineering contracts;
 - templates;
 - scripts;
 - testes;
 - Issues/PRs/Git;
 - documentação de produto e arquitetura.
+
+## APIs e contratos
+
+Quando uma interface precisar de contrato formal, prefira padrões abertos e versionáveis adequados ao protocolo, como OpenAPI, GraphQL SDL, Protobuf, AsyncAPI ou Arazzo, sem obrigar um provedor comercial específico.
+
+Ferramentas como Redocly CLI, oasdiff, Schemathesis e Pact são defaults condicionais da Factory porque produzem gates executáveis, mas podem ser substituídas por equivalentes quando o projeto tiver razão técnica registrada. O comportamento exigido pelo contrato importa mais que o fornecedor da ferramenta.
+
+Não amarre a correção de uma API a consulta online em tempo de CI quando o contrato, ruleset e ferramentas puderem ser versionados/reproduzidos localmente.
 
 ## Adaptadores
 
@@ -36,6 +45,8 @@ Criar regras/adaptadores mínimos apenas quando o cliente exigir formato própri
 
 Nunca manter cópias completas e independentes das mesmas regras em `AGENTS.md`, `CLAUDE.md`, `.cursor/rules` etc. Os adaptadores devem apontar para uma fonte comum.
 
+A mesma regra vale para API governance: não duplicar toda `core/API_ENGINEERING.md` em perfis, templates ou projetos. Esses arquivos registram somente decisões locais e apontam para o contrato comum.
+
 ## Estado do trabalho
 
 O handoff durável entre agentes usa GitHub:
@@ -43,6 +54,8 @@ O handoff durável entre agentes usa GitHub:
 `repo + branch/PR + PROJECT_STATE + Issue + testes`.
 
 Memória ou histórico de chat pode complementar, mas não é a fonte de verdade.
+
+Quando houver API `contract`/`governed`, inclua também a fonte de verdade do contrato e a baseline/decisão de compatibilidade necessária para retomar com segurança.
 
 ## Dados operacionais locais
 
