@@ -13,95 +13,106 @@ Quando `core/SEMANTIC_ASSURANCE.md` selecionar profundidade `domain` ou `formal`
 - critérios `must` possuem requisito de origem rastreável ou exceção explícita e justificada;
 - conceitos, entidades, relações, estados e restrições referenciados existem e são coerentes;
 - não há cardinalidade/range/enum impossível ou dependência estruturada simultaneamente exigida e proibida;
-- perguntas semânticas marcadas `blocking` foram resolvidas antes da implementação;
-- cobertura semântica é tratada como **cobertura estrutural de rastreabilidade**, nunca como percentual de correção da intenção humana;
-- semantic diff foi considerado quando a baseline de requisitos/domínio mudou, e ACs/invariantes/gates impactados foram reverificados;
-- property/stateful/model-based testing foi derivado quando invariantes, ranges ou máquina de estados justificarem exploração além de exemplos manuais;
-- formalizações `required`, quando existirem, possuem artefato versionado, referências de origem e gate executado;
-- métodos formais registram pressupostos/limites do modelo e não são tratados como prova de que a interpretação humana original estava perfeita.
+- perguntas `blocking` foram resolvidas antes da implementação;
+- cobertura semântica é **cobertura estrutural de rastreabilidade**, nunca percentual de correção da intenção humana;
+- semantic diff foi considerado quando baseline de requisitos/domínio mudou e ACs/invariantes/gates impactados foram reverificados;
+- property/stateful/model-based testing foi derivado quando invariantes, ranges ou estados justificarem exploração além de exemplos manuais;
+- combinatorial/t-way testing foi considerado quando múltiplas dimensões finitas interagirem; modelo ACTS/covering-array só vira gate quando materializado/versionado;
+- formalizações `required` possuem artefato, referências de origem e gate executado;
+- métodos formais registram pressupostos/limites e não são tratados como prova de interpretação humana perfeita.
 
-Em profundidade `scenario`, não exigir `semantic-assurance.json` apenas para preencher processo; o contrato semântico atual pode ser suficiente.
+Em `scenario`, não exigir `semantic-assurance.json` apenas para preencher processo.
 
 ## Correspondência com a intenção
 
-Quando a mudança exigir Semantic Verification (`core/SEMANTIC_VERIFICATION.md`):
+Quando a mudança exigir Semantic Verification:
 
-- `specs/semantic-contract.json` representa o objetivo e as regras atuais antes da implementação;
-- critérios obrigatórios estão expressos como comportamentos observáveis (`given / when / then`);
-- todo critério `must` está ligado em `specs/verification-plan.json` a pelo menos uma evidência executável/gate declarado;
-- os gates referenciados foram realmente executados e passaram; rastreabilidade textual não substitui execução;
-- `specs/review-evidence.json` corresponde à spec, ao plano e ao conteúdo atual;
-- risco médio/alto recebeu revisão desacoplada (`independent-agent` ou `clean-context`), não apenas autoavaliação do mesmo raciocínio;
-- mudança posterior em código/spec/plano invalida a revisão anterior até nova verificação;
-- mudança semântica material indicada por Semantic Assurance invalida evidência dependente até nova prova.
+- `specs/semantic-contract.json` representa objetivo/regras atuais antes da implementação;
+- critérios obrigatórios são observáveis (`given / when / then`);
+- todo critério `must` está ligado em `specs/verification-plan.json` a evidência executável/gate;
+- gates foram realmente executados; rastreabilidade textual não substitui execução;
+- `specs/review-evidence.json` corresponde a spec, plano e conteúdo atual;
+- risco médio/alto recebeu revisão desacoplada (`independent-agent` ou `clean-context`);
+- mudança posterior em código/spec/plano invalida revisão anterior até nova verificação;
+- mudança semântica material indicada por Semantic Assurance invalida evidência dependente.
 
-Documentação, chore e refactor pequeno sem mudança observável não precisam receber especificação formal pesada.
+Docs/chore/refactor pequeno sem mudança observável permanecem leves.
 
 ## Adequação da arquitetura
 
 Quando `core/SYSTEM_ENGINEERING.md` se aplicar:
 
-- o nível do produto foi classificado e registrado de forma proporcional;
-- `persistent-app` ou superior possui fonte autoritativa de dados durável compatível com o requisito real;
-- `multi-user-system` ou superior não depende de `localStorage`, mocks, arrays locais ou JSON estático como persistência final compartilhada;
-- identidade/autenticação existe quando necessária ao produto;
-- autorização é aplicada server-side quando usuários/perfis possuem escopos diferentes;
+- nível do produto foi classificado/registrado;
+- `persistent-app` ou superior possui fonte autoritativa durável;
+- `multi-user-system` ou superior não usa `localStorage`/mocks/JSON estático como persistência final compartilhada;
+- identidade/autenticação existe quando necessária;
+- **autorização é aplicada server-side** quando escopos diferem;
 - mutações protegidas possuem validação server-side;
-- mudanças de schema persistente usam migrations/versionamento equivalente;
-- concorrência, repetição/idempotência e recovery foram considerados quando materiais;
-- um protótipo/demo não é rotulado como produção apenas porque a interface e o CRUD visual funcionam.
+- schema persistente usa migrations/versionamento equivalente;
+- concorrência, idempotência e recovery foram considerados quando materiais;
+- protótipo/demo não é rotulado produção só porque UI/CRUD funcionam.
 
 ## APIs e integrações
 
 Quando `core/API_ENGINEERING.md` se aplicar:
 
-- o modo de governança da interface foi classificado sem formalizar API desnecessária;
-- para `contract`/`governed`, existe uma fonte de verdade machine-readable adequada ao protocolo e ela está versionada;
-- contrato e implementação representam o mesmo comportamento no fluxo crítico;
-- lint/validação do contrato passou quando suportado;
-- breaking changes foram comparadas contra baseline conhecida quando consumidores dependem de compatibilidade;
-- autenticação/autorização de operações protegidas possui evidência de acesso permitido e negado;
-- inputs inválidos e erros esperados são controlados e não viram 500 acidental;
-- paginação, idempotência, concorrência, operações longas e rate limiting foram tratados somente quando materiais ao produto;
-- integrações externas relevantes possuem timeout e política de retry/falha limitada;
-- webhooks relevantes tratam autenticidade, duplicidade/replay e idempotência conforme risco;
-- testes negativos/property/fuzz ou consumer-provider contract tests foram executados quando o modo/risco justificar;
-- documentação/SDK gerado não promete comportamento divergente da implementação.
+- API mode foi classificado sem formalização desnecessária;
+- `contract`/`governed` tem fonte machine-readable versionada;
+- contrato e implementação representam o mesmo fluxo crítico;
+- lint/validação passou quando suportado;
+- breaking changes foram comparadas contra baseline quando necessário;
+- autenticação/autorização protegida possui allow/deny evidence;
+- inputs inválidos/erros esperados são controlados e não viram 500 acidental;
+- paginação, idempotência, concorrência, operações longas e rate limiting foram tratados quando materiais;
+- integrações externas têm timeout e retry/falha limitada;
+- webhooks tratam autenticidade, replay/duplicidade e idempotência quando necessário;
+- testes negativos/property/fuzz/consumer-provider foram executados quando modo/risco exigir;
+- docs/SDK não prometem comportamento divergente.
 
-Redocly CLI, oasdiff, Schemathesis, Pact, AsyncAPI e Arazzo são defaults/opções preferidas conforme `core/API_ENGINEERING.md`, não gates obrigatórios universais.
+Redocly CLI, oasdiff, Schemathesis, Pact, AsyncAPI e Arazzo são defaults/opções condicionais, não gates universais.
 
 ## Independent Verification
 
-Quando `core/INDEPENDENT_VERIFICATION.md` selecionar modo acima de `baseline`:
+Quando `core/INDEPENDENT_VERIFICATION.md` selecionar acima de `baseline`:
 
-- existe uma matriz proporcional de checks independentes, sem instalar scanners só para cumprir checklist;
-- a política permanece `free-only` salvo autorização explícita de gasto;
-- checks `required` executaram com sucesso ou possuem exceção explícita, pequena e versionada;
-- scanner indisponível/não executado não foi contado como `pass`;
+- existe matriz proporcional por **classe de falha**, sem instalar scanners só para checklist;
+- política permanece `free-only` salvo gasto autorizado;
+- checks `required` passaram ou possuem exceção explícita, pequena e versionada;
+- ferramenta indisponível/não executada não virou `pass`;
+- não foram executados equivalentes redundantes apenas para aumentar quantidade;
 - SAST/supply-chain/accessibility foram aplicados quando selecionados;
-- mutation testing foi usado nos domínios/linguagens aplicáveis quando o modo/risco exigir, verificando se os próprios testes detectam defeitos deliberados;
-- Schemathesis/property/fuzz/stateful testing foi usado quando API Engineering e a matriz selecionarem esse gate;
-- OWASP ZAP baseline/active foi executado somente contra ambiente efêmero/autorizado; produção nunca foi inferida como alvo ativo;
-- Lighthouse CI só bloqueia por budget quando existe baseline estável e política explícita;
-- findings críticos/altos materiais não foram silenciados por suppressions globais;
-- logs/artefatos não expõem secrets ou dados pessoais reais;
-- ferramentas e actions usadas como gate possuem versão/commit reproduzível no projeto real.
+- mutation testing foi usado quando modo/risco exigir;
+- Hypothesis/fast-check/property-stateful foi usado quando Semantic Assurance derivou propriedade relevante e matriz tornou o gate aplicável;
+- NIST ACTS/covering-array foi executado quando modelo combinatorial versionado e check `required` existirem;
+- Schemathesis foi usado quando API Engineering/matriz selecionarem;
+- RESTler só foi escalado em REST/OpenAPI `governed` complexo, com configuração materializada e alvo descartável;
+- OWASP ZAP baseline/active foi executado apenas contra ambiente efêmero/autorizado;
+- workflows GitHub selecionados foram validados por actionlint e, em risco maior, zizmor antes de tratar CI como laboratório confiável;
+- migrations PostgreSQL materiais passaram por Squawk/equivalente quando selecionado;
+- limites arquiteturais materializados passaram por dependency-cruiser/equivalente quando selecionado;
+- cross-browser Playwright cobriu Chromium/Firefox/WebKit somente quando o produto promete suporte multi-engine;
+- Lighthouse CI só bloqueia com baseline/budget estável;
+- k6 só bloqueia por workload/SLO/threshold definido e alvo autorizado;
+- Toxiproxy/fault injection usa proxy/stub controlado e prova timeout/retry/idempotência/degradação sem atacar provedor externo;
+- findings críticos/altos materiais não foram silenciados por suppression global;
+- logs/artefatos não expõem secrets/dados pessoais reais;
+- ferramentas/actions usadas como gate possuem versão/commit reproduzível.
 
-Semgrep Community Edition, Trivy, StrykerJS/mutmut, Schemathesis, OWASP ZAP, axe-core e Lighthouse CI são defaults preferidos, não dependências universais. Ferramenta gratuita equivalente pode substituí-los quando tecnicamente melhor.
+Defaults principais incluem Semgrep CE, Trivy, StrykerJS/mutmut, Schemathesis, OWASP ZAP, axe-core, Lighthouse CI, actionlint, zizmor, Hypothesis/fast-check, NIST ACTS, Squawk, dependency-cruiser, k6 e Toxiproxy conforme pré-condições. Opengrep/RESTler são substituição/escalonamento, não duplicação automática.
 
-Independent Verification fornece evidência técnica independente da IA implementadora, mas **não substitui** revisão semântica desacoplada de risco médio/alto nem Semantic Assurance da especificação quando aplicável.
+Independent Verification não substitui revisão semântica desacoplada nem Semantic Assurance.
 
 ## Implementação
 
 - comportamento solicitado existe;
 - requisitos relevantes foram atendidos;
-- não foram removidas funcionalidades fora do escopo;
+- funcionalidades fora do escopo não foram removidas;
 - solução reutiliza padrões existentes quando adequado;
-- não há dependências ou abstrações desnecessárias conhecidas.
+- não há dependências/abstrações desnecessárias conhecidas.
 
 ## Qualidade executável
 
-Quando o projeto suportar:
+Quando suportado:
 
 - lint passa;
 - typecheck passa;
@@ -109,16 +120,16 @@ Quando o projeto suportar:
 - build passa;
 - erros novos de console não são ignorados.
 
-Typecheck/build são também defesa contra imports/assinaturas inexistentes. Integrações pouco tipadas ou dependentes de runtime devem ter smoke/integration test quando a falha de API for risco material.
+Typecheck/build defendem imports/assinaturas inexistentes. Integrações pouco tipadas/runtime ganham smoke/integration test quando falha de API for risco material.
 
 ## Comportamento
 
 - fluxo principal foi exercitado;
-- estados de loading, vazio, sucesso e erro foram considerados quando aplicáveis;
-- regressão direta foi verificada;
-- operações repetíveis não criam duplicidade quando idempotência for requisito;
-- para `persistent-app` ou superior, o fluxo crítico exercita persistência real ou ambiente equivalente, não apenas estado de navegador;
-- para fluxos protegidos, testes cobrem acesso permitido e negado quando autorização for requisito material.
+- loading/vazio/sucesso/erro considerados quando aplicáveis;
+- regressão direta verificada;
+- operações repetíveis não duplicam quando idempotência é requisito;
+- `persistent-app` ou superior exercita persistência real/equivalente, não só estado do navegador;
+- fluxos protegidos cobrem acesso permitido/negado quando autorização material.
 
 ## UI
 
@@ -126,11 +137,12 @@ Quando houver interface:
 
 - desktop verificado;
 - mobile/responsividade verificada;
-- interação real verificada no navegador quando possível;
+- interação real no navegador quando possível;
 - acessibilidade básica considerada;
-- componentes seguem o design system do projeto;
+- design system respeitado;
 - não há mistura visual sem justificativa;
-- quando existe baseline visual estável e regressão visual é risco material, screenshot diff/visual regression entra como gate executável; não criar snapshots frágeis apenas para cumprir checklist.
+- visual regression entra apenas com baseline estável e risco material;
+- compatibilidade cross-browser entra somente quando parte do suporte prometido.
 
 ## Segurança e dados
 
@@ -138,34 +150,35 @@ Quando relevante:
 
 - autenticação/autorização verificadas;
 - inputs validados;
-- segredos não foram adicionados ao repositório;
-- migrations e alterações de dados têm estratégia de recuperação;
-- para `production-system` ou superior, backup/restore ou recuperação compatível com o provedor foi definido quando perda de dados for material;
-- logs/auditoria/observabilidade existem no nível necessário para diagnosticar operações e falhas relevantes.
+- segredos não foram adicionados;
+- migrations/alterações de dados têm recovery;
+- `production-system` ou superior tem backup/restore compatível quando perda material;
+- logs/auditoria/observabilidade existem no nível necessário.
 
-API Security específica fica detalhada em `core/API_ENGINEERING.md` + `skills/security-review`; Independent Verification executa scanners/gates proporcionais sem duplicar o catálogo de ameaças. Regras de autorização complexas podem usar OPA/Rego ou Cedar quando Semantic Assurance justificar policy-as-code, sem torná-los defaults universais.
+API Security fica em API Engineering + security-review; Independent Verification executa gates sem duplicar catálogo de ameaças. Policies complexas podem usar OPA/Rego/Cedar quando Semantic Assurance justificar.
 
 ## Entrega
 
 - diff revisado proporcionalmente ao risco;
-- estado do projeto continua recuperável pelo Git;
-- documentação/PROJECT_STATE é atualizada apenas quando o estado vigente realmente mudou;
-- nível do sistema e decisões de persistência/identidade/recovery ficam recuperáveis no repositório quando relevantes;
-- modo/fonte de verdade da API e baseline de compatibilidade ficam recuperáveis quando `contract`/`governed` se aplicar;
-- semantic depth, `semantic-assurance.json`, baseline/diff e formalizações ficam recuperáveis quando `domain`/`formal` se aplicar, preferencialmente com `SEMANTICS.md` para decisões humanas específicas;
-- modo/checks/exceções de Independent Verification ficam recuperáveis quando acima de `baseline`, preferencialmente em `VERIFICATION.md` e workflows/configs;
-- limitações ou testes impossíveis de executar são declarados explicitamente.
+- estado do projeto recuperável pelo Git;
+- PROJECT_STATE atualizado quando estado vigente mudou;
+- nível do sistema/persistência/identidade/recovery recuperáveis quando relevantes;
+- API mode/contrato/baseline recuperáveis quando `contract/governed`;
+- semantic depth, assurance, diff e formalizações recuperáveis em `domain/formal`;
+- modelos property/combinatorial/load/resilience ficam versionados quando virarem gates;
+- modo/checks/exceções de Independent Verification ficam recuperáveis em `VERIFICATION.md`/workflows;
+- limitações/testes impossíveis são declarados.
 
 ## Regra final
 
-Nunca declarar "pronto" se houver erro conhecido que invalide o objetivo principal. Distinguir claramente: implementado, testado, validado e pronto para produção.
+Nunca declarar "pronto" com erro conhecido que invalide objetivo principal. Distinguir: implementado, testado, validado e pronto para produção.
 
-Para Semantic Assurance `domain`/`formal`, especificação estruturalmente inconsistente ou com pergunta `blocking` também não está pronta para implementação/entrega.
+Spec `domain/formal` inconsistente ou com pergunta `blocking` não está pronta.
 
-Para trabalho funcional com spec aplicável, `lint + typecheck + build + testes verdes` sem rastreabilidade e revisão semântica atual ainda não é Definition of Done completa.
+Trabalho funcional com spec aplicável não termina em `lint + typecheck + build + testes verdes` sem rastreabilidade/revisão atual.
 
-Para `multi-user-system` ou superior, UI completa + CRUD visual + dados no navegador também não são Definition of Done de produção sem a arquitetura compartilhada e os gates exigidos por `core/SYSTEM_ENGINEERING.md`.
+`multi-user-system` ou superior não termina em UI + CRUD + dados locais sem arquitetura compartilhada.
 
-Para API `contract`/`governed`, endpoint funcionando sem contrato/gates de compatibilidade e comportamento exigidos por `core/API_ENGINEERING.md` também não constitui Definition of Done completa.
+API `contract/governed` não termina em endpoint funcionando sem contrato/compatibilidade/gates aplicáveis.
 
-Para Independent Verification `adversarial`/`release`, testes primários verdes sem os checks `required` selecionados também não constituem Definition of Done completa.
+Independent Verification `adversarial/release` não termina com testes primários verdes se check `required` selecionado ainda não passou.

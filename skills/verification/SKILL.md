@@ -14,13 +14,13 @@ Produzir evidência proporcional ao risco, não apenas confiança textual.
 Quando `core/SEMANTIC_VERIFICATION.md` se aplicar:
 
 1. validar `specs/semantic-contract.json`;
-2. gerar/atualizar `specs/verification-plan.json` a partir dos critérios da spec;
-3. garantir que todo critério `must` aponta para evidência executável real;
-4. só então usar os gates como prova do requisito.
+2. gerar/atualizar `specs/verification-plan.json` a partir dos critérios;
+3. garantir que todo critério `must` aponta para evidência executável;
+4. só então usar os gates como prova.
 
-Isso reduz o risco de o agente escrever testes que apenas confirmam a implementação que ele próprio escolheu, em vez do comportamento pedido.
+Quando `core/SEMANTIC_ASSURANCE.md` for `domain/formal`, valide também consistência, semantic diff e candidatos a property/stateful/combinatorial tests antes de tratar a spec como ready.
 
-Quando `core/INDEPENDENT_VERIFICATION.md` se aplicar, derive também a matriz independente (`baseline`/`independent`/`adversarial`/`release`) e carregue `independent-verification`. O objetivo é adicionar métodos que não dependam dos mesmos casos escritos pela IA implementadora.
+Quando `core/INDEPENDENT_VERIFICATION.md` se aplicar, derive a matriz `baseline`/`independent`/`adversarial`/`release` e carregue `independent-verification`. O objetivo é diversidade de método, não quantidade de scanners.
 
 ## Sequência padrão
 
@@ -29,50 +29,67 @@ Quando disponível e relevante:
 1. validar sintaxe/configuração;
 2. lint;
 3. typecheck;
-4. testes direcionados derivados dos critérios/contratos aplicáveis;
+4. testes direcionados derivados dos critérios/contratos;
 5. build;
-6. iniciar aplicação;
+6. iniciar aplicação/serviços de teste;
 7. exercitar fluxo principal;
-8. testar browser/E2E quando houver UI;
-9. usar visual regression quando houver baseline estável e regressão visual for risco material;
-10. executar verificadores independentes selecionados, como Trivy/Semgrep/axe, mutation testing, Schemathesis ou OWASP ZAP;
+8. browser/E2E quando houver UI;
+9. visual regression quando houver baseline estável e risco material;
+10. executar a matriz independente selecionada;
 11. verificar regressão direta;
-12. revisar diff e efeitos colaterais prováveis;
+12. revisar diff/impacto;
 13. para risco médio/alto com spec, realizar revisão desacoplada antes de delivery.
 
 ## Testes por comportamento
 
 Prefira contratos observáveis: `condição/entrada → comportamento esperado → estado/saída esperado`.
 
-Quando houver spec semântica, use IDs `AC-###` como rastreabilidade no plano de verificação. O teste pode continuar idiomático para a stack; o vínculo formal fica no `verification-plan.json`.
+Quando houver spec, use IDs `AC-###` como rastreabilidade no plano de verificação. O teste continua idiomático para a stack; o vínculo formal fica em `verification-plan.json`.
 
-Quando um bug importante for corrigido, avalie criar teste ou guardrail que impeça reincidência.
+Quando um bug importante for corrigido, avalie teste/guardrail contra reincidência.
 
 ## Verificação independente
 
-A camada independente é proporcional e `free-only` por padrão. Não instalar tudo em todo projeto.
+A camada é proporcional e `free-only`. Não instalar tudo em todo projeto.
 
-- Trivy/Semgrep/axe são bons candidatos para evidência independente de custo baixo/moderado;
-- mutation testing serve para verificar a força dos próprios testes;
-- Schemathesis gera casos adversariais quando API Engineering selecionar esse gate;
-- OWASP ZAP observa o sistema de fora e deve usar ambiente efêmero/autorizado;
-- Lighthouse CI entra quando performance/qualidade tiver baseline estável.
+Classes possíveis, sempre condicionais:
 
-Ferramenta indisponível não significa `pass`. Checks `required` precisam executar ou receber exceção explícita e justificável.
+- supply chain/secrets/misconfiguration — Trivy;
+- SAST — Semgrep CE ou substituto validado;
+- mutation — StrykerJS/mutmut;
+- domain property/stateful — Hypothesis/fast-check quando Semantic Assurance justificar;
+- combinatorial — NIST ACTS/equivalente quando houver modelo finito material;
+- API fuzz/stateful — Schemathesis; RESTler apenas como escalonamento `governed` profundo;
+- DAST — OWASP ZAP em alvo efêmero/autorizado;
+- CI correctness/security — actionlint/zizmor quando workflows existirem;
+- PostgreSQL migration safety — Squawk quando aplicável;
+- architecture conformance — dependency-cruiser/equivalente quando limites estiverem declarados;
+- browser/accessibility — Playwright/axe, com Chromium+Firefox+WebKit somente se suporte multi-engine for requisito;
+- page quality — Lighthouse CI com baseline;
+- load/concurrency — k6 com SLO/workload real;
+- network resilience — Toxiproxy/equivalente com proxy/stub controlado.
+
+Ferramenta indisponível não significa `pass`. Check `required` precisa executar ou receber exceção explícita/versionada.
+
+Não rode equivalentes redundantes sem ganho. Semgrep+Opengrep em paralelo, por exemplo, não é default; Opengrep é alternativa qualificada. Schemathesis permanece API fuzz principal; RESTler é escalonamento.
+
+## Alvos seguros
+
+DAST ativo, fuzz destrutivo, load e fault injection nunca inferem produção/terceiro como alvo. Use preview/local/ambiente efêmero e dados fictícios. Toxiproxy degrada um proxy/stub controlado, não o serviço externo real.
 
 ## APIs/bibliotecas
 
-Typecheck e build capturam grande parte de imports/assinaturas inexistentes em stacks tipadas. Para integração não tipada ou dependente de runtime, adicione smoke/integration test ligado ao critério afetado. Não trate documentação externa como substituta de execução real.
+Typecheck/build capturam boa parte de imports/assinaturas inexistentes em stacks tipadas. Para integração não tipada/runtime, adicione smoke/integration test ligado ao critério afetado.
 
-`core/API_ENGINEERING.md` decide o contrato e a necessidade de gates específicos. `core/INDEPENDENT_VERIFICATION.md` decide como esses gates adversariais se combinam com outros verificadores sem duplicar o contrato da API.
+`core/API_ENGINEERING.md` decide contrato e gates específicos. Independent Verification decide execução adversarial sem duplicar o contrato.
 
 ## Revisão proporcional
 
-Mudança localizada: revisar diff, dependências diretas e testes afetados. Mudança estrutural, incidente sistêmico ou release importante: ampliar auditoria.
+Mudança localizada: revisar diff, dependências diretas e testes afetados. Mudança estrutural/incidente/release: ampliar auditoria.
 
-Quando Semantic Verification exigir revisão desacoplada, prefira outro agente/contexto; se indisponível, faça uma nova passagem `clean-context` usando apenas spec, conteúdo/diff necessário e evidências, sem usar o raciocínio da implementação como prova.
+Quando Semantic Verification exigir revisão desacoplada, prefira outro agente/contexto; se indisponível, faça `clean-context` usando apenas spec, conteúdo/diff e evidências.
 
-Scanners determinísticos, mutation testing e fuzzing **não substituem** essa revisão semântica independente: eles não entendem sozinhos a intenção do produto.
+Scanners, mutation, property testing, fuzzing, load tests e model checkers **não substituem** revisão semântica independente: não entendem sozinhos a intenção.
 
 ## Comunicação
 

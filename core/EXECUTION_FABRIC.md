@@ -13,7 +13,7 @@ Ordem baseline:
 3. `sandbox` — shell leve quando realmente disponível;
 4. `local_full` — executor local/interativo completo (Codex ou equivalente).
 
-Essa ordem é preferência, não dogma. Um backend incapaz nunca pode ser escolhido só por ser mais barato/leve. Na V1.3, o Learning Engine pode otimizar a ordem apenas entre candidatos já elegíveis.
+Essa ordem é preferência, não dogma. Backend incapaz nunca pode ser escolhido só por ser mais barato/leve. Learning Engine pode otimizar a ordem apenas entre candidatos já elegíveis.
 
 ## Capacidades
 
@@ -49,10 +49,18 @@ Pode cobrir:
 - lint/format/typecheck;
 - unit/integration tests;
 - builds;
-- Playwright headless;
+- Playwright headless/cross-browser;
 - serviços efêmeros de teste;
-- migrations em ambiente descartável;
-- validadores do repositório.
+- migrations em ambiente descartável e migration-safety lint;
+- validadores do repositório;
+- property/stateful/combinatorial tests;
+- scanners de segurança/supply-chain;
+- mutation testing;
+- API fuzz/stateful testing;
+- DAST em alvo efêmero;
+- load testing em alvo controlado;
+- fault-injection por proxy/stub controlado;
+- solvers/model checkers formais reproduzíveis.
 
 O adaptador em `engine/ci_executor.py` descobre apenas gates declarados no repositório e pertencentes a uma allowlist. O conteúdo de prompt nunca vira comando de shell.
 
@@ -60,54 +68,73 @@ Por padrão:
 
 - `shell=False` no executor Python;
 - nenhuma credencial/secret é necessária;
-- comandos são construídos a partir de IDs conhecidos, não do valor textual de scripts recebido do usuário;
-- instalação de dependências só é proposta quando existe lockfile compatível; `package.json` sem lockfile não recebe `npm install` permissivo como fallback;
+- comandos são construídos a partir de IDs conhecidos, não do texto livre do usuário;
+- instalação de dependências só é proposta quando existe lockfile compatível;
 - um gate falho interrompe a sequência para preservar evidência clara.
 
 ## Independent Verification
 
-`core/INDEPENDENT_VERIFICATION.md` usa esta Fabric para separar ainda mais implementação de prova.
+`core/INDEPENDENT_VERIFICATION.md` usa esta Fabric para separar implementação de prova.
 
-Quando a matriz selecionar `independent`, `adversarial` ou `release`, `github_ci` é o executor preferido porque pode iniciar um ambiente limpo e rodar motores determinísticos que não dependem do julgamento da IA atual, por exemplo:
+Quando a matriz selecionar `independent`, `adversarial` ou `release`, `github_ci` é executor preferido porque pode iniciar ambiente limpo e rodar motores determinísticos independentes do julgamento da IA atual.
 
-- Semgrep Community Edition e Trivy;
+A matriz pode incluir, somente quando houver pré-condição real:
+
+- Trivy / Semgrep CE ou substituto validado;
 - StrykerJS/mutmut;
-- Schemathesis;
-- OWASP ZAP em alvo efêmero/autorizado;
-- axe-core/Playwright;
-- Lighthouse CI quando houver baseline estável.
+- Schemathesis e, como escalonamento, RESTler;
+- OWASP ZAP;
+- axe-core/Playwright e matriz Chromium/Firefox/WebKit;
+- Lighthouse CI;
+- actionlint / zizmor para verificar o próprio GitHub Actions;
+- Hypothesis / fast-check;
+- NIST ACTS ou covering-array equivalent;
+- Squawk;
+- dependency-cruiser/equivalente;
+- k6;
+- Toxiproxy/equivalente.
 
-Esses motores continuam sendo **gates do projeto**, não novos backends de raciocínio. A Execution Fabric escolhe onde executá-los; `engine/independent_verification.py` decide quais são proporcionais ao risco/arquitetura.
+Esses motores são **gates do projeto**, não novos backends de raciocínio. A Execution Fabric escolhe onde executá-los; `engine/independent_verification.py` decide quais são proporcionais ao risco e às superfícies do projeto.
 
-Se GitHub-hosted capacity não estiver disponível ou puder gerar custo não autorizado, a Factory pode usar runner self-hosted/local equivalente. Não deve contratar scanner/SaaS pago ou reduzir o gate silenciosamente para economizar recursos.
+O CI que executa os outros gates também deve ser verificável: actionlint cobre correção estrutural do workflow e zizmor cobre riscos de segurança do GitHub Actions quando selecionados.
 
-Um scanner determinístico não conta como `independent-agent` de Semantic Verification. Ele produz evidência técnica independente, mas não entende sozinho a intenção do produto.
+Se GitHub-hosted capacity não estiver disponível ou puder gerar custo não autorizado, a Factory pode usar runner self-hosted/local equivalente. Não deve contratar scanner/SaaS pago nem reduzir gate silenciosamente.
+
+Scanner/fuzzer/solver determinístico não conta como `independent-agent` de Semantic Verification. Produz evidência técnica, mas não entende sozinho a intenção.
+
+## Provas agressivas e alvos seguros
+
+- ZAP ativo, RESTler fuzz profundo, Schemathesis destrutivo, k6 e Toxiproxy nunca inferem produção/terceiro como alvo;
+- load usa preview/test env controlado, salvo autorização explícita para outro alvo;
+- Toxiproxy degrada conexão via proxy/stub controlado, não o provedor externo;
+- checks caros podem migrar para release/nightly;
+- ferramenta required indisponível não vira `pass`.
 
 ## Fallback da tarefa
 
-`engine/execution_engine.py` mantém histórico bounded em `.factory/execution.json`. Esse arquivo é cache operacional local e fica fora do Git por padrão.
+`engine/execution_engine.py` mantém histórico bounded em `.factory/execution.json`, cache operacional local fora do Git por padrão.
 
-O fallback é escopado pela tarefa autônoma atual (`task_key`). Depois do limite de falhas configurado para uma mesma tarefa + ação + backend, aquele backend é temporariamente rejeitado e a Factory tenta o próximo backend capaz disponível. Falhas de uma tarefa antiga não penalizam uma tarefa nova.
+O fallback é escopado pela tarefa atual (`task_key`). Depois do limite de falhas para tarefa + ação + backend, aquele backend é temporariamente rejeitado e a Factory tenta o próximo capaz. Falhas antigas não penalizam tarefa nova.
 
-Isso é diferente do repair loop do Autonomy Engine:
+Isso difere do repair loop:
 
-- **repair loop** decide quantas vezes o trabalho pode ser corrigido antes de bloquear;
-- **Execution Fabric** decide qual backend deve executar a próxima tentativa.
+- **repair loop** decide quantas correções são permitidas antes de bloquear;
+- **Execution Fabric** decide qual backend executa a próxima tentativa.
 
 ## Learning Engine
 
-Depois de capacidade, disponibilidade, fallback da tarefa e guardrails de segurança/risco, a V1.3 pode consultar `engine/learning_engine.py`.
+Depois de capacidade, disponibilidade, fallback e guardrails de segurança/risco, a Factory pode consultar `engine/learning_engine.py`.
 
 O aprendizado:
 
-- usa apenas metadados técnicos allowlisted e locais;
-- exige amostra mínima antes de alterar a ordem baseline;
-- pode reordenar somente backends já elegíveis;
+- usa somente metadados técnicos locais/allowlisted;
+- exige amostra mínima antes de alterar baseline;
+- reordena somente backends já elegíveis;
 - não ressuscita backend rejeitado;
-- não promove `local_full` sobre backend leve capaz somente por score;
+- não promove `local_full` sobre backend leve capaz só por score;
 - retorna explicação e permite comparar com `--no-learning`.
 
-Consulte `core/LEARNING_ENGINE.md` para o contrato completo.
+Consulte `core/LEARNING_ENGINE.md`.
 
 ## Interface interna
 
@@ -125,11 +152,11 @@ python scripts/factory.py run-gates
 python scripts/independent_verification.py --root <projeto> --risk high --system-level multi-user-system
 ```
 
-`next`, `resume` e `record` também retornam uma decisão `execution` automaticamente. A CLI deriva `task_key` do estado atual do Autonomy Engine quando disponível.
+Quando integrações externas forem materialmente relevantes, o agente pode acrescentar `--external-integrations` ao planner de Independent Verification.
 
-A decisão automática usa as capacidades padrão da fase. Quando a tarefa tiver exigência adicional conhecida — como browser interativo ou migration real — o agente deve refinar a rota com essas capacidades antes de executar.
+`next`, `resume` e `record` também retornam decisão `execution` automaticamente. A CLI deriva `task_key` do estado do Autonomy Engine quando disponível.
 
-O usuário não deve precisar executar esses comandos manualmente; são o protocolo portátil entre agentes.
+O usuário não precisa executar esses comandos manualmente; são protocolo portátil entre agentes.
 
 ## Limites de segurança
 
@@ -137,9 +164,9 @@ A Fabric nunca deve:
 
 - conceder secrets/permissões por inferência;
 - executar texto livre de prompt como shell;
-- escolher backend sem todas as capacidades obrigatórias;
+- escolher backend sem capacidades obrigatórias;
 - deixar aprendizado ultrapassar incapacidade/fallback/risco;
 - reduzir testes/Definition of Done para economizar recursos;
 - transformar falha técnica comum em pergunta ao usuário antes de tentar reparo/fallback;
-- tratar scanner não executado como sucesso;
-- apontar fuzz/DAST ativo para produção por inferência.
+- tratar scanner/fuzzer/model checker não executado como sucesso;
+- apontar fuzz/DAST/load/fault injection para produção ou terceiro por inferência.

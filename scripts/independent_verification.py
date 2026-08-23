@@ -25,6 +25,11 @@ def parser() -> argparse.ArgumentParser:
     command.add_argument("--system-level", choices=SYSTEM_LEVELS, default="persistent-app")
     command.add_argument("--api-mode", choices=API_MODES, default="none")
     command.add_argument("--release", action="store_true")
+    command.add_argument(
+        "--external-integrations",
+        action="store_true",
+        help="Project has material network integrations whose resilience must be exercised through controlled test proxies/stubs",
+    )
     return command
 
 
@@ -36,6 +41,7 @@ def main() -> int:
         system_level=args.system_level,
         api_mode=args.api_mode,
         release=args.release,
+        external_integrations=args.external_integrations,
     )
     print(json.dumps(plan, indent=2, ensure_ascii=False))
     return 0
