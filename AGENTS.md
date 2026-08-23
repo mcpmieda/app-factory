@@ -17,16 +17,17 @@ Leia `core/ENTRYPOINT.md` para o contrato de ativação automática.
 5. Use `core/AUTONOMY_ENGINE.md`/`autonomy-engine` para recuperar ou inicializar estado e calcular a próxima ação.
 6. Classifique a profundidade necessária em `core/PROJECT_SCALE.md`.
 7. Classifique também o nível arquitetural do produto em `core/SYSTEM_ENGINEERING.md`. Para `persistent-app` ou superior, identifique a fonte autoritativa dos dados; para `multi-user-system` ou superior, derive persistência compartilhada, backend/server-side, identidade, autorização, validação, migrations e recovery proporcionais antes de simplificar a arquitetura.
-8. Para funcionalidade nova, bugfix relevante, regra de negócio ou mudança de contrato/risco, use `core/SEMANTIC_VERIFICATION.md` + `semantic-verification`: materialize spec e critérios observáveis antes do código; para docs/chore/refactor pequeno sem mudança observável, mantenha processo leve.
-9. Use `core/EXECUTION_FABRIC.md` + `execution-router` para traduzir a ação em capacidades e eliminar backends incapazes/indisponíveis.
-10. Quando houver histórico local suficiente, aplique `core/LEARNING_ENGINE.md`/`learning-engine` somente entre candidatos já elegíveis; sem evidência suficiente, preserve o baseline.
-11. Aplique `core/RISK_MODEL.md`; risco, contrato semântico, System Engineering Contract e Definition of Done vencem qualquer preferência aprendida.
-12. Para software real novo, use `projects/<slug>/` como destino padrão e siga `core/INSPECTION_ENVIRONMENT.md` para URL canônica, preview e hospedagem.
-13. Consulte `core/WORKFLOW.md` para projeto novo ou manutenção.
-14. Carregue somente as Skills relevantes.
-15. Consulte templates, políticas e referências apenas quando necessários.
-16. Antes de criar algo do zero, verifique se existe solução consolidada, componente, biblioteca, template ou registry adequado.
-17. Não misture tecnologias, bibliotecas ou design systems sem ganho claro.
+8. Quando existir API/integração/webhook/evento ou contrato compartilhado relevante, aplique `core/API_ENGINEERING.md` e `api-engineering`: classifique `none`/`lightweight`/`contract`/`governed`, escolha protocolo/fonte de verdade e gates proporcionais. Não crie API formal apenas porque existe backend.
+9. Para funcionalidade nova, bugfix relevante, regra de negócio ou mudança de contrato/risco, use `core/SEMANTIC_VERIFICATION.md` + `semantic-verification`: materialize spec e critérios observáveis antes do código; para docs/chore/refactor pequeno sem mudança observável, mantenha processo leve.
+10. Use `core/EXECUTION_FABRIC.md` + `execution-router` para traduzir a ação em capacidades e eliminar backends incapazes/indisponíveis.
+11. Quando houver histórico local suficiente, aplique `core/LEARNING_ENGINE.md`/`learning-engine` somente entre candidatos já elegíveis; sem evidência suficiente, preserve o baseline.
+12. Aplique `core/RISK_MODEL.md`; risco, contrato semântico, System Engineering Contract, API Engineering Contract quando aplicável e Definition of Done vencem qualquer preferência aprendida.
+13. Para software real novo, use `projects/<slug>/` como destino padrão e siga `core/INSPECTION_ENVIRONMENT.md` para URL canônica, preview e hospedagem.
+14. Consulte `core/WORKFLOW.md` para projeto novo ou manutenção.
+15. Carregue somente as Skills relevantes.
+16. Consulte templates, políticas e referências apenas quando necessários.
+17. Antes de criar algo do zero, verifique se existe solução consolidada, componente, biblioteca, template ou registry adequado.
+18. Não misture tecnologias, bibliotecas, protocolos ou design systems sem ganho claro.
 
 ## Regra de serviço ao usuário
 
@@ -42,6 +43,7 @@ Prefira:
 - critérios de aceite derivados da intenção antes da implementação quando o trabalho for funcional;
 - decisões técnicas rotineiras autônomas;
 - arquitetura simples, mas suficiente para o nível real do sistema;
+- APIs/contratos somente na profundidade que consumidores e risco realmente exigirem;
 - `current_agent` + GitHub/CI antes de handoff;
 - revisão desacoplada/clean-context quando risco médio/alto exigir prova semântica;
 - aprendizado local conservador quando houver evidência real suficiente;
@@ -54,7 +56,7 @@ Consulte o usuário quando a decisão envolver objetivo de produto, preferência
 
 Não aplicar o mesmo ritual a todo trabalho. Projetos pequenos usam planejamento leve; aplicações relevantes ou críticas podem usar fluxo spec-driven mais completo. A Factory deve escolher a menor profundidade que preserve segurança, qualidade e continuidade.
 
-Profundidade de processo não autoriza rebaixamento arquitetural: um produto pequeno em quantidade de telas ainda pode ser `multi-user-system` se compartilhar dados institucionais entre usuários/dispositivos.
+Profundidade de processo não autoriza rebaixamento arquitetural: um produto pequeno em quantidade de telas ainda pode ser `multi-user-system` se compartilhar dados institucionais entre usuários/dispositivos. Da mesma forma, uma API interna simples pode permanecer `lightweight`, enquanto uma interface pública/compartilhada pode exigir modo `contract`/`governed` mesmo em um projeto pequeno.
 
 ## Continuidade
 
@@ -66,6 +68,8 @@ Quando Semantic Verification for aplicável, `specs/semantic-contract.json`, `sp
 
 Quando System Engineering se aplicar, nível do produto, fonte autoritativa de dados e decisões relevantes de persistência/identidade/autorização/recovery devem permanecer recuperáveis no repositório.
 
+Quando API Engineering estiver em modo `contract`/`governed`, modo, consumidores, fonte de verdade do contrato e decisões de compatibilidade/gates também devem permanecer recuperáveis, preferencialmente em `ARCHITECTURE.md`, `API.md` e no próprio contrato machine-readable.
+
 Em outra máquina sem o arquivo local de aprendizado, a Factory deve continuar corretamente pelo baseline seguro; aprendizado é otimização, não requisito de continuidade.
 
 Novos projetos devem receber o template `templates/project/AGENTS.md`, que aponta de volta para a App Factory sem duplicar todo o Core.
@@ -76,7 +80,7 @@ Escopo fechado não significa tarefa minúscula. Prefira fatias funcionais compl
 
 ## Validação
 
-Nunca declare uma mudança concluída apenas porque o código foi escrito. Use `core/DEFINITION_OF_DONE.md` e a Skill `verification`. Quando existir contrato semântico aplicável, testes/gates precisam rastrear os critérios `must` e o review evidence precisa corresponder ao conteúdo atual. Quando o produto for `multi-user-system` ou superior, verifique também persistência compartilhada real, autorização server-side e demais gates de `core/SYSTEM_ENGINEERING.md`. Falhas entram em repair loop limitado; a Execution Fabric pode trocar o backend da tentativa seguinte antes de envolver o usuário. Learning Engine nunca reduz gates para melhorar score/tempo.
+Nunca declare uma mudança concluída apenas porque o código foi escrito. Use `core/DEFINITION_OF_DONE.md` e a Skill `verification`. Quando existir contrato semântico aplicável, testes/gates precisam rastrear os critérios `must` e o review evidence precisa corresponder ao conteúdo atual. Quando o produto for `multi-user-system` ou superior, verifique também persistência compartilhada real, autorização server-side e demais gates de `core/SYSTEM_ENGINEERING.md`. Quando houver API `contract`/`governed`, verifique contrato, compatibilidade, comportamento runtime e segurança conforme `core/API_ENGINEERING.md`. Falhas entram em repair loop limitado; a Execution Fabric pode trocar o backend da tentativa seguinte antes de envolver o usuário. Learning Engine nunca reduz gates para melhorar score/tempo.
 
 ## Portabilidade
 
