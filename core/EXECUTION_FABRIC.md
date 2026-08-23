@@ -64,6 +64,25 @@ Por padrão:
 - instalação de dependências só é proposta quando existe lockfile compatível; `package.json` sem lockfile não recebe `npm install` permissivo como fallback;
 - um gate falho interrompe a sequência para preservar evidência clara.
 
+## Independent Verification
+
+`core/INDEPENDENT_VERIFICATION.md` usa esta Fabric para separar ainda mais implementação de prova.
+
+Quando a matriz selecionar `independent`, `adversarial` ou `release`, `github_ci` é o executor preferido porque pode iniciar um ambiente limpo e rodar motores determinísticos que não dependem do julgamento da IA atual, por exemplo:
+
+- Semgrep Community Edition e Trivy;
+- StrykerJS/mutmut;
+- Schemathesis;
+- OWASP ZAP em alvo efêmero/autorizado;
+- axe-core/Playwright;
+- Lighthouse CI quando houver baseline estável.
+
+Esses motores continuam sendo **gates do projeto**, não novos backends de raciocínio. A Execution Fabric escolhe onde executá-los; `engine/independent_verification.py` decide quais são proporcionais ao risco/arquitetura.
+
+Se GitHub-hosted capacity não estiver disponível ou puder gerar custo não autorizado, a Factory pode usar runner self-hosted/local equivalente. Não deve contratar scanner/SaaS pago ou reduzir o gate silenciosamente para economizar recursos.
+
+Um scanner determinístico não conta como `independent-agent` de Semantic Verification. Ele produz evidência técnica independente, mas não entende sozinho a intenção do produto.
+
 ## Fallback da tarefa
 
 `engine/execution_engine.py` mantém histórico bounded em `.factory/execution.json`. Esse arquivo é cache operacional local e fica fora do Git por padrão.
@@ -103,6 +122,7 @@ python scripts/factory.py learning-status
 python scripts/factory.py learning-recommend verify
 python scripts/factory.py gates
 python scripts/factory.py run-gates
+python scripts/independent_verification.py --root <projeto> --risk high --system-level multi-user-system
 ```
 
 `next`, `resume` e `record` também retornam uma decisão `execution` automaticamente. A CLI deriva `task_key` do estado atual do Autonomy Engine quando disponível.
@@ -120,4 +140,6 @@ A Fabric nunca deve:
 - escolher backend sem todas as capacidades obrigatórias;
 - deixar aprendizado ultrapassar incapacidade/fallback/risco;
 - reduzir testes/Definition of Done para economizar recursos;
-- transformar falha técnica comum em pergunta ao usuário antes de tentar reparo/fallback.
+- transformar falha técnica comum em pergunta ao usuário antes de tentar reparo/fallback;
+- tratar scanner não executado como sucesso;
+- apontar fuzz/DAST ativo para produção por inferência.
