@@ -35,11 +35,12 @@ Activate from software-development intent itself. The user may describe only an 
 15. If semantic proof is required, load `semantic-verification`: create/update the structured contract and acceptance criteria before implementation, then derive verification traceability from it. In `domain`/`formal`, Semantic Assurance must be ready against the current contract fingerprint first.
 16. Choose the execution capability with `core/TASK_ROUTER.md`: current agent + GitHub/CI first when they can prove the work; local/Codex only when genuinely needed. Independent/adversarial/formal checks should prefer GitHub CI or an equivalent deterministic free runner when capable.
 17. Load only the specialized Skills needed for the current block.
-18. Prefer reuse of mature solutions when appropriate.
-19. Execute the largest safe complete functional slice, record the resulting autonomy event, ask the engine for `next`, and continue until done or genuinely blocked.
-20. During verification, execute the selected independent/adversarial matrix in addition to implementation-authored tests when applicable.
-21. When a semantic model changes, use semantic diff to identify impacted requirements, acceptance criteria, invariants and declared gates before accepting prior evidence as current.
-22. For medium/high-risk semantic work, do not let the implementing reasoning self-approve the delivery: prefer an independent reviewer/context; otherwise use the clean-context review packet built from current spec + diff + verification evidence. Deterministic/formal tools are complementary evidence, not a semantic reviewer.
+18. Once the routing decision has explicitly selected specialized Skills, record only their installed slugs when the local Factory CLI is available: `python scripts/skill_routing.py --root <project> record --skill <slug> ...`. This is advisory aggregate telemetry only; never include prompt/task text and never block work if local routing telemetry is unavailable.
+19. Prefer reuse of mature solutions when appropriate.
+20. Execute the largest safe complete functional slice, record the resulting autonomy event, ask the engine for `next`, and continue until done or genuinely blocked.
+21. During verification, execute the selected independent/adversarial matrix in addition to implementation-authored tests when applicable.
+22. When a semantic model changes, use semantic diff to identify impacted requirements, acceptance criteria, invariants and declared gates before accepting prior evidence as current.
+23. For medium/high-risk semantic work, do not let the implementing reasoning self-approve the delivery: prefer an independent reviewer/context; otherwise use the clean-context review packet built from current spec + diff + verification evidence. Deterministic/formal tools are complementary evidence, not a semantic reviewer.
 
 ## Common routing examples
 
