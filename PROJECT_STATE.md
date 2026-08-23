@@ -9,6 +9,7 @@ Manter a **App Factory V1.4 estável** como baseline recuperável, autônomo, ad
 ## Estado
 
 - fase: `V1.4 — estável + governance hardening`;
+- versão: `1.4.0`;
 - versão dos engines/plugin baseline: `1.4.0`;
 - baseline publicada anterior preservada: tag/release `v1.0.0`;
 - V1.1 / Issue #32: Context Engine + Autonomy Engine concluídos;
