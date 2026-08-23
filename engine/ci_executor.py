@@ -30,6 +30,14 @@ KNOWN_PYTHON_VALIDATORS = (
     "scripts/validate_v1_4.py",
 )
 
+LOCKFILE_MARKERS = (
+    "pnpm-lock.yaml",
+    "yarn.lock",
+    "bun.lock",
+    "bun.lockb",
+    "package-lock.json",
+)
+
 
 @dataclass(frozen=True)
 class Gate:
@@ -66,6 +74,10 @@ class GateRun:
             "stdout_tail": self.stdout_tail,
             "stderr_tail": self.stderr_tail,
         }
+
+
+def lockfile_present(root: Path) -> bool:
+    return any((root / marker).is_file() for marker in LOCKFILE_MARKERS)
 
 
 def package_manager(root: Path) -> str | None:
@@ -144,11 +156,25 @@ def build_ci_plan(root: Path | str) -> dict[str, Any]:
     install = install_argv(root)
     gates = discover_declared_gates(root)
     package_present = (root / "package.json").is_file()
+    has_lockfile = lockfile_present(root) if package_present else False
+
+    if not package_present:
+        reproducibility_action = None
+    elif install:
+        reproducibility_action = "frozen-install"
+    else:
+        # Deliberately advisory only: CI Executor never turns a missing lockfile
+        # into an implicit permissive install. A controlled bootstrap must
+        # materialize, validate and commit the lockfile first.
+        reproducibility_action = "materialize-validate-commit-lockfile"
+
     return {
         "schema_version": 1,
         "package_manager": manager,
+        "lockfile_present": has_lockfile if package_present else None,
         "install_argv": list(install) if install else None,
         "reproducible_install": bool(install) if package_present else None,
+        "reproducibility_action": reproducibility_action,
         "gates": [gate.to_dict() for gate in gates],
         "security": {
             "shell": False,
