@@ -68,3 +68,5 @@ jobs:
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git commit -m "fix: scope policy-as-code recommendations to access policy"
           git push origin HEAD:feat/field-test-hardening
+
+# trigger: 2026-08-23 field-test hardening
