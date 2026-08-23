@@ -10,12 +10,16 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 
 REQUIRED_FILES = [
+    "AGENTS.md",
     "core/CHANGE_HYGIENE.md",
+    "core/WORKFLOW.md",
     "scripts/change_hygiene.py",
     "scripts/validate_change_hygiene.py",
     "tests/change_hygiene/test_change_hygiene.py",
     "research/CHANGE_HYGIENE_RESEARCH.md",
+    "skills/factory-router/SKILL.md",
     "skills/maintenance/SKILL.md",
+    "templates/project/AGENTS.md",
     "core/PRINCIPLES.md",
     "core/DEFINITION_OF_DONE.md",
     ".github/workflows/validate-change-hygiene.yml",
@@ -34,12 +38,33 @@ MARKERS = {
         "jscpd",
         "projetos externos",
     ],
+    "AGENTS.md": [
+        "core/CHANGE_HYGIENE.md",
+        "manutenção com uma implementação final consolidada",
+        "Change Hygiene também é proporcional",
+    ],
+    "core/WORKFLOW.md": [
+        "core/CHANGE_HYGIENE.md",
+        "consolidar a implementação final",
+        "limpeza que não foi reverificada não conta como estado final confiável",
+    ],
+    "skills/factory-router/SKILL.md": [
+        "core/CHANGE_HYGIENE.md",
+        "Factory-built and external projects",
+        "run the Change Hygiene consolidation pass",
+        "Corrija este projeto legado que não foi criado pela App Factory",
+    ],
     "skills/maintenance/SKILL.md": [
         "core/CHANGE_HYGIENE.md",
         "Preserve **comportamento**, não implementação obsoleta",
         "Consolidação obrigatória",
         "scripts/change_hygiene.py",
         "net code health da área tocada",
+    ],
+    "templates/project/AGENTS.md": [
+        "Change Hygiene for existing code",
+        "core/CHANGE_HYGIENE.md",
+        "The final tree should look like the implementation",
     ],
     "core/PRINCIPLES.md": [
         "Preservar comportamento, não implementação obsoleta",
@@ -70,6 +95,11 @@ MARKERS = {
         "Ruff / Vulture",
         "jscpd",
         "net code health",
+    ],
+    ".github/workflows/validate-change-hygiene.yml": [
+        "fetch-depth: 0",
+        "Scan this PR for objective residue",
+        "scripts/change_hygiene.py --root . --base",
     ],
 }
 
