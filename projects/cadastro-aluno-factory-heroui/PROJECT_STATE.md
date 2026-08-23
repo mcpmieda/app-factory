@@ -66,7 +66,7 @@ Gates obrigatórios:
 
 - lint;
 - typecheck;
-- 15 testes unitários;
+- 17 testes unitários;
 - build;
 - 10 E2E desktop/mobile;
 - `npm audit` completo;
@@ -77,7 +77,7 @@ Gates obrigatórios:
 
 - especificação e Semantic Assurance: verdes;
 - lint/typecheck/build: verdes;
-- testes unitários: 15/15 verdes;
+- testes unitários: 17/17 verdes;
 - Playwright: 10/10 verdes em Chromium desktop/mobile;
 - `npm audit`: verde após atualização compatível do ESLint;
 - `package-lock.json`: gerado em runner limpo e versionado antes do CI congelado;
