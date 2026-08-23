@@ -16,23 +16,24 @@ A App Factory é **general-purpose**. Sistemas escolares são um domínio válid
 2. Leia `core/PRINCIPLES.md`.
 3. Siga `core/HUMAN_INTERACTION.md` para decidir o que o agente deve fazer sozinho e o que realmente depende do usuário.
 4. Em repositório existente, use `core/CONTEXT_ENGINE.md`/`context-engine` para recuperar mapa incremental e arquivos relevantes.
-5. Use `core/AUTONOMY_ENGINE.md`/`autonomy-engine` para recuperar ou inicializar estado e calcular a próxima ação.
-6. Classifique a profundidade necessária em `core/PROJECT_SCALE.md`.
-7. Classifique também o nível arquitetural em `core/SYSTEM_ENGINEERING.md`. Para `persistent-app` ou superior, identifique fonte autoritativa; para `multi-user-system` ou superior, derive persistência compartilhada, backend/server-side, identidade, autorização, validação, migrations e recovery proporcionais antes de simplificar.
-8. Quando existir API/integração/webhook/evento/contrato compartilhado relevante, aplique `core/API_ENGINEERING.md` e `api-engineering`: classifique `none`/`lightweight`/`contract`/`governed`, escolha protocolo/fonte de verdade e gates proporcionais. Backend não implica API formal.
-9. Para funcionalidade nova, bugfix relevante, regra de negócio ou mudança de contrato/risco, aplique `core/SEMANTIC_ASSURANCE.md` + `core/SEMANTIC_VERIFICATION.md`: escolha semantic depth `scenario`/`domain`/`formal`, materialize spec antes do código e use `semantic-assurance` em `domain`/`formal`.
-10. Em `domain`/`formal`, `specs/semantic-assurance.json` deve estar coerente com fingerprint da spec, sem contradições determinísticas, refs quebradas ou perguntas `blocking`. Property/combinatorial/formal methods entram somente quando a estrutura do domínio justificar.
-11. Derive `core/INDEPENDENT_VERIFICATION.md`. Para `independent`/`adversarial`/`release`, carregue `independent-verification` e selecione a menor matriz gratuita/open source que cubra **classes de falha diferentes**. Projetos simples permanecem `baseline`.
-12. Ao montar essa matriz, considere superfícies objetivas, não catálogo: workflows GitHub, API, navegador, migrations PostgreSQL, arquitetura declarada, invariantes/estados, combinações finitas, workload/SLO, integrações externas e release. Não rode equivalentes redundantes sem ganho.
-13. Use `core/EXECUTION_FABRIC.md` + `execution-router` para traduzir a ação em capacidades e eliminar backends incapazes/indisponíveis. Verificadores independentes e gates formais preferem GitHub Actions/CI quando capaz.
-14. Quando houver histórico local suficiente, aplique `core/LEARNING_ENGINE.md`/`learning-engine` somente entre candidatos já elegíveis; sem evidência suficiente, preserve baseline.
-15. Aplique `core/RISK_MODEL.md`; risco, contrato semântico, Semantic Assurance, System Engineering, API Engineering, Independent Verification e Definition of Done vencem qualquer preferência aprendida.
-16. Para software real novo, use `projects/<slug>/` por padrão e siga `core/INSPECTION_ENVIRONMENT.md` para URL canônica, preview e hospedagem quando aplicável.
-17. Consulte `core/WORKFLOW.md` para projeto novo ou manutenção.
-18. Carregue somente Skills relevantes.
-19. Consulte templates, políticas e referências apenas quando necessários.
-20. Antes de criar algo do zero, verifique solução consolidada, componente, biblioteca, template, formalismo ou registry adequado.
-21. Não misture tecnologias, protocolos, solvers, scanners ou design systems sem ganho claro.
+5. Em evolução, manutenção, refactor, debugging, modernização ou revisão de código existente, aplique `core/CHANGE_HYGIENE.md` e `maintenance`: preserve comportamento estável sem preservar implementação obsoleta, consolide repair loops e não entregue camadas de tentativas acumuladas.
+6. Use `core/AUTONOMY_ENGINE.md`/`autonomy-engine` para recuperar ou inicializar estado e calcular a próxima ação.
+7. Classifique a profundidade necessária em `core/PROJECT_SCALE.md`.
+8. Classifique também o nível arquitetural em `core/SYSTEM_ENGINEERING.md`. Para `persistent-app` ou superior, identifique fonte autoritativa; para `multi-user-system` ou superior, derive persistência compartilhada, backend/server-side, identidade, autorização, validação, migrations e recovery proporcionais antes de simplificar.
+9. Quando existir API/integração/webhook/evento/contrato compartilhado relevante, aplique `core/API_ENGINEERING.md` e `api-engineering`: classifique `none`/`lightweight`/`contract`/`governed`, escolha protocolo/fonte de verdade e gates proporcionais. Backend não implica API formal.
+10. Para funcionalidade nova, bugfix relevante, regra de negócio ou mudança de contrato/risco, aplique `core/SEMANTIC_ASSURANCE.md` + `core/SEMANTIC_VERIFICATION.md`: escolha semantic depth `scenario`/`domain`/`formal`, materialize spec antes do código e use `semantic-assurance` em `domain`/`formal`.
+11. Em `domain`/`formal`, `specs/semantic-assurance.json` deve estar coerente com fingerprint da spec, sem contradições determinísticas, refs quebradas ou perguntas `blocking`. Property/combinatorial/formal methods entram somente quando a estrutura do domínio justificar.
+12. Derive `core/INDEPENDENT_VERIFICATION.md`. Para `independent`/`adversarial`/`release`, carregue `independent-verification` e selecione a menor matriz gratuita/open source que cubra **classes de falha diferentes**. Projetos simples permanecem `baseline`.
+13. Ao montar essa matriz, considere superfícies objetivas, não catálogo: workflows GitHub, API, navegador, migrations PostgreSQL, arquitetura declarada, invariantes/estados, combinações finitas, workload/SLO, integrações externas e release. Não rode equivalentes redundantes sem ganho.
+14. Use `core/EXECUTION_FABRIC.md` + `execution-router` para traduzir a ação em capacidades e eliminar backends incapazes/indisponíveis. Verificadores independentes e gates formais preferem GitHub Actions/CI quando capaz.
+15. Quando houver histórico local suficiente, aplique `core/LEARNING_ENGINE.md`/`learning-engine` somente entre candidatos já elegíveis; sem evidência suficiente, preserve baseline.
+16. Aplique `core/RISK_MODEL.md`; risco, contrato semântico, Semantic Assurance, System Engineering, API Engineering, Independent Verification, Change Hygiene e Definition of Done vencem qualquer preferência aprendida.
+17. Para software real novo, use `projects/<slug>/` por padrão e siga `core/INSPECTION_ENVIRONMENT.md` para URL canônica, preview e hospedagem quando aplicável.
+18. Consulte `core/WORKFLOW.md` para projeto novo ou manutenção.
+19. Carregue somente Skills relevantes.
+20. Consulte templates, políticas e referências apenas quando necessários.
+21. Antes de criar algo do zero, verifique solução consolidada, componente, biblioteca, template, formalismo ou registry adequado.
+22. Não misture tecnologias, protocolos, solvers, scanners ou design systems sem ganho claro.
 
 ## Regra de serviço ao usuário
 
@@ -53,6 +54,7 @@ Prefira:
 - ferramentas gratuitas/open source quando equivalentes adequados existirem;
 - `current_agent` + GitHub/CI antes de handoff;
 - revisão desacoplada/clean-context quando risco médio/alto exigir prova semântica;
+- manutenção com uma implementação final consolidada em vez de patches sucessivos;
 - aprendizado local conservador;
 - explicações simples para decisões relevantes.
 
@@ -64,7 +66,7 @@ Não aplicar o mesmo ritual a todo trabalho. Projetos pequenos usam planejamento
 
 Profundidade de processo não autoriza rebaixamento arquitetural. Semantic Assurance segue `scenario → domain → formal`; Independent Verification segue `baseline → independent → adversarial → release`.
 
-A mesma proporcionalidade vale aos motores: actionlint/zizmor exigem workflows; Squawk exige PostgreSQL+migrations; property/combinatorial exige modelo semântico adequado; k6 exige workload/SLO/baseline útil; Toxiproxy exige integração material; RESTler é escalonamento de REST/OpenAPI `governed`; cross-browser só entra quando o produto promete suporte multi-engine.
+A mesma proporcionalidade vale aos motores: actionlint/zizmor exigem workflows; Squawk exige PostgreSQL+migrations; property/combinatorial exige modelo semântico adequado; k6 exige workload/SLO/baseline útil; Toxiproxy exige integração material; RESTler é escalonamento de REST/OpenAPI `governed`; cross-browser só entra quando o produto promete suporte multi-engine. Change Hygiene também é proporcional: scanner stdlib-first é leve; Knip/Stylelint/Vulture/jscpd entram somente quando stack, risco e configuração justificarem.
 
 ## Continuidade
 
@@ -94,11 +96,13 @@ Escopo fechado não significa tarefa minúscula. Prefira fatias funcionais compl
 
 Nunca declare concluído só porque código foi escrito. Use `core/DEFINITION_OF_DONE.md` e Skill `verification`.
 
+Em manutenção/revisão de sistema existente, rode a consolidação de `core/CHANGE_HYGIENE.md` antes da revisão final e reverifique depois da limpeza. O fato de um bug ter desaparecido não basta se a solução ainda depende de código morto, shadow implementation, override acumulado ou tentativa temporária.
+
 Quando Semantic Assurance for `domain`/`formal`, a spec precisa estar ready antes da implementação. Quando contrato semântico se aplicar, gates rastreiam critérios `must` e review evidence corresponde ao conteúdo atual. Em `multi-user-system`+, verifique persistência compartilhada real, autorização server-side e System Engineering. Em API `contract`/`governed`, verifique contrato/compatibilidade/runtime/segurança. Quando Independent Verification selecionar checks `required`, execute-os em GitHub CI/ambiente equivalente.
 
 Mutation/property/combinatorial testing, Schemathesis/RESTler, ZAP, SAST/supply-chain, migration/architecture checks, load/resilience, browser/accessibility e CI self-check são evidências complementares e condicionais. Nenhum substitui Semantic Assurance ou revisão semântica independente.
 
-Falhas entram em repair loop limitado; Execution Fabric pode trocar backend antes de envolver o usuário. Learning Engine nunca reduz gates para melhorar score/tempo.
+Falhas entram em repair loop limitado; Execution Fabric pode trocar backend antes de envolver o usuário. Learning Engine nunca reduz gates para melhorar score/tempo. Ao sair do repair loop com solução válida, Change Hygiene consolida o estado antes da entrega.
 
 ## Portabilidade
 

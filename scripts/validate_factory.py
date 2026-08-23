@@ -20,6 +20,7 @@ REQUIRED = [
     "core/WORKFLOW.md",
     "core/RISK_MODEL.md",
     "core/DEFINITION_OF_DONE.md",
+    "core/CHANGE_HYGIENE.md",
     "core/SYSTEM_ENGINEERING.md",
     "core/API_ENGINEERING.md",
     "core/SEMANTIC_ASSURANCE.md",
@@ -44,19 +45,25 @@ REQUIRED = [
     "scripts/agent_conformance.py",
     "scripts/validate_agent_conformance.py",
     "scripts/skill_routing.py",
+    "scripts/change_hygiene.py",
+    "scripts/validate_change_hygiene.py",
     "evals/agent-conformance/README.md",
     "evals/agent-conformance/cases/functional-spec-and-plan.json",
     "evals/agent-conformance/cases/docs-change-stays-light.json",
     "tests/agent_conformance/test_agent_conformance.py",
+    "tests/change_hygiene/test_change_hygiene.py",
     "research/EVALUATION_EVIDENCE_RESEARCH.md",
+    "research/CHANGE_HYGIENE_RESEARCH.md",
     ".coveragerc",
     "requirements/ci-evidence.txt",
     ".github/workflows/validate-agent-conformance.yml",
     ".github/workflows/validate-python-evidence.yml",
+    ".github/workflows/validate-change-hygiene.yml",
     "ui/UI_POLICY.md",
     "ui/PROFESSIONAL_UI_PROFILE.md",
     "ui/MOTION_POLICY.md",
     "skills/factory-router/SKILL.md",
+    "skills/maintenance/SKILL.md",
     "skills/api-engineering/SKILL.md",
     "skills/semantic-assurance/SKILL.md",
     "skills/independent-verification/SKILL.md",
@@ -140,8 +147,6 @@ def validate_professional_ui() -> None:
         "templates/project/AGENTS.md",
         ["ui/PROFESSIONAL_UI_PROFILE.md", "professional-default"],
     )
-    # Guardrail: o novo quality bar não pode inverter a escolha validada do
-    # perfil administrativo.
     require_markers(
         "profiles/web-admin/PROFILE.md",
         [
@@ -267,6 +272,46 @@ def validate_evaluation_evidence() -> None:
     )
 
 
+def validate_change_hygiene() -> None:
+    require_markers(
+        "core/CHANGE_HYGIENE.md",
+        [
+            "preservar comportamento estável não significa preservar implementação obsoleta",
+            "Substituir, não sombrear",
+            "Consolidação após repair loop",
+            "projetos externos",
+            "scripts/change_hygiene.py",
+        ],
+    )
+    require_markers(
+        "skills/maintenance/SKILL.md",
+        [
+            "core/CHANGE_HYGIENE.md",
+            "Consolidação obrigatória",
+            "net code health da área tocada",
+        ],
+    )
+    require_markers(
+        "core/PRINCIPLES.md",
+        [
+            "Preservar comportamento, não implementação obsoleta",
+            "A árvore final não é o histórico de tentativas",
+        ],
+    )
+    require_markers(
+        "core/DEFINITION_OF_DONE.md",
+        [
+            "Change Hygiene em sistemas existentes",
+            "shadow implementations",
+            "Manutenção não termina apenas porque o bug sumiu",
+        ],
+    )
+    require_markers(
+        "research/CHANGE_HYGIENE_RESEARCH.md",
+        ["Google Engineering Practices", "Chromium", "Microsoft Engineering Fundamentals Playbook", "Knip", "Stylelint", "jscpd"],
+    )
+
+
 def main() -> int:
     missing = [path for path in REQUIRED if not (ROOT / path).is_file()]
     if missing:
@@ -283,9 +328,10 @@ def main() -> int:
 
     validate_professional_ui()
     validate_evaluation_evidence()
+    validate_change_hygiene()
 
     print(
-        f"OK: {len(REQUIRED)} arquivos obrigatórios, {len(skill_files)} Skills, Professional UI e Evaluation Evidence validados."
+        f"OK: {len(REQUIRED)} arquivos obrigatórios, {len(skill_files)} Skills, Professional UI, Evaluation Evidence e Change Hygiene validados."
     )
     return 0
 

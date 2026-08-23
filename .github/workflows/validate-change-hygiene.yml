@@ -1,0 +1,57 @@
+name: Validate Change Hygiene
+
+on:
+  pull_request:
+    paths:
+      - "AGENTS.md"
+      - "PROJECT_STATE.md"
+      - "core/**"
+      - "docs/DECISIONS.md"
+      - "skills/factory-router/**"
+      - "skills/maintenance/**"
+      - "templates/project/**"
+      - "scripts/change_hygiene.py"
+      - "scripts/validate_change_hygiene.py"
+      - "tests/change_hygiene/**"
+      - "research/CHANGE_HYGIENE_RESEARCH.md"
+      - ".github/workflows/validate-change-hygiene.yml"
+  push:
+    branches: [main]
+    paths:
+      - "AGENTS.md"
+      - "PROJECT_STATE.md"
+      - "core/**"
+      - "docs/DECISIONS.md"
+      - "skills/factory-router/**"
+      - "skills/maintenance/**"
+      - "templates/project/**"
+      - "scripts/change_hygiene.py"
+      - "scripts/validate_change_hygiene.py"
+      - "tests/change_hygiene/**"
+      - "research/CHANGE_HYGIENE_RESEARCH.md"
+      - ".github/workflows/validate-change-hygiene.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  validate-change-hygiene:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Compile scanner and validator
+        run: python -m py_compile scripts/change_hygiene.py scripts/validate_change_hygiene.py
+      - name: Validate Change Hygiene
+        run: python scripts/validate_change_hygiene.py
+      - name: Scan this PR for objective residue
+        if: github.event_name == 'pull_request'
+        run: python scripts/change_hygiene.py --root . --base "origin/${{ github.base_ref }}"
+      - name: Validate App Factory wiring
+        run: python scripts/validate_factory.py
