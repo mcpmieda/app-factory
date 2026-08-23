@@ -4,25 +4,26 @@ Este contrato define como a App Factory verifica a **qualidade da própria espec
 
 A separação de responsabilidades é deliberada:
 
-- **Semantic Assurance** pergunta: *a intenção está suficientemente clara, coerente, completa, modelada e rastreável para ser implementada com segurança?*
-- **Semantic Verification** pergunta: *a implementação atual satisfaz a especificação atual?*
-- **System Engineering** define a profundidade mínima da arquitetura do produto.
+- **Semantic Assurance** pergunta: a intenção está suficientemente clara, coerente, completa, modelada e rastreável para ser implementada com segurança?
+- **Semantic Verification** pergunta: a implementação atual satisfaz a especificação atual?
+- **System Engineering** define a profundidade mínima da arquitetura.
 - **API Engineering** define contratos de interface quando existirem.
-- **Independent Verification** executa motores externos/adversariais contra implementação e testes.
+- **Independent Verification** executa motores externos/adversariais e transforma propriedades/modelos semânticos em gates quando aplicável.
 
-Semantic Assurance não substitui decisão humana de produto. Ferramentas formais provam propriedades do modelo fornecido; não provam que o modelo representa perfeitamente o mundo real.
+Semantic Assurance não substitui decisão humana de produto. Ferramentas formais ou geradores de teste provam propriedades do modelo fornecido; não provam que o modelo representa perfeitamente o mundo real.
 
 ## 1. Fontes e princípios incorporados
 
 A Factory adota, sem copiar cegamente uma ferramenta única:
 
-- estrutura de requisitos inspirada em **EARS** para tornar condição, gatilho, sujeito e resposta explícitos;
-- campos e formalização inspirados em **NASA FRET/FRETish** para requisitos temporais/reativos quando a precisão adicional trouxer valor;
-- análise cruzada de requisitos, cobertura e artefatos inspirada em workflows modernos de spec-driven development;
-- model-based/stateful/property-based testing para explorar sequências e valores além dos exemplos escritos manualmente;
-- métodos formais condicionais para restrições, relações, estados, concorrência, temporalidade, decisões e políticas.
+- estrutura inspirada em **EARS** para tornar condição, gatilho, sujeito e resposta explícitos;
+- **NASA FRET/FRETish** para requisitos temporais/reativos quando precisão adicional trouxer valor;
+- análise cruzada de requisitos, gaps e artefatos inspirada em workflows modernos de spec-driven development;
+- property/stateful/model-based testing para explorar valores e sequências além dos exemplos manuais;
+- combinatorial/t-way testing com covering arrays, preferindo **NIST ACTS** quando o espaço finito de configurações justificar;
+- métodos formais condicionais para restrições, relações, estados, concorrência, temporalidade, decisões e policies.
 
-A Factory não transforma linguagem natural em “prova matemática” silenciosamente. Toda formalização que virar gate precisa ser recuperável, revisável e ligada ao requisito de origem.
+A Factory não transforma linguagem natural em “prova matemática” silenciosamente. Toda formalização/modelo que virar gate precisa ser recuperável, revisável e ligado à origem.
 
 ## 2. Profundidade semântica
 
@@ -32,212 +33,247 @@ Documentação/chore ou mudança sem comportamento observável. Não criar artef
 
 ### `scenario`
 
-Funcionalidade pequena ou regra isolada. `specs/semantic-contract.json` com invariantes e critérios `given/when/then` normalmente é suficiente.
+Funcionalidade pequena ou regra isolada. `specs/semantic-contract.json` com invariantes e critérios `given/when/then` normalmente basta.
 
 ### `domain`
 
-Use quando existirem múltiplos conceitos/regras interagindo, domínio institucional, papéis, estados, relações, decisões ou risco de interpretação divergente.
+Use quando múltiplos conceitos/regras interagirem, houver papéis, estados, relações, decisões, domínio institucional/comercial ou risco de interpretação divergente.
 
 Além do contrato semântico, materialize `specs/semantic-assurance.json` com vocabulário, modelo de domínio, requisitos normalizados, restrições e rastreabilidade.
 
 ### `formal`
 
-Use somente quando o custo de erro e a natureza do problema justificarem análise formal: concorrência/distribuição, safety/liveness, requisitos temporais críticos, políticas complexas, relações combinatórias, regras com grande espaço de estados ou sistema crítico.
+Use somente quando custo de erro e natureza do problema justificarem análise formal: concorrência/distribuição, safety/liveness, requisitos temporais críticos, policies complexas, relações combinatórias, grande espaço de estados ou sistema crítico.
 
-`formal` não significa instalar todas as ferramentas formais. Selecione uma técnica adequada ao problema.
+`formal` não significa instalar todas as ferramentas. Selecione a técnica adequada ao problema.
 
 ## 3. Estrutura de requisitos
 
-Para profundidade `domain` ou `formal`, cada requisito relevante deve ser normalizado em campos estruturados em vez de depender apenas de uma frase livre.
+Para `domain`/`formal`, cada requisito relevante deve ser normalizado em campos estruturados em vez de depender apenas de frase livre.
 
 Campos recomendados:
 
 - `id`: `REQ-###`;
 - `priority`: `must` / `should` / `may`;
 - `pattern`: `ubiquitous`, `event`, `state`, `unwanted`, `optional`, `complex`, `decision` ou `policy`;
-- `component`: quem deve responder;
-- `scope`: contexto em que a regra vale;
-- `preconditions`: pré-condições;
-- `trigger`: evento/condição que dispara a regra;
-- `response`: resultados obrigatórios observáveis;
-- `timing`: limite/janela temporal quando relevante;
-- `concept_refs`: termos/entidades usados;
-- `acceptance_refs`: critérios `AC-###` que concretizam o requisito;
-- `invariant_refs`: invariantes `INV-###` relacionados;
-- `formalization`: artefato formal opcional quando houver.
+- `component`;
+- `scope`;
+- `preconditions`;
+- `trigger`;
+- `response`;
+- `timing`;
+- `concept_refs`;
+- `acceptance_refs`;
+- `invariant_refs`;
+- `formalization_refs`.
 
-A estrutura segue o espírito EARS/FRET, mas não exige que todo projeto adote sintaxe textual específica nem runtime Cucumber.
+A estrutura segue o espírito EARS/FRET, sem exigir sintaxe textual universal ou runtime Cucumber.
 
 ## 4. Vocabulário e modelo de domínio
 
-A partir de `domain`, a Factory deve tornar explícitos os conceitos cuja ambiguidade mudaria o comportamento.
+A partir de `domain`, torne explícitos apenas conceitos cuja ambiguidade mudaria comportamento.
 
 `specs/semantic-assurance.json` pode conter:
 
-- `glossary`: termos, definições, aliases e conceitos proibidos/deprecados;
-- `entities`: entidades de domínio e atributos relevantes;
-- `relations`: relações dirigidas entre entidades, com cardinalidade quando material;
-- `states`: estados de domínio importantes;
-- `transitions`: transições permitidas/negadas;
-- `constraints`: restrições estruturadas;
-- `open_questions`: ambiguidades ou decisões ainda abertas.
+- `glossary`;
+- `entities`;
+- `relations` e cardinalidades relevantes;
+- `states`;
+- `transitions` permitidas/negadas;
+- `constraints`;
+- `open_questions`.
 
-Não transformar todo substantivo em entidade. Modele somente conceitos que afetam regra, persistência, autorização, integração, estados ou interpretação.
+Não transforme todo substantivo em entidade. Modele conceitos que afetam regra, persistência, autorização, integração, estados ou interpretação.
 
 ## 5. Consistência determinística mínima
 
 O engine deve detectar sem IA, quando os dados estruturados permitirem:
 
 - IDs duplicados;
-- referências quebradas entre requisitos, conceitos, invariantes e critérios;
+- referências quebradas;
 - relações apontando para entidades inexistentes;
-- transições apontando para estados inexistentes;
+- transições para estados inexistentes;
 - cardinalidade impossível (`min > max`);
-- intervalo impossível (`min > max`);
-- enumeração cuja lista permitida foi integralmente proibida;
-- dependência e proibição simultâneas para o mesmo par de regras;
-- critérios `must` sem requisito de origem em profundidade `domain`/`formal`;
+- range impossível (`min > max`);
+- enum cujos valores permitidos foram todos proibidos;
+- dependência e proibição/exclusão simultâneas;
+- critérios `must` sem origem em requisito em `domain/formal`;
 - requisitos `must` sem critério de aceite;
 - pergunta aberta `blocking`;
-- uso de termos vagos conhecidos como finding advisory, nunca como “prova” automática de ambiguidade.
+- termos vagos conhecidos como finding advisory, nunca como prova automática.
 
-Um finding determinístico deve indicar os IDs envolvidos e, quando possível, um contraexemplo simples.
+Finding determinístico deve indicar IDs envolvidos e, quando possível, contraexemplo simples.
 
 ## 6. Cobertura semântica
 
-A Factory não deve mostrar uma porcentagem enganosa de “correção semântica”. Em vez disso, reporte cobertura estrutural separada:
+Não mostrar porcentagem enganosa de “correção semântica”. Reportar cobertura estrutural separada:
 
-- requisitos `must` ligados a critérios de aceite;
-- critérios `must` ligados a requisitos;
-- requisitos ligados aos conceitos de domínio que usam;
-- invariantes rastreados até requisitos/critério;
-- critérios ligados a evidência executável via `verification-plan.json`;
-- regras formais ligadas ao requisito de origem quando existirem.
+- requisito `must` → critério;
+- critério `must` → requisito;
+- requisito → conceitos usados;
+- invariante → requisito/critério;
+- critério → evidência executável;
+- formalização/modelo → origem.
 
-Cobertura incompleta é sinal objetivo. Cobertura 100% não significa que a intenção humana esteja perfeita.
+Cobertura incompleta é sinal objetivo. **100% não significa** que a intenção humana esteja correta.
 
 ## 7. Semantic Diff e impacto
 
-Quando a especificação mudar, compare por IDs estáveis e fingerprints.
+Compare por IDs estáveis e fingerprints.
 
-O diff semântico deve apontar:
+O **Semantic Diff** deve apontar:
 
 - requisitos adicionados/removidos/alterados;
 - conceitos/entidades/relações alterados;
-- restrições e estados alterados;
-- critérios/invariantes impactados por referências;
-- gates/testes impactados quando `verification-plan.json` permitir rastrear;
-- formalizações que ficaram potencialmente stale.
+- restrições/estados alterados;
+- critérios/invariantes impactados;
+- gates/testes impactados quando rastreáveis;
+- formalizações, propriedades ou modelos combinatoriais potencialmente stale.
 
-Mudança textual sem mudança semântica não deve gerar impacto artificial quando os campos estruturados forem equivalentes. Mudança semântica material deve invalidar evidência/review dependente.
+Mudança semântica material invalida evidência dependente até nova passagem.
 
-## 8. Model-based e property-based testing
+## 8. Property-based e stateful testing
 
-Exemplos `given/when/then` continuam importantes, mas não devem ser a única forma de explorar um domínio com espaço grande.
+Exemplos `given/when/then` continuam importantes, mas não devem ser a única exploração de domínio com espaço grande.
 
 Quando houver invariantes, ranges, sequências ou máquina de estados:
 
-- prefira property-based testing compatível com a linguagem;
-- para Python, Hypothesis é um default forte quando já fizer sentido na stack;
-- para outras linguagens, selecione alternativa madura/open source equivalente;
-- para fluxos stateful, gere sequências de operações e valide invariantes a cada estado;
-- transforme contraexemplos encontrados em regressão reproduzível.
+- Python: preferir **Hypothesis**;
+- JavaScript/TypeScript: preferir **fast-check**;
+- outras linguagens: equivalente maduro/open source;
+- gerar valores/sequências e validar invariantes a cada passo quando stateful;
+- preservar seed/contraexemplo reproduzível;
+- transformar finding importante em regressão determinística.
+
+Property testing não substitui mutation testing: mutation pergunta se os testes detectam defeitos; property testing procura valores/estados que violem uma propriedade declarada.
 
 Não introduzir property-based testing em lógica trivial sem ganho real.
 
-## 9. Métodos formais condicionais
+## 9. Combinatorial testing / NIST ACTS
 
-### Restrições e regras combinatórias
+Quando múltiplas dimensões finitas interagirem, teste exaustivo pode crescer de forma impraticável. Nesse caso considere **NIST ACTS** ou covering-array generator equivalente.
 
-Use **Z3** ou solver SMT equivalente quando regras estruturadas puderem ser expressas como restrições e for útil perguntar “existe alguma combinação que satisfaz tudo?” ou “há um contraexemplo?”.
+Candidatos típicos, em qualquer domínio:
+
+- roles × permissions × states;
+- feature flags × plans × regions;
+- browser × auth mode × configuration;
+- product variants × rules × channel;
+- qualquer combinação de parâmetros discretos com risco de interação.
+
+Regras:
+
+- não usar ACTS só porque há muitos campos;
+- derive parâmetros/valores/restrições do domínio real;
+- escolha força t-way por evidência/risco, não número arbitrário;
+- quando a combinação for material, versionar `specs/combinatorial-model.json` ou artefato equivalente;
+- um modelo materializado pode virar gate de Independent Verification;
+- sem modelo executável, a recomendação permanece advisory.
+
+ACTS reduz o espaço de combinações do modelo; não prova comportamentos que não foram modelados.
+
+## 10. Métodos formais condicionais
+
+### Restrições e combinatória lógica
+
+Use **Z3**/SMT quando regras estruturadas puderem ser expressas como restrições e for útil perguntar satisfatibilidade/contraexemplo.
 
 Use **Alloy** quando o problema for predominantemente relacional: entidades, cardinalidades, ownership, composições e invariantes estruturais.
 
-### Requisitos temporais/reativos
+### Temporal/reativo
 
-Use **NASA FRET/FRETish** ou técnica equivalente quando timing, scope, condição e resposta precisarem de semântica temporal precisa e realizability/consistency checking trouxer valor.
+Use **NASA FRET/FRETish** quando timing, scope, condição e resposta exigirem semântica temporal precisa.
 
-Não gerar FRETish aproximado e tratá-lo como prova. O artefato formal deve ser validado pela ferramenta real quando virar gate.
+Não gerar FRETish aproximado e tratá-lo como prova. Ferramenta real precisa validar artefato quando virar gate.
 
-### Estados, concorrência e sistemas distribuídos
+### Estados, concorrência e distribuído
 
-Considere **P**, **Quint/TLA+** ou equivalente quando interleavings, mensagens, falhas, safety/liveness ou concorrência forem o risco central.
+Considere P, **Quint/TLA+** ou equivalente para interleavings, mensagens, falhas, safety/liveness e concorrência.
 
-### Decisões de negócio
+### Decisão de negócio
 
-Considere **DMN/decision tables** quando grande parte do comportamento for uma decisão tabular com combinações de entrada/saída que precisam ser revisáveis e executáveis.
+Considere **DMN**/decision tables quando comportamento for predominantemente tabular/combinatório e precisar ser revisável/executável.
 
-### Autorização/policy-as-code
+### Authorization/policy-as-code
 
-Considere **OPA/Rego** ou **Cedar** quando políticas de autorização complexas precisarem ser separadas da implementação e testadas como regras declarativas.
+Considere **OPA/Rego** ou **Cedar** para policies complexas separadas da implementação.
 
-Nenhuma dessas ferramentas é dependência universal da Factory.
+Nenhuma técnica é dependência universal.
 
-## 10. Formalization registry
+## 11. Formalization registry
 
-Quando método formal for usado, `semantic-assurance.json` deve registrar por requisito:
+Quando método formal for usado, registre por requisito:
 
 - `kind`: `z3`, `alloy`, `fret`, `p`, `quint`, `tla+`, `dmn`, `opa`, `cedar` ou equivalente;
-- `artifact`: caminho versionado;
-- `source_refs`: requisitos/invariantes que o artefato representa;
-- `gate`: gate executável quando obrigatório;
+- `artifact` versionado;
+- `source_refs`;
+- `gate` executável quando obrigatório;
 - `status`: `required`, `advisory` ou `experimental`.
 
 Formalização sem `source_refs` não é rastreabilidade. Ferramenta não executada não conta como prova.
 
-## 11. Ambiguidade e análise por IA
+## 12. Ambiguidade e análise por IA
 
-Análise por IA pode encontrar:
+IA pode sugerir:
 
 - termos indefinidos;
 - pressupostos implícitos;
-- conflitos entre requisitos distantes;
+- conflitos distantes;
 - edge cases ausentes;
-- conflito funcional x não funcional;
+- conflito funcional × não funcional;
 - diferença entre regra escrita e domínio conhecido.
 
-Mas findings da própria IA são hipóteses até serem resolvidos pelo contrato estruturado, usuário/domínio ou prova determinística/formal.
+Mas finding da IA é hipótese até ser resolvido por contrato estruturado, evidência, usuário/domínio ou prova determinística/formal.
 
-Não bloqueie automaticamente por mera suspeita probabilística. Marque como `blocking` somente quando a ambiguidade impede uma implementação segura/correta ou exige decisão humana genuína.
+Não bloqueie automaticamente por mera suspeita probabilística. `blocking` só quando a ambiguidade impede implementação segura/correta ou exige decisão humana genuína.
 
-## 12. Relação com Semantic Verification
+## 13. Handoff para Independent Verification
 
-Fluxo preferido para trabalho relevante:
+Fluxo preferido:
 
 ```text
 intenção
-→ semantic assurance proporcional
+→ Semantic Assurance proporcional
 → semantic-contract + semantic-assurance quando aplicável
-→ análise de consistência/cobertura
-→ specification ready
+→ consistência/cobertura
+→ propriedades/modelos combinatórios/formalizações quando justificados
 → implementação
 → verification-plan + testes/gates
-→ Independent Verification quando aplicável
+→ Independent Verification
 → review desacoplado
 → delivery
 ```
 
-`semantic-contract.json` continua sendo a autoridade dos critérios de aceite e invariantes observáveis. `semantic-assurance.json` complementa com domínio/requisitos/consistência; não deve duplicar OpenAPI, schema de banco ou todos os detalhes de arquitetura.
+Semantic Assurance identifica **o que vale explorar**; Independent Verification decide quando isso vira gate:
 
-## 13. Definition of Done semântica
+- invariantes/ranges/estados → Hypothesis/fast-check;
+- múltiplas dimensões finitas → NIST ACTS;
+- formalization registry → solver/model checker;
+- critérios → evidência executável normal.
 
-Quando profundidade for `domain` ou `formal`, não concluir a fase de especificação se:
+`semantic-contract.json` continua autoridade dos critérios/invariantes observáveis. `semantic-assurance.json` complementa com domínio/requisitos/consistência; não duplica OpenAPI, schema de banco ou arquitetura inteira.
 
-- existir erro estrutural/contradição determinística não resolvida;
-- houver `open_question` blocking;
-- requisito `must` não tiver critério de aceite;
+## 14. Definition of Done semântica
+
+Em `domain/formal`, não concluir especificação se:
+
+- houver erro estrutural/contradição determinística não resolvida;
+- `open_question` blocking existir;
+- requisito `must` não tiver critério;
 - critério `must` não tiver origem rastreável;
 - referência obrigatória estiver quebrada;
-- formalização marcada `required` estiver ausente/stale/não executada quando o gate já existir.
+- formalização `required` estiver ausente/stale/não executada quando gate existir.
 
-Para `formal`, a entrega também deve registrar limites do modelo e pressupostos que ficaram fora da prova.
+Para `formal`, registre limites e assumptions do modelo.
 
-## 14. Regra final
+Property/combinatorial testing só bloqueia quando Independent Verification o selecionar como `required`; não tornar toda modelagem semântica um gerador pesado por padrão.
 
-A meta não é “formalizar tudo”. A meta é aumentar precisão onde a ambiguidade custa caro.
+## 15. Regra final
 
-A Factory deve usar a forma mais leve que preserve corretamente a intenção real:
+A meta não é formalizar nem gerar tudo. É aumentar precisão onde ambiguidade/combinação custa caro.
+
+Use a forma mais leve que preserve corretamente a intenção:
 
 `scenario → domain → formal`
 
-Subir de nível somente quando relações, estados, decisões, risco ou custo de erro justificarem. Voltar para uma forma simples quando complexidade formal não estiver produzindo evidência melhor.
+Suba quando relações, estados, combinações, decisões, risco ou custo de erro justificarem. Simplifique quando complexidade adicional não produz evidência melhor.
