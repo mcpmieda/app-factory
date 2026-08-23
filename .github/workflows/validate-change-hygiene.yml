@@ -3,8 +3,12 @@ name: Validate Change Hygiene
 on:
   pull_request:
     paths:
+      - "AGENTS.md"
       - "core/**"
+      - "docs/DECISIONS.md"
+      - "skills/factory-router/**"
       - "skills/maintenance/**"
+      - "templates/project/**"
       - "scripts/change_hygiene.py"
       - "scripts/validate_change_hygiene.py"
       - "tests/change_hygiene/**"
@@ -13,8 +17,12 @@ on:
   push:
     branches: [main]
     paths:
+      - "AGENTS.md"
       - "core/**"
+      - "docs/DECISIONS.md"
+      - "skills/factory-router/**"
       - "skills/maintenance/**"
+      - "templates/project/**"
       - "scripts/change_hygiene.py"
       - "scripts/validate_change_hygiene.py"
       - "tests/change_hygiene/**"
@@ -31,6 +39,8 @@ jobs:
     timeout-minutes: 10
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
       - uses: actions/setup-python@v5
         with:
           python-version: "3.12"
@@ -38,5 +48,8 @@ jobs:
         run: python -m py_compile scripts/change_hygiene.py scripts/validate_change_hygiene.py
       - name: Validate Change Hygiene
         run: python scripts/validate_change_hygiene.py
+      - name: Scan this PR for objective residue
+        if: github.event_name == 'pull_request'
+        run: python scripts/change_hygiene.py --root . --base "origin/${{ github.base_ref }}"
       - name: Validate App Factory wiring
         run: python scripts/validate_factory.py
