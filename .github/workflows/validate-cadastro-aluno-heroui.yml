@@ -11,10 +11,8 @@ on:
       - "projects/cadastro-aluno-factory-heroui/**"
       - ".github/workflows/validate-cadastro-aluno-heroui.yml"
 
-# Temporary only for recording the first final review-evidence.json after all
-# required gates pass. The final workflow reverts to contents: read.
 permissions:
-  contents: write
+  contents: read
 
 jobs:
   verify:
@@ -22,10 +20,8 @@ jobs:
     timeout-minutes: 25
 
     steps:
-      - name: Checkout exact PR head
+      - name: Checkout
         uses: actions/checkout@v4
-        with:
-          ref: ${{ github.event.pull_request.head.sha || github.sha }}
 
       - name: Node
         uses: actions/setup-node@v4
@@ -76,34 +72,7 @@ jobs:
         working-directory: projects/cadastro-aluno-factory-heroui
         run: npm run e2e
 
-      - name: Validate or record final semantic review
-        if: github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == github.repository
-        run: |
-          if python scripts/factory.py --root projects/cadastro-aluno-factory-heroui semantic-status; then
-            echo "Semantic review is already current."
-            exit 0
-          fi
-
-          python scripts/factory.py --root projects/cadastro-aluno-factory-heroui record-semantic-review \
-            --mode deterministic-ci \
-            --verdict pass \
-            --criterion AC-001=pass \
-            --criterion AC-002=pass \
-            --criterion AC-003=pass \
-            --criterion AC-004=pass \
-            --criterion AC-005=pass \
-            --criterion AC-006=pass \
-            --criterion AC-007=pass \
-            --finding "Required field-test gates passed in clean GitHub CI with frozen dependencies."
-
-          python scripts/factory.py --root projects/cadastro-aluno-factory-heroui semantic-status
-
-          git add projects/cadastro-aluno-factory-heroui/specs/review-evidence.json
-          if git diff --cached --quiet; then
-            echo "No semantic review change to commit."
-            exit 0
-          fi
-          git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git commit -m "test: record student field-test semantic review"
-          git push origin HEAD:${{ github.event.pull_request.head.ref }}
+      - name: Validate semantic review freshness
+        env:
+          PYTHONPATH: .
+        run: python scripts/factory.py --root projects/cadastro-aluno-factory-heroui semantic-status
