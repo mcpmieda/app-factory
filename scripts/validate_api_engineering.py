@@ -33,71 +33,26 @@ def main() -> int:
     require_markers(
         "core/API_ENGINEERING.md",
         [
-            "`none`",
-            "`lightweight`",
-            "`contract`",
-            "`governed`",
-            "OpenAPI",
-            "GraphQL",
-            "gRPC",
-            "AsyncAPI",
-            "Arazzo",
-            "RFC 9457",
-            "RFC 9110",
-            "OWASP API Security",
-            "Redocly CLI",
-            "oasdiff",
-            "Schemathesis",
-            "Pact",
-            "idempot",
-            "Webhooks",
-            "breaking",
-            "timeout",
-            "retry",
-            "Contract-first",
-            "não cria uma API onde o produto não precisa",
+            "`none`", "`lightweight`", "`contract`", "`governed`", "OpenAPI", "GraphQL", "gRPC", "AsyncAPI", "Arazzo",
+            "RFC 9457", "RFC 9110", "OWASP API Security", "Redocly CLI", "oasdiff", "Schemathesis", "Pact", "idempot",
+            "Webhooks", "breaking", "timeout", "retry", "Contract-first", "não cria uma API onde o produto não precisa",
         ],
     )
 
     require_markers(
         "skills/api-engineering/SKILL.md",
         [
-            "name: api-engineering",
-            "core/API_ENGINEERING.md",
-            "`none`, `lightweight`, `contract` or `governed`",
-            "Redocly",
-            "oasdiff",
-            "Schemathesis",
-            "Pact",
-            "semantic-verification",
-            "security-review",
-            "independent-verification",
+            "name: api-engineering", "core/API_ENGINEERING.md", "`none`, `lightweight`, `contract` or `governed`",
+            "Redocly", "oasdiff", "Schemathesis", "Pact", "semantic-verification", "security-review", "independent-verification",
         ],
     )
 
     integration_files = [
-        "README.md",
-        "AGENTS.md",
-        "PROJECT_STATE.md",
-        "APP_FACTORY_PLAN.md",
-        "PORTABILITY.md",
-        "docs/DECISIONS.md",
-        "docs/CODEX_PLUGIN.md",
-        ".codex-plugin/plugin.json",
-        "core/ENTRYPOINT.md",
-        "core/SYSTEM_ENGINEERING.md",
-        "core/SEMANTIC_VERIFICATION.md",
-        "core/WORKFLOW.md",
-        "core/DEFINITION_OF_DONE.md",
-        "skills/factory-router/SKILL.md",
-        "skills/app-planner/SKILL.md",
-        "skills/architecture/SKILL.md",
-        "skills/security-review/SKILL.md",
-        "profiles/web-admin/PROFILE.md",
-        "profiles/web-app/PROFILE.md",
-        "profiles/automation/PROFILE.md",
-        "templates/project/AGENTS.md",
-        "templates/project/ARCHITECTURE.md",
+        "README.md", "AGENTS.md", "PROJECT_STATE.md", "APP_FACTORY_PLAN.md", "PORTABILITY.md", "docs/DECISIONS.md",
+        "docs/CODEX_PLUGIN.md", ".codex-plugin/plugin.json", "core/ENTRYPOINT.md", "core/SYSTEM_ENGINEERING.md",
+        "core/SEMANTIC_VERIFICATION.md", "core/WORKFLOW.md", "core/DEFINITION_OF_DONE.md", "skills/factory-router/SKILL.md",
+        "skills/app-planner/SKILL.md", "skills/architecture/SKILL.md", "skills/security-review/SKILL.md", "profiles/web-admin/PROFILE.md",
+        "profiles/web-app/PROFILE.md", "profiles/automation/PROFILE.md", "templates/project/AGENTS.md", "templates/project/ARCHITECTURE.md",
         "templates/project/PROJECT_STATE.md",
     ]
     for path in integration_files:
@@ -107,43 +62,16 @@ def main() -> int:
 
     require_markers(
         "PROJECT_STATE.md",
-        [
-            "governance hardening",
-            "API Engineering Contract",
-            "18",
-            "Validate API Engineering Contract",
-        ],
+        ["governance hardening", "API Engineering Contract", "19", "Validate API Engineering Contract"],
     )
     require_markers(
         "APP_FACTORY_PLAN.md",
-        [
-            "System Engineering",
-            "API Engineering",
-            "Execution Fabric",
-            "Semantic Verification",
-            "Governance hardenings sobre V1.4",
-        ],
+        ["System Engineering", "API Engineering", "Execution Fabric", "Semantic Verification", "Governance hardenings sobre V1.4"],
     )
-    require_markers(
-        "docs/DECISIONS.md",
-        [
-            "D-035",
-            "D-037",
-            "D-039",
-            "D-042",
-            "D-044",
-        ],
-    )
+    require_markers("docs/DECISIONS.md", ["D-035", "D-037", "D-039", "D-042", "D-044"])
     require_markers(
         "docs/CODEX_PLUGIN.md",
-        [
-            "1.4.0",
-            "18 Skills",
-            "api-engineering",
-            "System Engineering",
-            "API Engineering",
-            "validate_api_engineering.py",
-        ],
+        ["1.4.0", "19 Skills", "api-engineering", "System Engineering", "API Engineering", "validate_api_engineering.py"],
     )
 
     plugin = json.loads(read(".codex-plugin/plugin.json"))
@@ -158,54 +86,28 @@ def main() -> int:
 
     require_markers(
         "templates/project/API.md",
-        [
-            "modo de governanca",
-            "fonte de verdade",
-            "compatibilidade",
-            "timeout",
-            "retry",
-            "Webhooks/eventos",
-            "Gates",
-            "Arazzo",
-            "Nao copie `core/API_ENGINEERING.md`",
-        ],
+        ["modo de governanca", "fonte de verdade", "compatibilidade", "timeout", "retry", "Webhooks/eventos", "Gates", "Arazzo", "Nao copie `core/API_ENGINEERING.md`"],
     )
-    require_markers(
-        "templates/api/redocly.yaml",
-        ["recommended-strict", "version the Redocly CLI"],
-    )
-    require_markers(
-        "templates/api/README.md",
-        ["@redocly/cli", "oasdiff breaking", "schemathesis", "nao dependencias universais"],
-    )
+    require_markers("templates/api/redocly.yaml", ["recommended-strict", "version the Redocly CLI"])
+    require_markers("templates/api/README.md", ["@redocly/cli", "oasdiff breaking", "schemathesis", "nao dependencias universais"])
 
-    # Regression guards: API governance must extend, not replace, the proven engines/recipes.
     preserved = [
-        "core/SYSTEM_ENGINEERING.md",
-        "core/CONTEXT_ENGINE.md",
-        "core/AUTONOMY_ENGINE.md",
-        "core/EXECUTION_FABRIC.md",
-        "core/LEARNING_ENGINE.md",
-        "core/SEMANTIC_VERIFICATION.md",
-        "engine/context_engine.py",
-        "engine/autonomy_engine.py",
-        "engine/execution_engine.py",
-        "engine/learning_engine.py",
-        "engine/semantic_verification.py",
-        "starters/web-admin/recipes/auth-better-auth/recipe.json",
-        "starters/web-admin/recipes/database-drizzle-postgres/recipe.json",
+        "core/SYSTEM_ENGINEERING.md", "core/CONTEXT_ENGINE.md", "core/AUTONOMY_ENGINE.md", "core/EXECUTION_FABRIC.md",
+        "core/LEARNING_ENGINE.md", "core/SEMANTIC_VERIFICATION.md", "engine/context_engine.py", "engine/autonomy_engine.py",
+        "engine/execution_engine.py", "engine/learning_engine.py", "engine/semantic_verification.py",
+        "starters/web-admin/recipes/auth-better-auth/recipe.json", "starters/web-admin/recipes/database-drizzle-postgres/recipe.json",
     ]
     missing = [path for path in preserved if not (ROOT / path).is_file()]
     if missing:
         fail("Regressão: capacidades/recipes preservados ausentes: " + ", ".join(missing))
 
     readme = read("README.md")
-    if "18 Skills" not in readme:
+    if "19 Skills" not in readme:
         fail("README deve refletir as Skills atuais sem alterar a baseline dos engines")
 
     print(
-        "OK: API Engineering integrado de forma condicional a arquitetura, semântica, "
-        "segurança, Independent Verification, perfis, templates, plugin/documentação e regressão dos engines/recipes existentes."
+        "OK: API Engineering integrado de forma condicional a arquitetura, semântica, segurança, Independent Verification, "
+        "perfis, templates, plugin/documentação e regressão dos engines/recipes existentes."
     )
     return 0
 
