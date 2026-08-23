@@ -28,6 +28,7 @@ test.beforeEach(async ({ page }) => {
   await page.goto("/");
   await page.evaluate(() => window.localStorage.clear());
   await page.reload();
+  await expect(page.getByText("0 resultados")).toBeVisible();
 });
 
 test("cadastra aluno e mantém após recarregar", async ({ page }) => {
