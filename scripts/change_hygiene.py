@@ -23,20 +23,14 @@ SOURCE_SUFFIXES = {
     ".cs", ".cpp", ".cc", ".c", ".h", ".hpp", ".css", ".scss", ".less",
     ".vue", ".svelte", ".astro",
 }
+JS_LIKE_SUFFIXES = {".js", ".jsx", ".mjs", ".cjs", ".ts", ".tsx", ".vue", ".svelte", ".astro"}
+PYTHON_SUFFIXES = {".py"}
 CSS_SUFFIXES = {".css", ".scss", ".less"}
+C_STYLE_SUFFIXES = SOURCE_SUFFIXES - PYTHON_SUFFIXES
 TRANSIENT_SUFFIXES = {".bak", ".orig", ".rej", ".tmp", ".temp", ".swp"}
 TRANSIENT_NAMES = {"npm-debug.log", "yarn-error.log", "debug.log"}
 SHADOW_SUFFIX = re.compile(
     r"(?i)(?:[-_.](?:old|new|fixed|final|copy|backup|legacy|tmp|temp|v[2-9][0-9]*))$"
-)
-SUPPRESSION_PATTERNS = (
-    "eslint-disable",
-    "stylelint-disable",
-    "@ts-ignore",
-    "@ts-expect-error",
-    "# noqa",
-    "# type: ignore",
-    "noinspection",
 )
 TEMP_DEBT_RE = re.compile(
     r"(?i)(?:todo|fixme).{0,80}(?:temporary|workaround|remove|legacy|compat)|"
@@ -194,19 +188,73 @@ def scan_content(root: Path, path: str, blockers: list[dict[str, Any]]) -> None:
         )
 
 
+def _outside_simple_quotes(prefix: str) -> bool:
+    """Cheap guard against matching directive-like strings as comments.
+
+    This is not a language parser. It only reduces obvious false positives; the
+    findings remain advisory and stack-native linters stay authoritative.
+    """
+
+    return prefix.count('"') % 2 == 0 and prefix.count("'") % 2 == 0
+
+
+def comment_segment(path: str, line: str) -> str:
+    suffix = Path(path).suffix.lower()
+    tokens: tuple[str, ...]
+    if suffix in PYTHON_SUFFIXES:
+        tokens = ("#",)
+    elif suffix in C_STYLE_SUFFIXES:
+        tokens = ("//", "/*")
+    else:
+        return ""
+
+    candidates: list[tuple[int, str]] = []
+    for token in tokens:
+        index = line.find(token)
+        if index >= 0 and _outside_simple_quotes(line[:index]):
+            candidates.append((index, line[index:]))
+    if not candidates:
+        return ""
+    return min(candidates, key=lambda item: item[0])[1]
+
+
+def suppression_marker(path: str, comment: str) -> str | None:
+    suffix = Path(path).suffix.lower()
+    lowered = comment.lower()
+    if suffix in JS_LIKE_SUFFIXES:
+        for marker in ("eslint-disable", "@ts-ignore", "@ts-expect-error"):
+            if marker in lowered:
+                return marker
+    if suffix in CSS_SUFFIXES and "stylelint-disable" in lowered:
+        return "stylelint-disable"
+    if suffix in PYTHON_SUFFIXES:
+        if re.search(r"#\s*noqa\b", lowered):
+            return "# noqa"
+        if re.search(r"#\s*type:\s*ignore\b", lowered):
+            return "# type: ignore"
+    if suffix in C_STYLE_SUFFIXES and "noinspection" in lowered:
+        return "noinspection"
+    return None
+
+
 def scan_added_risks(path: str, lines: list[str], advisories: list[dict[str, Any]]) -> None:
+    suffix = Path(path).suffix.lower()
+    if suffix not in SOURCE_SUFFIXES:
+        return
+
     for line_number, line in enumerate(lines, start=1):
         lowered = line.lower()
-        for marker in SUPPRESSION_PATTERNS:
-            if marker.lower() in lowered:
-                add_finding(
-                    advisories,
-                    "new-suppression",
-                    path,
-                    f"Nova suppression detectada ({marker}); prefira corrigir a causa ou justificar a exceção.",
-                    added_line=line_number,
-                )
-        if Path(path).suffix.lower() in CSS_SUFFIXES and "!important" in lowered:
+        comment = comment_segment(path, line)
+        marker = suppression_marker(path, comment) if comment else None
+        if marker:
+            add_finding(
+                advisories,
+                "new-suppression",
+                path,
+                f"Nova suppression detectada ({marker}); prefira corrigir a causa ou justificar a exceção.",
+                added_line=line_number,
+            )
+        if suffix in CSS_SUFFIXES and "!important" in lowered:
             add_finding(
                 advisories,
                 "css-important-added",
@@ -214,7 +262,7 @@ def scan_added_risks(path: str, lines: list[str], advisories: list[dict[str, Any
                 "Novo !important pode indicar camada de override; revisar se a regra original pode ser corrigida.",
                 added_line=line_number,
             )
-        if TEMP_DEBT_RE.search(line):
+        if comment and TEMP_DEBT_RE.search(comment):
             add_finding(
                 advisories,
                 "temporary-debt-marker",
@@ -256,10 +304,10 @@ def detect_tooling(root: Path) -> dict[str, Any]:
     pyproject = root / "pyproject.toml"
     requirements_text = ""
     for name in ("requirements.txt", "requirements-dev.txt"):
-        path = root / name
-        if path.is_file():
+        requirement = root / name
+        if requirement.is_file():
             try:
-                requirements_text += "\n" + path.read_text(encoding="utf-8")
+                requirements_text += "\n" + requirement.read_text(encoding="utf-8")
             except (OSError, UnicodeDecodeError):
                 pass
     pyproject_text = ""
