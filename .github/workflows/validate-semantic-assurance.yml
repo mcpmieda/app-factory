@@ -1,0 +1,26 @@
+name: Validate Semantic Assurance
+
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+
+permissions:
+  contents: read
+
+jobs:
+  semantic-assurance:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Compile Semantic Assurance engine
+        run: python -m py_compile engine/semantic_assurance.py scripts/semantic_assurance.py scripts/validate_semantic_assurance.py
+      - name: Validate Factory structure
+        run: python scripts/validate_factory.py
+      - name: Validate Semantic Assurance
+        run: python scripts/validate_semantic_assurance.py
