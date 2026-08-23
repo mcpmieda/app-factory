@@ -139,6 +139,10 @@ def validate_professional_ui() -> None:
         ],
     )
     require_markers(
+        "starters/web-admin/template/.factory-template.json",
+        ['"professionalUiProfile": "professional-default"', '"motionProfile": "ambient"'],
+    )
+    require_markers(
         "starters/web-admin/template/AGENTS.md",
         [
             "Preserve shadcn/ui as the visual foundation",
@@ -148,12 +152,44 @@ def validate_professional_ui() -> None:
         ],
     )
     require_markers(
+        "starters/web-admin/template/PRODUCT.md",
+        [
+            "visual system: shadcn/ui baseline",
+            "ReUI only when",
+            "Professional UI Profile: `professional-default`",
+        ],
+    )
+    require_markers(
         "starters/web-admin/template/ARCHITECTURE.md",
         [
             "Tailwind CSS + shadcn/ui",
             "ReUI only when",
             "Professional UI Profile: `professional-default`",
             "HeroUI",
+        ],
+    )
+    require_markers(
+        "starters/web-admin/template/PROJECT_STATE.md",
+        [
+            "design system: shadcn/ui foundation",
+            "advanced UI/ReUI: not activated",
+            "Professional UI Profile: `professional-default`",
+        ],
+    )
+    require_markers(
+        "scripts/create-web-admin.mjs",
+        [
+            "professionalUiProfile",
+            '"professionalUiProfile"',
+            "Professional UI Profile:",
+        ],
+    )
+    require_markers(
+        "scripts/create-web-admin.test.mjs",
+        [
+            "baseManifest.professionalUiProfile",
+            "professional-default",
+            "design system: shadcn\\/ui foundation",
         ],
     )
     require_markers(
