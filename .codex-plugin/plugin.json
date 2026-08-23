@@ -11,7 +11,7 @@
   "interface": {
     "displayName": "App Factory",
     "shortDescription": "Build real systems with proportional architecture and proof.",
-    "longDescription": "A portable software-development factory that activates from software intent, classifies real system architecture and API governance proportionally, recovers repository context and autonomous state, materializes semantic contracts for relevant work, routes each action to capable backends, uses GitHub CI for deterministic proof, requires decoupled semantic review when risk warrants it, and conservatively learns from privacy-safe local execution metadata without making Codex or any vendor mandatory.",
+    "longDescription": "A portable software-development factory that activates from software intent, classifies real system architecture and API Engineering governance proportionally, recovers repository context and autonomous state, materializes semantic contracts for relevant work, routes each action to capable backends, uses GitHub CI for deterministic proof, requires decoupled semantic review when risk warrants it, and conservatively learns from privacy-safe local execution metadata without making Codex or any vendor mandatory.",
     "developerName": "mcpmieda",
     "category": "Productivity",
     "capabilities": ["Interactive"],
