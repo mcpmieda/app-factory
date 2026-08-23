@@ -22,6 +22,8 @@ Quando houver API/integração relevante, `core/API_ENGINEERING.md` entra como c
 
 `core/INDEPENDENT_VERIFICATION.md` também não cria uma fase paralela universal. Ele aprofunda a fase de **verification** quando risco, nível do sistema, API ou release justificarem evidência externa ao raciocínio implementador. Projetos simples permanecem `baseline`.
 
+Em **código existente**, `core/CHANGE_HYGIENE.md` é transversal ao repair/review: tentativas podem existir durante diagnóstico, mas antes da entrega a solução passa por consolidação e regressão novamente. O histórico de tentativas pertence ao Git, não ao caminho ativo do produto.
+
 ## Projeto novo
 
 1. Descoberta — entender problema, usuários e resultado desejado.
@@ -51,20 +53,23 @@ Use `TASK_ROUTER.md` para escolher a rota de execução mais leve e verificável
 3. atualizar o Context Engine e reconciliar delta se o fingerprint mudou;
 4. identificar baseline seguro;
 5. entender escopo e impacto;
-6. confirmar se o nível de sistema e a fonte autoritativa dos dados continuam coerentes com `core/SYSTEM_ENGINEERING.md`, sobretudo quando a evolução transforma demo/local app em sistema persistente ou multiusuário;
-7. se houver API/integração relevante, confirmar se o modo de governança, consumidores e fonte de verdade continuam coerentes com `core/API_ENGINEERING.md`, principalmente antes de alteração potencialmente incompatível;
-8. decidir se a mudança altera comportamento/regra/contrato o suficiente para exigir Semantic Verification e recalcular semantic depth se a complexidade de domínio, estados, políticas, temporalidade ou concorrência mudou;
-9. quando a mudança for `domain`/`formal`, validar o fingerprint de `semantic-assurance.json` contra o contrato atual, atualizar o assurance antes da implementação e calcular semantic diff para identificar requisitos/ACs/invariantes/gates afetados;
-10. recalcular Independent Verification quando risco, nível do sistema, API, autenticação/dependências/UI ou condição de release mudarem; não manter `baseline` apenas porque o projeto começou simples;
-11. quando Semantic Verification exigir, atualizar a spec antes da implementação e regenerar a rastreabilidade afetada;
-12. para contrato machine-readable, atualizar o contrato no mesmo bloco da implementação e comparar breaking changes quando aplicável;
-13. revisar diff e dependências diretas;
-14. preservar comportamento fora do escopo e compatibilidade prometida a consumidores;
-15. testar o que mudou e regressão diretamente relacionada;
-16. executar gates formais/property/stateful selecionados e checks independentes aplicáveis, registrando findings/exceções proporcionais;
-17. reparar automaticamente falhas verificadas dentro do limite configurado;
-18. ampliar auditoria apenas quando risco ou extensão justificarem;
-19. fazer revisão desacoplada quando exigida e registrar novo estado confiável.
+6. aplicar `core/CHANGE_HYGIENE.md` à área que será alterada, mesmo quando o projeto foi criado fora da App Factory; preservar comportamento estável sem assumir que implementação obsoleta precisa permanecer;
+7. confirmar se o nível de sistema e a fonte autoritativa dos dados continuam coerentes com `core/SYSTEM_ENGINEERING.md`, sobretudo quando a evolução transforma demo/local app em sistema persistente ou multiusuário;
+8. se houver API/integração relevante, confirmar se o modo de governança, consumidores e fonte de verdade continuam coerentes com `core/API_ENGINEERING.md`, principalmente antes de alteração potencialmente incompatível;
+9. decidir se a mudança altera comportamento/regra/contrato o suficiente para exigir Semantic Verification e recalcular semantic depth se a complexidade de domínio, estados, políticas, temporalidade ou concorrência mudou;
+10. quando a mudança for `domain`/`formal`, validar o fingerprint de `semantic-assurance.json` contra o contrato atual, atualizar o assurance antes da implementação e calcular semantic diff para identificar requisitos/ACs/invariantes/gates afetados;
+11. recalcular Independent Verification quando risco, nível do sistema, API, autenticação/dependências/UI ou condição de release mudarem; não manter `baseline` apenas porque o projeto começou simples;
+12. quando Semantic Verification exigir, atualizar a spec antes da implementação e regenerar a rastreabilidade afetada;
+13. para contrato machine-readable, atualizar o contrato no mesmo bloco da implementação e comparar breaking changes quando aplicável;
+14. revisar diff e dependências diretas;
+15. preservar comportamento fora do escopo e compatibilidade prometida a consumidores;
+16. testar o que mudou e regressão diretamente relacionada;
+17. executar gates formais/property/stateful selecionados e checks independentes aplicáveis, registrando findings/exceções proporcionais;
+18. reparar automaticamente falhas verificadas dentro do limite configurado;
+19. **consolidar a implementação final** conforme `core/CHANGE_HYGIENE.md`: remover tentativas descartadas, código morto/orfandade, shadow implementations, overrides/suppressions desnecessários e temporários; dupla implementação só permanece por compatibilidade real com condição de remoção explícita;
+20. executar novamente lint/typecheck/build/test e regressões aplicáveis depois da consolidação; limpeza que não foi reverificada não conta como estado final confiável;
+21. ampliar auditoria apenas quando risco ou extensão justificarem;
+22. fazer revisão desacoplada quando exigida e registrar novo estado confiável.
 
 ## Tamanho do trabalho
 
@@ -88,6 +93,8 @@ Não repita indefinidamente a mesma correção. O Autonomy Engine usa repair loo
 2. mude estratégia/modelo/executor quando possível;
 3. só envolva o usuário se existir decisão humana real ou se nenhum executor disponível conseguir prosseguir com segurança.
 
+Uma tentativa bem-sucedida ainda não fecha manutenção automaticamente: ao sair do repair loop, execute Change Hygiene. Se a versão final só funciona porque tentativas anteriores continuam anulando umas às outras, a reparação não foi consolidada.
+
 Falha de Semantic Assurance também é falha real da fase de especificação: contradição determinística, referência obrigatória quebrada, `open_question` blocking ou formalização `required` stale/sem gate impede avançar. Finding probabilístico/advisory não deve ser promovido automaticamente a bloqueio.
 
 Falha semântica de verificação (critério `must` não provado ou review stale) é falha real mesmo que build e testes genéricos estejam verdes.
@@ -100,4 +107,4 @@ Falha de Independent Verification também é real quando o check estiver `requir
 
 ## Handoff entre agentes
 
-Aponte para repositório/branch/PR, `PROJECT_STATE.md`, `.factory/state.json` quando versionado, Issue/bloco funcional e critérios de conclusão. Inclua nível do sistema e decisões de persistência/identidade/recovery quando relevantes. Quando houver API `contract`/`governed`, inclua modo, contrato autoritativo e baseline de compatibilidade. Quando semantic depth for `domain`/`formal`, inclua `specs/semantic-assurance.json`, `SEMANTICS.md` quando existir, erros/perguntas abertas e baseline/diff relevante. Quando Independent Verification estiver acima de `baseline`, inclua `VERIFICATION.md`, checks `required/advisory`, ambiente seguro de teste e exceções relevantes. Quando Semantic Verification se aplicar, inclua `specs/semantic-contract.json`, `specs/verification-plan.json` e o review evidence atual. Não use transcrição integral de conversa como mecanismo principal de continuidade.
+Aponte para repositório/branch/PR, `PROJECT_STATE.md`, `.factory/state.json` quando versionado, Issue/bloco funcional e critérios de conclusão. Inclua nível do sistema e decisões de persistência/identidade/recovery quando relevantes. Quando houver API `contract`/`governed`, inclua modo, contrato autoritativo e baseline de compatibilidade. Quando semantic depth for `domain`/`formal`, inclua `specs/semantic-assurance.json`, `SEMANTICS.md` quando existir, erros/perguntas abertas e baseline/diff relevante. Quando Independent Verification estiver acima de `baseline`, inclua `VERIFICATION.md`, checks `required/advisory`, ambiente seguro de teste e exceções relevantes. Quando Semantic Verification se aplicar, inclua `specs/semantic-contract.json`, `specs/verification-plan.json` e o review evidence atual. Em manutenção com compatibilidade temporária, inclua também qual caminho legado permanece, quem depende dele e a condição objetiva de remoção. Não use transcrição integral de conversa como mecanismo principal de continuidade.
