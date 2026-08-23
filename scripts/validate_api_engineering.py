@@ -76,6 +76,7 @@ def main() -> int:
     integration_files = [
         "README.md",
         "AGENTS.md",
+        "PROJECT_STATE.md",
         "PORTABILITY.md",
         "core/ENTRYPOINT.md",
         "core/SYSTEM_ENGINEERING.md",
@@ -95,9 +96,18 @@ def main() -> int:
     ]
     for path in integration_files:
         text = read(path)
-        if "API_ENGINEERING" not in text and "api-engineering" not in text:
+        if "API_ENGINEERING" not in text and "api-engineering" not in text and "API Engineering" not in text:
             fail(f"{path} não referencia a fonte comum de API Engineering")
 
+    require_markers(
+        "PROJECT_STATE.md",
+        [
+            "governance hardening",
+            "API Engineering Contract",
+            "17",
+            "Validate API Engineering Contract",
+        ],
+    )
     require_markers(
         "templates/project/API.md",
         [
