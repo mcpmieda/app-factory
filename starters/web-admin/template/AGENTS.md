@@ -9,13 +9,15 @@ This project follows **App Factory** (`mcpmieda/app-factory`) and uses the valid
 3. Read `PRODUCT.md` and `ARCHITECTURE.md` for product or structural changes.
 4. Activate optional recipes only when the product requires them.
 5. Preserve shadcn/ui as the visual foundation; use ReUI only for a justified advanced component.
-6. For UI work, follow `ui/UI_POLICY.md` and `ui/MOTION_POLICY.md` from App Factory. Default Motion Profile is `ambient` contextual; attenuate dense admin views and respect `prefers-reduced-motion`.
-7. Do not add another design system or motion library only to obtain an effect when the current stack/CSS can provide it cleanly.
-8. Verify format, lint, typecheck, tests, build, critical browser behavior and relevant motion/reduced-motion behavior before completion.
+6. For UI work, follow `ui/UI_POLICY.md`, `ui/PROFESSIONAL_UI_PROFILE.md` and `ui/MOTION_POLICY.md` from App Factory. Default quality bar is `professional-default`; default Motion Profile is `ambient` contextual; attenuate dense admin views and respect `prefers-reduced-motion`.
+7. `professional-default` does not authorize adding another design system. Use shadcn/ReUI composition to reach the quality bar; HeroUI remains an alternative only when the product explicitly follows a different visual system.
+8. Before building medium/large UI, inventory needed archetypes (shell, header, stats, search/command, filters, data view, form, detail, feedback) and reuse the current registry/design system first.
+9. Do not add another design system or motion library only to obtain an effect when the current stack/CSS can provide it cleanly.
+10. Verify visual hierarchy, loading/empty/error states, desktop/mobile, keyboard/focus, format, lint, typecheck, tests, build, critical browser behavior and relevant motion/reduced-motion behavior before completion.
 
 ## Factory fallback
 
-If the plugin is unavailable, consult `mcpmieda/app-factory` starting at `AGENTS.md`, `core/ENTRYPOINT.md`, `profiles/web-admin/PROFILE.md`, `ui/UI_POLICY.md` and `ui/MOTION_POLICY.md`.
+If the plugin is unavailable, consult `mcpmieda/app-factory` starting at `AGENTS.md`, `core/ENTRYPOINT.md`, `profiles/web-admin/PROFILE.md`, `ui/UI_POLICY.md`, `ui/PROFESSIONAL_UI_PROFILE.md` and `ui/MOTION_POLICY.md`.
 
 <!-- BEGIN:nextjs-agent-rules -->
 
