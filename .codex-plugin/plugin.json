@@ -17,10 +17,9 @@
     "capabilities": ["Interactive"],
     "websiteURL": "https://github.com/mcpmieda/app-factory",
     "defaultPrompt": [
-      "Create a real software system with proportional architecture and prove the intended behavior.",
-      "Resume this project, preserve its baseline and continue with the safest capable backend.",
-      "Design or evolve this API with proportional contracts, compatibility and executable evidence.",
-      "Verify this robust system with free independent adversarial checks in CI when risk warrants it."
+      "Create a real software system with proportional architecture and prove intended behavior with independent checks when needed.",
+      "Resume this project, preserve its baseline and continue with the safest capable backend and proportional verification.",
+      "Design or evolve this API with proportional contracts, compatibility, security and adversarial evidence when warranted."
     ]
   }
 }
