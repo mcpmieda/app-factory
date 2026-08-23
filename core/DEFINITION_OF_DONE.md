@@ -102,6 +102,25 @@ Defaults principais incluem Semgrep CE, Trivy, StrykerJS/mutmut, Schemathesis, O
 
 Independent Verification não substitui revisão semântica desacoplada nem Semantic Assurance.
 
+## Change Hygiene em sistemas existentes
+
+Quando o trabalho altera um sistema já existente — criado ou não pela App Factory — aplique `core/CHANGE_HYGIENE.md` antes de fechar:
+
+- preserve comportamento estável, **não implementação obsoleta**;
+- a área tocada não deve terminar com code health pior sem exceção material explicitamente justificada;
+- implementação substituída, imports/exports/dependências/handlers/estilos/arquivos órfãos foram removidos quando não há consumidor legítimo;
+- repair loops foram seguidos por uma passagem explícita de **consolidação**;
+- não restaram arquivos `.bak/.orig/.rej/.tmp`, marcadores de conflito ou scaffolding temporário rastreado;
+- funções/componentes/estilos `old/new/fixed/final/copy/v2` paralelos foram consolidados ou possuem fronteira de compatibilidade real + condição objetiva de remoção;
+- CSS não ganhou seletor mais específico/`!important` apenas para vencer regra anterior que poderia ser corrigida na origem;
+- suppressions novas (`eslint-disable`, `stylelint-disable`, `@ts-ignore`, `# noqa` ou equivalente) foram revistas e mantidas apenas quando necessárias;
+- lint/typecheck/build/test/regressões aplicáveis foram executados novamente **depois** da limpeza final;
+- dead-code tooling já configurado no projeto (por exemplo Knip, Ruff/Vulture) foi executado quando aplicável;
+- duplication tooling (por exemplo jscpd) só bloqueia quando existe baseline/configuração estável; não usar percentual universal arbitrário;
+- em projeto externo, dívida histórica fora do escopo não precisa ser reescrita, mas o diff não deve acrescentar nova camada de dívida na área modificada.
+
+O scanner `scripts/change_hygiene.py` pode apontar resíduos objetivos e advisories. `advisory` exige contexto; não autoriza remoção automática de código possivelmente usado por mecanismos dinâmicos.
+
 ## Implementação
 
 - comportamento solicitado existe;
@@ -182,3 +201,5 @@ Trabalho funcional com spec aplicável não termina em `lint + typecheck + build
 API `contract/governed` não termina em endpoint funcionando sem contrato/compatibilidade/gates aplicáveis.
 
 Independent Verification `adversarial/release` não termina com testes primários verdes se check `required` selecionado ainda não passou.
+
+Manutenção não termina apenas porque o bug sumiu se a solução final ainda depende de tentativas descartadas, shadow implementations ou overrides acumulados sem justificativa.
