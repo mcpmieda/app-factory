@@ -39,6 +39,17 @@ Quando houver consumidor independente, API compartilhada, integração externa, 
 - HTTP/OpenAPI é default forte para API HTTP compartilhada, mas GraphQL, gRPC, AsyncAPI e Arazzo entram somente quando o requisito justificar;
 - Redocly/oasdiff/Schemathesis/Pact são opções de gate, não dependências automáticas deste perfil.
 
+## Independent Verification
+
+Aplique `core/INDEPENDENT_VERIFICATION.md` sem transformar toda SPA em pipeline pesado.
+
+- web app local/baixo risco pode permanecer `baseline`;
+- persistência compartilhada, autenticação, múltiplos usuários ou risco médio podem elevar para `independent`;
+- sistemas multiusuário/API/alto risco podem elevar para `adversarial`;
+- releases de produção relevantes podem usar `release`.
+
+Quando selecionados, Trivy/Semgrep/axe, mutation testing, Schemathesis, OWASP ZAP e Lighthouse CI rodam preferencialmente em GitHub CI/runner equivalente. Checks não aplicáveis não são instalados. Scanners não substituem os testes de fluxo nem a revisão semântica.
+
 ## Living UI e gates
 
 Default contextual `ambient`, priorizando interaction/state e reduced motion. Exigir acessibilidade, desktop/mobile, build/audit e ausência de erro. Fluxos reais com concorrência ou transação exigem contrato servidor, autorização, idempotência e recovery antes de produção.
@@ -46,5 +57,7 @@ Default contextual `ambient`, priorizando interaction/state e reduced motion. Ex
 Para `persistent-app` ou superior, o E2E crítico deve exercitar a fonte de persistência real ou ambiente equivalente; sobreviver a refresh via `localStorage` não comprova persistência compartilhada.
 
 Quando API `contract`/`governed` fizer parte do fluxo, o E2E/integration evidence deve provar correspondência entre contrato e implementação e os gates de `core/API_ENGINEERING.md` aplicáveis.
+
+Quando Independent Verification ficar acima de `baseline`, `VERIFICATION.md`/workflow registra checks `required/advisory`, alvo seguro e exceções. DAST/fuzz destrutivo nunca aponta para produção por inferência.
 
 Evidence: `examples/web-app-pilot/` and `research/V0.9_UNIVERSAL_VALIDATION.md`.
