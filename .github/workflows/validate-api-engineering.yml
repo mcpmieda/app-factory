@@ -1,0 +1,49 @@
+name: Validate API Engineering Contract
+
+on:
+  pull_request:
+    paths:
+      - "README.md"
+      - "AGENTS.md"
+      - "PORTABILITY.md"
+      - "core/API_ENGINEERING.md"
+      - "core/SYSTEM_ENGINEERING.md"
+      - "core/SEMANTIC_VERIFICATION.md"
+      - "core/ENTRYPOINT.md"
+      - "core/WORKFLOW.md"
+      - "core/DEFINITION_OF_DONE.md"
+      - "skills/api-engineering/SKILL.md"
+      - "skills/factory-router/SKILL.md"
+      - "skills/app-planner/SKILL.md"
+      - "skills/architecture/SKILL.md"
+      - "skills/security-review/SKILL.md"
+      - "profiles/web-admin/PROFILE.md"
+      - "profiles/web-app/PROFILE.md"
+      - "profiles/automation/PROFILE.md"
+      - "templates/project/AGENTS.md"
+      - "templates/project/ARCHITECTURE.md"
+      - "templates/project/PROJECT_STATE.md"
+      - "templates/project/API.md"
+      - "templates/api/**"
+      - "scripts/validate_factory.py"
+      - "scripts/validate_api_engineering.py"
+      - ".github/workflows/validate-api-engineering.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  api-engineering:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Compile validators
+        run: python -m py_compile scripts/validate_factory.py scripts/validate_api_engineering.py
+      - name: Validate Factory structure
+        run: python scripts/validate_factory.py
+      - name: Validate API Engineering wiring
+        run: python scripts/validate_api_engineering.py
