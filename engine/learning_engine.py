@@ -47,6 +47,11 @@ SAFE_CAPABILITIES = {
     "live_migration",
 }
 
+SKILL_ROUTING_SCHEMA_VERSION = 1
+SKILL_ROUTING_MAX_SKILLS = 64
+SKILL_ROUTING_SOURCES = {"factory-router", "app-planner", "manual"}
+SKILL_NAME_CHARS = frozenset("abcdefghijklmnopqrstuvwxyz0123456789-")
+
 
 def utc_now() -> str:
     return datetime.now(timezone.utc).replace(microsecond=0).isoformat()
@@ -350,4 +355,128 @@ def recommend_backend(
         "mode": "baseline",
         "backend": baseline,
         "reason": "Evidence is not strong enough to override the baseline order.",
+    }
+
+
+def skill_routing_path(root: Path | str) -> Path:
+    return Path(root).resolve() / ".factory" / "skill-routing.json"
+
+
+def normalize_skill_name(skill: str) -> str:
+    compact = str(skill).strip().lower()
+    if not 1 <= len(compact) <= 64:
+        raise ValueError("Skill slug must contain 1..64 characters")
+    if compact[0] == "-" or compact[-1] == "-" or any(char not in SKILL_NAME_CHARS for char in compact):
+        raise ValueError(f"invalid Skill slug: {skill}")
+    return compact
+
+
+def empty_skill_routing_state() -> dict[str, Any]:
+    return {
+        "schema_version": SKILL_ROUTING_SCHEMA_VERSION,
+        "decisions": 0,
+        "selected_total": 0,
+        "skills": {},
+        "sources": {},
+        "local_only": True,
+        "external_telemetry": False,
+    }
+
+
+def read_skill_routing_state(root: Path | str) -> dict[str, Any]:
+    path = skill_routing_path(root)
+    try:
+        value = json.loads(path.read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError):
+        value = None
+    if not isinstance(value, dict):
+        return empty_skill_routing_state()
+
+    skills: dict[str, int] = {}
+    raw_skills = value.get("skills")
+    if isinstance(raw_skills, dict):
+        for raw_name, raw_count in raw_skills.items():
+            try:
+                name = normalize_skill_name(str(raw_name))
+            except ValueError:
+                continue
+            if type(raw_count) is int and raw_count >= 0:
+                skills[name] = raw_count
+
+    sources: dict[str, int] = {}
+    raw_sources = value.get("sources")
+    if isinstance(raw_sources, dict):
+        for raw_source, raw_count in raw_sources.items():
+            source = str(raw_source).strip().lower()
+            if source in SKILL_ROUTING_SOURCES and type(raw_count) is int and raw_count >= 0:
+                sources[source] = raw_count
+
+    state = {
+        "schema_version": SKILL_ROUTING_SCHEMA_VERSION,
+        "decisions": sum(sources.values()),
+        "selected_total": sum(skills.values()),
+        "skills": dict(sorted(skills.items())),
+        "sources": dict(sorted(sources.items())),
+        "local_only": True,
+        "external_telemetry": False,
+    }
+    updated_at = valid_timestamp(value.get("updated_at"))
+    if updated_at:
+        state["updated_at"] = updated_at
+    return state
+
+
+def write_skill_routing_state(root: Path | str, state: dict[str, Any]) -> None:
+    path = skill_routing_path(root)
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text(json.dumps(state, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
+
+
+def record_skill_routing(
+    root: Path | str,
+    *,
+    skills: Iterable[str],
+    source: str = "factory-router",
+) -> dict[str, Any]:
+    safe_source = str(source).strip().lower()
+    if safe_source not in SKILL_ROUTING_SOURCES:
+        raise ValueError(f"unsupported Skill routing source: {source}")
+    safe_skills = tuple(sorted({normalize_skill_name(skill) for skill in skills}))
+    if not safe_skills:
+        raise ValueError("at least one Skill must be selected")
+
+    state = read_skill_routing_state(root)
+    known = set(state["skills"])
+    if len(known | set(safe_skills)) > SKILL_ROUTING_MAX_SKILLS:
+        raise ValueError("Skill routing cardinality limit exceeded")
+
+    for skill in safe_skills:
+        state["skills"][skill] = int(state["skills"].get(skill, 0)) + 1
+    state["sources"][safe_source] = int(state["sources"].get(safe_source, 0)) + 1
+    state["decisions"] = sum(int(value) for value in state["sources"].values())
+    state["selected_total"] = sum(int(value) for value in state["skills"].values())
+    state["updated_at"] = utc_now()
+    write_skill_routing_state(root, state)
+    return state
+
+
+def skill_routing_report(
+    root: Path | str,
+    *,
+    installed_skills: Iterable[str] = (),
+) -> dict[str, Any]:
+    state = read_skill_routing_state(root)
+    installed = tuple(sorted({normalize_skill_name(skill) for skill in installed_skills}))
+    observed = set(state["skills"])
+    rows = {
+        skill: int(state["skills"].get(skill, 0))
+        for skill in sorted(observed | set(installed))
+    }
+    return {
+        **state,
+        "skills": rows,
+        "never_selected": [skill for skill in installed if rows.get(skill, 0) == 0],
+        "advisory_only": True,
+        "used_for_backend_learning": False,
+        "automatic_delete_recommendation": False,
     }
