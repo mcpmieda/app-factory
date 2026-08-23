@@ -12,7 +12,7 @@ Use quando a tarefa começa como ideia, problema, novo sistema ou grande evoluç
 1. Reescreva internamente o objetivo em linguagem de resultado.
 2. Identifique usuários, fluxos principais, dados e restrições.
 3. Classifique o produto com `core/SYSTEM_ENGINEERING.md` (`website`, `local-app`, `persistent-app`, `multi-user-system`, `production-system` ou `critical-system`) antes de fechar arquitetura.
-4. Para `persistent-app` ou superior, registre fonte autoritativa, fronteira cliente/servidor, persistência e identidade/autorização; não aceite armazenamento só no navegador como persistência final compartilhada.
+4. Para `persistent-app` ou superior, registre a **fonte autoritativa dos dados**, fronteira cliente/servidor, persistência e identidade/autorização; não aceite armazenamento só no navegador como persistência final compartilhada.
 5. Verifique fronteira de API/integração. Quando existir, aplique `core/API_ENGINEERING.md`, classifique `none`, `lightweight`, `contract` ou `governed`, identifique consumidores e escolha protocolo/contrato proporcional. Backend não implica OpenAPI/API pública.
 6. Para API `contract`/`governed`, registre fonte machine-readable e gates mínimos de contrato/compatibilidade/runtime.
 7. Decida se Semantic Verification é necessária. Quando for, derive profundidade de **Semantic Assurance** conforme `core/SEMANTIC_ASSURANCE.md`: `scenario`, `domain` ou `formal`.
@@ -58,7 +58,7 @@ Classificação da API, modelagem técnica, método formal, property/combinatori
 
 ## Saída esperada
 
-Objetivo, usuários/fluxos, escopo, nível de sistema, fonte autoritativa quando aplicável, API mode/contrato, semantic depth, modo de Independent Verification, perfil, arquitetura, stack, riscos, blocos funcionais, critérios de sucesso e roteamento.
+Objetivo, usuários/fluxos, escopo, nível de sistema, **fonte autoritativa dos dados** quando aplicável, API mode/contrato, semantic depth, modo de Independent Verification, perfil, arquitetura, stack, riscos, blocos funcionais, critérios de sucesso e roteamento.
 
 Quando relevante, a saída durável também registra:
 
