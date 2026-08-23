@@ -10,6 +10,10 @@
 - autenticação:
 - deploy:
 - design system:
+- Professional UI Profile: `professional-default` por padrão para UI material / exceção justificada:
+- density: `compact` / `comfortable` / `spacious` quando relevante:
+- surface: `flat` / `layered` / `immersive` quando relevante:
+- emphasis: `quiet` / `balanced` / `bold` quando relevante:
 - Motion Profile: `ambient` por padrão (`none`, `subtle`, `ambient`, `expressive`):
 - motion implementation: recursos nativos do design system / CSS / biblioteca especializada somente se necessário:
 - testes:
@@ -19,7 +23,12 @@
 
 Para cada escolha importante, registrar motivo curto e evitar tecnologia sem necessidade.
 
-Interfaces devem seguir `ui/MOTION_POLICY.md`: motion é independente do design system, `prefers-reduced-motion` é obrigatório para movimento não essencial e telas densas/leitura prolongada podem atenuar `ambient` para comportamento `subtle`.
+Interfaces devem seguir `ui/UI_POLICY.md`, `ui/PROFESSIONAL_UI_PROFILE.md` e `ui/MOTION_POLICY.md`:
+
+- `professional-default` define o quality bar, não instala biblioteca;
+- admin/dashboard/CRUD continua preferindo shadcn como base e ReUI seletivo quando componente avançado justificar;
+- HeroUI continua alternativa principal quando sua linguagem visual for mais adequada;
+- motion é independente do design system, `prefers-reduced-motion` é obrigatório para movimento não essencial e telas densas/leitura prolongada podem atenuar `ambient` para comportamento `subtle`.
 
 ## Componentes
 
@@ -86,8 +95,20 @@ Para Independent Verification, ambientes destrutivos/fuzz/DAST devem usar dados 
 
 Para APIs expostas, detalhes específicos ficam em `API.md`/contrato e seguem `core/API_ENGINEERING.md` + `skills/security-review`. Security Review define ameaças; Semantic Assurance pode estruturar policies complexas; Independent Verification executa somente os scanners/gates selecionados para riscos automatizáveis.
 
+## UI profissional, quando aplicável
+- inventário de arquétipos: shell / page-header / stats / search-command / filters / data-view / form / detail-inspector / feedback / outros realmente necessários:
+- componentes reutilizados do design system/registry:
+- componentes próprios justificados:
+- estados críticos: loading / empty / error / success / disabled / permission denied / outros:
+- estratégia mobile para dados densos:
+- ação destrutiva/primary action:
+- visual QA executado:
+
+Não copiar templates/ativos proprietários de referências comerciais para a Factory ou projeto sem licença explícita aplicável.
+
 ## Acessibilidade e movimento
 - reduced motion:
+- teclado/foco:
 - telas/fluxos onde `ambient` deve ser atenuado:
 - sinais de atenção que precisam encerrar/reduzir após interação:
 - axe-core/Playwright: [não aplicável / advisory / required conforme VERIFICATION.md]
