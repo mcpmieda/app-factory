@@ -11,6 +11,7 @@ ROOT = Path(__file__).resolve().parents[1]
 
 REQUIRED_FILES = [
     "AGENTS.md",
+    "PROJECT_STATE.md",
     "core/CHANGE_HYGIENE.md",
     "core/WORKFLOW.md",
     "scripts/change_hygiene.py",
@@ -42,6 +43,14 @@ MARKERS = {
         "core/CHANGE_HYGIENE.md",
         "manutenção com uma implementação final consolidada",
         "Change Hygiene também é proporcional",
+    ],
+    "PROJECT_STATE.md": [
+        "Change Hygiene",
+        "preservar comportamento não significa preservar implementação obsoleta",
+        "consolidação",
+        "projetos externos",
+        "19",
+        "V1.4 — estável",
     ],
     "core/WORKFLOW.md": [
         "core/CHANGE_HYGIENE.md",
