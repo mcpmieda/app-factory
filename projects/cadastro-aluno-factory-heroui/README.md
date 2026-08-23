@@ -1,70 +1,71 @@
-# Cadastro de Aluno — App Factory + HeroUI
+# Gestão de Alunos — App Factory + HeroUI
 
-Aplicativo de cadastro de aluno em **uma única etapa**, construído segundo a App Factory e usando **HeroUI v3** como design system.
+Aplicativo local de gestão de alunos construído com **Next.js 16 + HeroUI v3** e usado como teste de campo da App Factory.
 
-## Teste mais fácil: GitHub Codespaces
+Produção atual: `https://cadastro-aluno-factory-heroui.vercel.app`
 
-Este projeto já contém `.devcontainer/devcontainer.json`.
+## O que esta versão faz
 
-Depois de colocar os arquivos em um repositório no GitHub:
+- cadastro e edição de alunos;
+- status `Ativo`, `Arquivado` e `Transferido`;
+- pesquisa por nome, matrícula, e-mail, telefone, curso, turma ou responsável;
+- filtros por status e turma;
+- ordenação por atualização, nome ou turma;
+- visão detalhada de cada aluno;
+- painel com total, ativos, turmas e arquivados;
+- backup completo em JSON versionado;
+- restauração de backup com validação e confirmação;
+- exportação em CSV;
+- migração automática dos cadastros da versão antiga `v1` para `v2`;
+- interface responsiva e `prefers-reduced-motion`.
 
-1. abra o repositório;
-2. clique em **Code**;
-3. abra a aba **Codespaces**;
-4. clique em **Create codespace on main**.
+## Arquitetura — importante
 
-O Codespaces irá automaticamente:
+Este produto continua classificado como **`local-app`**.
 
-- instalar as dependências;
-- instalar o Chromium do Playwright;
-- iniciar o Next.js;
-- encaminhar a porta `3000`;
-- abrir o app no navegador.
+O Vercel hospeda e distribui a aplicação, mas os registros são guardados no `localStorage` do navegador atual. Portanto:
 
-Você não precisa executar `npm install` manualmente.
+- cada navegador/dispositivo possui seus próprios dados;
+- não há banco compartilhado;
+- não há login nem perfis de acesso;
+- não existe sincronização entre computadores;
+- esta versão não deve ser usada como cadastro institucional multiusuário.
 
-## Abrir online com Vercel
+Essa escolha é intencional para este teste: a evolução aumenta bastante o produto sem introduzir backend apenas por sofisticação.
 
-Este projeto está pronto para ser publicado como um site Next.js sem variáveis de ambiente.
+## Compatibilidade com a versão anterior
 
-Quando ele estiver dentro do repositório `mcpmieda/app-factory`, use como **Root Directory** no Vercel:
+A versão anterior utilizava:
 
-```text
-projects/cadastro-aluno-factory-heroui
-```
+`app-factory.student-registration.v1`
 
-Depois basta clicar em **Deploy**. O Vercel instala as dependências, executa `next build` e fornece um endereço `*.vercel.app`.
+A versão atual utiliza:
 
-Os dados cadastrados continuam no `localStorage` do navegador. Portanto, esta publicação é uma demonstração funcional, não um cadastro compartilhado entre computadores.
+`app-factory.student-registration.v2`
 
-## Testar toda a estrutura
+Quando o `v2` ainda não existe e o navegador contém registros válidos no `v1`, a aplicação migra automaticamente os registros. Campos que não existiam antes não recebem dados inventados; por exemplo, o turno passa a `Não informado`.
 
-No terminal do Codespaces:
+## Verificação
 
 ```bash
 npm run test:all
 ```
 
-Esse único comando executa:
+Executa:
 
 1. ESLint;
-2. TypeScript typecheck;
-3. testes unitários com Vitest;
-4. build do Next.js;
-5. testes E2E com Playwright em desktop e mobile.
+2. TypeScript;
+3. testes unitários;
+4. build Next.js;
+5. Playwright E2E.
 
-Também é possível usar no VS Code/Codespaces:
-
-**Terminal → Run Task → ✅ Verificar app completo**
-
-## Rodar localmente
+Scripts individuais:
 
 ```bash
-bash scripts/bootstrap.sh
-npm run dev
+npm run test
+npm run e2e
+npm run verify
 ```
-
-Abra `http://localhost:3000`.
 
 ## Stack
 
@@ -81,10 +82,23 @@ Abra `http://localhost:3000`.
 
 Motion Profile: `ambient`.
 
-Em áreas de dados, o movimento é atenuado para `subtle`.
-`prefers-reduced-motion` é respeitado para movimento não essencial.
+Em superfícies densas de dados, o movimento é reduzido para `subtle`. `prefers-reduced-motion` desativa movimento não essencial.
 
-## Persistência
+## Desenvolvimento local
 
-Esta baseline usa `localStorage`, adequada para demonstração e teste local.
-Ela não deve ser confundida com uma solução multiusuário de produção.
+```bash
+bash scripts/bootstrap.sh
+npm run dev
+```
+
+Abra `http://localhost:3000`.
+
+## Vercel
+
+Root Directory:
+
+```text
+projects/cadastro-aluno-factory-heroui
+```
+
+A integração Git/Vercel pode continuar publicando alterações de `main`; nenhuma variável de ambiente é necessária nesta arquitetura local.

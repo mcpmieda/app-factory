@@ -1,24 +1,23 @@
-# Abrir o Cadastro de Aluno online
+# Gestão de Alunos online
 
-## Opção recomendada: Vercel
+Produção conhecida:
 
-1. Entre no Vercel com sua conta GitHub.
-2. Clique em **Add New → Project**.
-3. Importe o repositório **mcpmieda/app-factory**.
-4. Em **Root Directory**, escolha:
+`https://cadastro-aluno-factory-heroui.vercel.app`
 
-   `projects/cadastro-aluno-factory-heroui`
+## Configuração Vercel
 
-5. Não precisa criar variáveis de ambiente.
-6. Clique em **Deploy**.
-7. Quando terminar, clique em **Visit**.
+Repositório: `mcpmieda/app-factory`
 
-O endereço gerado ficará parecido com `https://cadastro-aluno-factory-heroui.vercel.app`.
+Root Directory:
 
-## Observação importante
+`projects/cadastro-aluno-factory-heroui`
 
-O app usa `localStorage`. Cada navegador guarda seus próprios cadastros. Esta versão é adequada para demonstração e teste; não é ainda um sistema multiusuário com banco compartilhado.
+Nenhuma variável de ambiente é necessária enquanto o produto permanecer um `local-app`.
 
-## Opção para desenvolvimento: GitHub Codespaces
+## O que a publicação significa
 
-No repositório, abra **Code → Codespaces → New with options**, escolha a configuração **Cadastro de Aluno - HeroUI**, crie o Codespace e aguarde. O servidor inicia automaticamente na porta 3000.
+O Vercel distribui a aplicação. Os dados continuam no `localStorage` de cada navegador.
+
+Portanto, abrir a mesma URL em outro computador **não** apresenta os mesmos cadastros. Para mover dados manualmente, use o backup JSON e a restauração.
+
+Se uma futura versão exigir dados compartilhados, usuários, permissões ou continuidade entre dispositivos, a arquitetura deve ser reclassificada antes da implementação; não basta alterar a hospedagem.

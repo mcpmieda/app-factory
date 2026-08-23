@@ -1,0 +1,66 @@
+{
+  "schema_version": 1,
+  "spec_fingerprint": "a6daa73079038a744f1732d094c0ccb95801229055dc337efb1f97a10c40490e",
+  "criteria": [
+    {
+      "id": "AC-001",
+      "priority": "must",
+      "preferred_evidence": ["browser"],
+      "evidence": [
+        {"kind": "browser", "ref": "e2e/student-registration.spec.ts", "gate": "package:e2e"}
+      ]
+    },
+    {
+      "id": "AC-002",
+      "priority": "must",
+      "preferred_evidence": ["browser", "test"],
+      "evidence": [
+        {"kind": "browser", "ref": "e2e/student-registration.spec.ts", "gate": "package:e2e"},
+        {"kind": "test", "ref": "src/features/students/tests/student-storage.test.ts", "gate": "package:test"}
+      ]
+    },
+    {
+      "id": "AC-003",
+      "priority": "must",
+      "preferred_evidence": ["browser"],
+      "evidence": [
+        {"kind": "browser", "ref": "e2e/student-registration.spec.ts", "gate": "package:e2e"}
+      ]
+    },
+    {
+      "id": "AC-004",
+      "priority": "must",
+      "preferred_evidence": ["browser", "test"],
+      "evidence": [
+        {"kind": "browser", "ref": "e2e/student-registration.spec.ts", "gate": "package:e2e"},
+        {"kind": "test", "ref": "src/features/students/tests/student-operations.test.ts", "gate": "package:test"}
+      ]
+    },
+    {
+      "id": "AC-005",
+      "priority": "must",
+      "preferred_evidence": ["browser", "test"],
+      "evidence": [
+        {"kind": "browser", "ref": "e2e/student-registration.spec.ts", "gate": "package:e2e"},
+        {"kind": "test", "ref": "src/features/students/tests/student-storage.test.ts", "gate": "package:test"}
+      ]
+    },
+    {
+      "id": "AC-006",
+      "priority": "must",
+      "preferred_evidence": ["browser", "test"],
+      "evidence": [
+        {"kind": "browser", "ref": "e2e/student-registration.spec.ts", "gate": "package:e2e"},
+        {"kind": "test", "ref": "src/features/students/tests/student-storage.test.ts", "gate": "package:test"}
+      ]
+    },
+    {
+      "id": "AC-007",
+      "priority": "must",
+      "preferred_evidence": ["test"],
+      "evidence": [
+        {"kind": "test", "ref": "src/features/students/tests/student-storage.test.ts", "gate": "package:test"}
+      ]
+    }
+  ]
+}

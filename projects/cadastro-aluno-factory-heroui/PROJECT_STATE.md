@@ -2,49 +2,82 @@
 
 ## Objetivo vigente
 
-Aplicativo simples de cadastro de aluno em uma única etapa, com interface HeroUI e experiência de teste fácil no navegador.
+Manter uma **gestão local completa de alunos** para demonstração e teste da App Factory, preservando a simplicidade arquitetural de um `local-app` mesmo quando distribuído pelo Vercel.
 
 ## Estado atual
 
-- fase: `baseline inicial`;
-- escala: `S — projeto pequeno`;
-- perfil de produto: `web-admin` simplificado;
+- fase: `field test v0.2`;
+- versão do app: `0.2.0`;
+- escala de processo: `S/M — evolução funcional relevante`;
+- nível do sistema: `local-app`;
+- perfil: `web-admin` com HeroUI v3;
+- API mode: `none`;
+- semantic depth: `domain`;
+- Independent Verification: `independent` proporcional;
+- fonte autoritativa dos dados: `localStorage` do navegador atual;
+- contrato de persistência: `v2`, com migração automática de `v1`;
+- backend/banco compartilhado: `não aplicável ao escopo atual`;
+- autenticação/autorização: `não aplicável ao escopo atual`;
 - stack: Next.js 16 + React 19 + TypeScript + Tailwind CSS 4 + HeroUI v3;
 - validação: Zod;
-- persistência: `localStorage` (demonstração/local, sem backend);
 - testes: Vitest + Playwright;
-- ambiente de teste fácil: GitHub Codespaces;
-- publicação online preparada: Vercel, sem variáveis de ambiente;
-- Motion Profile: `ambient`;
-- dense data views: attenuate to `subtle`;
-- reduced motion: mandatory.
+- publicação: Vercel;
+- URL de produção conhecida: `https://cadastro-aluno-factory-heroui.vercel.app`;
+- Motion Profile: `ambient`, atenuado para `subtle` em dados densos;
+- reduced motion: obrigatório.
 
-## Fluxo crítico
+## Capacidades
 
-1. usuário preenche os dados do aluno;
-2. validação ocorre na mesma tela;
-3. matrícula duplicada é bloqueada;
-4. cadastro é persistido localmente;
-5. registro aparece na lista;
-6. recarregar a página preserva os dados.
+1. cadastrar e editar aluno;
+2. impedir matrícula equivalente duplicada;
+3. pesquisar e filtrar registros;
+4. ordenar resultados;
+5. visualizar detalhes;
+6. arquivar, reativar ou marcar transferência;
+7. excluir com confirmação;
+8. mostrar indicadores resumidos;
+9. migrar registros locais legados v1 → v2;
+10. gerar backup JSON versionado;
+11. restaurar backup somente após validação e confirmação;
+12. exportar CSV.
 
-## Critérios de sucesso
+## Contratos importantes
 
-- cadastro em uma única etapa;
-- desktop e mobile;
-- estados vazio, erro e sucesso;
-- foco/teclado e labels acessíveis via HeroUI/React Aria;
-- `prefers-reduced-motion`;
-- lint, typecheck, unit test, build e E2E disponíveis por scripts;
-- Codespaces abre a aplicação na porta 3000 automaticamente.
+- hospedagem pública **não altera** a classificação para sistema multiusuário;
+- a persistência local continua sendo a fonte de verdade deste produto;
+- migração não pode inventar dados que não existiam no contrato antigo;
+- backup inválido não pode substituir registros atuais;
+- a interface deve continuar deixando explícito que os dados não são compartilhados.
+
+## Verificação
+
+Artefatos V1.4 usados neste field test:
+
+- `specs/semantic-contract.json`;
+- `specs/semantic-assurance.json`;
+- `specs/verification-plan.json`;
+- `specs/review-evidence.json` após a execução dos gates;
+- `SEMANTICS.md`;
+- `VERIFICATION.md`.
+
+Gates principais:
+
+- lint;
+- typecheck;
+- unit tests;
+- build;
+- E2E desktop/mobile;
+- dependency audit;
+- validação do contrato/assurance/rastreabilidade.
 
 ## Limitações conhecidas
 
-- não há backend, banco compartilhado ou autenticação;
-- os dados existem somente no navegador/dispositivo atual;
-- o `package-lock.json` será criado na primeira instalação porque o ambiente de geração deste pacote não possui acesso ao npm para materializar o lockfile;
-- a verificação executável final deve ser rodada no Codespaces com `npm run test:all`.
+- dados não são compartilhados entre dispositivos;
+- não há usuário autenticado nem autorização por papel;
+- restauração substitui a coleção local inteira após confirmação;
+- exclusão é local e imediata após confirmação;
+- o projeto não precisa de API fuzz, DAST, load testing ou migration SQL porque essas superfícies não existem.
 
-## Próxima ação lógica
+## Próxima ação
 
-Executar o gate do projeto no GitHub Actions. Para visualização online permanente, importar o repositório `mcpmieda/app-factory` no Vercel usando `projects/cadastro-aluno-factory-heroui` como Root Directory. O `package-lock.json` deve ser materializado em uma futura instalação com acesso ao npm para tornar a instalação totalmente reproduzível com `npm ci`.
+Executar o field test completo em CI, materializar instalação reproduzível com lockfile, validar os critérios semânticos e integrar somente com todos os gates verdes. Depois, transformar os aprendizados generalizáveis em melhorias da App Factory sem aumentar a quantidade de Skills por reflexo.
