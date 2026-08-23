@@ -27,16 +27,26 @@ flowchart LR
   B --> D[(Dados)]
 ```
 
-Adapte ou remova o diagrama quando não ajudar.
+Adapte ou remova o diagrama quando não ajudar. Se não houver API formal, não rotule uma função interna como API apenas para preencher o desenho.
 
 ## Fluxo de dados
 - ...
 
 ## Limites e contratos
-- APIs:
-- schema:
+- schema/dados:
 - integrações:
 - permissões:
+
+### API, quando aplicável
+- modo de governança: `none` / `lightweight` / `contract` / `governed`
+- consumidores/owner:
+- protocolo/estilo:
+- fonte de verdade do contrato:
+- caminho do contrato:
+- compatibilidade/depreciação:
+- gates de contrato/runtime:
+
+Use `core/API_ENGINEERING.md`. Para API relevante/complexa, use também `API.md`; para interface pequena, mantenha apenas estas linhas. Não copie o contrato genérico da Factory para o projeto.
 
 ## Configuração por ambiente
 Separar valores variáveis da lógica. Nunca registrar segredos.
@@ -47,6 +57,8 @@ Separar valores variáveis da lógica. Nunca registrar segredos.
 - dados sensíveis:
 - secrets:
 - privilégio mínimo:
+
+Para APIs expostas, detalhes específicos ficam em `API.md`/contrato e seguem `core/API_ENGINEERING.md` + `skills/security-review`.
 
 ## Acessibilidade e movimento
 - reduced motion:
