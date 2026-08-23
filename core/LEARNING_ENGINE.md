@@ -75,10 +75,44 @@ Ele continua disponível quando:
 - backends leves foram eliminados por incapacidade/disponibilidade;
 - o fallback da tarefa atual os rejeitou após falhas suficientes.
 
+## Skill Routing Telemetry
+
+A Factory mantém uma observação separada e muito mais limitada sobre **Skills roteadas/selecionadas**. Ela não afirma saber se um modelo leu, internalizou ou cognitivamente usou um arquivo Markdown.
+
+Arquivo local:
+
+`.factory/skill-routing.json`
+
+Ele guarda somente agregados de baixa cardinalidade:
+
+- número de decisões de roteamento registradas;
+- contagem por slug de Skill;
+- contagem por origem allowlisted (`factory-router`, `app-planner`, `manual`);
+- timestamp global de atualização.
+
+Não guarda sequência de eventos, prompt, objetivo, código, arquivo, log, URL, nome, token ou qualquer conteúdo do usuário. O arquivo fica fora do Git por padrão e não envia telemetria externa.
+
+O catálogo observado é bounded: o CLI só aceita slugs presentes em `skills/*/SKILL.md` e o engine possui limite defensivo de cardinalidade. Dados persistidos são tratados como não confiáveis e reconstruídos por schema seguro ao carregar.
+
+Uso:
+
+```text
+python scripts/skill_routing.py --root <projeto> record --skill app-planner --skill ui-builder
+python scripts/skill_routing.py --root <projeto> report
+```
+
+A contagem é **evidência operacional consultiva**, não autoridade de manutenção:
+
+- não alimenta automaticamente `recommend_backend()`;
+- nunca remove ou desativa Skill automaticamente;
+- `never_selected` significa somente “não observada neste dataset local”;
+- uma Skill rara pode continuar essencial por segurança, recovery, formalização ou outro uso excepcional.
+
 ## Relação com Execution Fabric
 
 - Execution Fabric decide **quem pode executar**.
 - Learning Engine recomenda **qual candidato elegível tem melhor evidência**.
+- Skill Routing Telemetry informa **quais Skills o roteamento declarou selecionar**, sem inferir uso cognitivo.
 - Autonomy Engine decide **qual é a próxima fase**.
 
 O aprendizado não altera Definition of Done, não reduz testes e não concede permissions/secrets.
@@ -110,6 +144,6 @@ Quando faltam dados, o Learning Engine informa `insufficient-data` e preserva a 
 
 ## Portabilidade
 
-O formato é local e baseado em JSON/stdlib. Outro agente no mesmo ambiente pode recuperar a evidência sem depender da conversa anterior. Não existe envio automático para servidor da App Factory ou aprendizado entre usuários/tenants na V1.3.
+Os formatos são locais e baseados em JSON/stdlib. Outro agente no mesmo ambiente pode recuperar a evidência sem depender da conversa anterior. Não existe envio automático para servidor da App Factory ou aprendizado entre usuários/tenants na V1.3.
 
-Como `.factory/learning.json` fica fora do Git, uma nova máquina pode não receber esse histórico. Nesse caso a Factory continua corretamente pelo baseline V1.2 e reaprende; Learning Engine é otimização, não requisito de continuidade.
+Como `.factory/learning.json` e `.factory/skill-routing.json` ficam fora do Git, uma nova máquina pode não receber esse histórico. Nesse caso a Factory continua corretamente pelo baseline V1.2 e sem estatística de roteamento; ambas são otimizações/observabilidade, não requisitos de continuidade.

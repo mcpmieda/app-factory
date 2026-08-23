@@ -38,10 +38,11 @@ yarn-error.log*
 # local databases
 /data/*.db*
 
-# local App Factory caches/learning; state.json may be versioned at explicit handoffs
+# local App Factory caches/learning/telemetry; state.json may be versioned at explicit handoffs
 /.factory/context/
 /.factory/execution.json
 /.factory/learning.json
+/.factory/skill-routing.json
 
 # vercel
 .vercel

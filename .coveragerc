@@ -1,0 +1,16 @@
+[run]
+branch = True
+source = engine
+parallel = True
+
+[report]
+show_missing = True
+skip_empty = True
+precision = 2
+
+[xml]
+output = coverage.xml
+
+[json]
+output = coverage.json
+pretty_print = True

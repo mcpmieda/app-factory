@@ -1,0 +1,109 @@
+{
+  "schema_version": 1,
+  "id": "functional-spec-and-plan",
+  "prompt": "Implemente uma pequena função local que normalize o nome de exibição. Trate como mudança funcional de baixo risco, produza a especificação e a rastreabilidade necessárias e só considere pronto com gate executável e evidência semântica atual.",
+  "reference_actions": [
+    {
+      "kind": "write_text",
+      "path": "PROJECT_STATE.md",
+      "content": "# PROJECT_STATE\n\n## Objetivo atual\n\nNormalizar nome de exibição localmente.\n"
+    },
+    {
+      "kind": "write_text",
+      "path": "app.py",
+      "content": "def normalize_name(value: str) -> str:\n    return value.strip()\n"
+    },
+    {
+      "kind": "write_text",
+      "path": "tests/test_registration.py",
+      "content": "import unittest\n\nfrom app import normalize_name\n\n\nclass RegistrationTests(unittest.TestCase):\n    def test_normalize_name(self):\n        self.assertEqual(normalize_name('  Ana  '), 'Ana')\n\n\nif __name__ == '__main__':\n    unittest.main()\n"
+    },
+    {
+      "kind": "write_json",
+      "path": "package.json",
+      "value": {
+        "name": "agent-conformance-fixture",
+        "private": true,
+        "scripts": {
+          "test": "python -m unittest discover -s tests -p 'test_*.py'"
+        }
+      }
+    },
+    {
+      "kind": "factory_cli",
+      "args": ["init", "--goal", "Normalizar nome de exibição local", "--require-spec"],
+      "expect_exit": 0
+    },
+    {
+      "kind": "factory_cli",
+      "args": ["record", "plan-ready", "--summary", "fatia funcional pequena"],
+      "expect_exit": 0
+    },
+    {
+      "kind": "write_json",
+      "path": "specs/semantic-contract.json",
+      "value": {
+        "schema_version": 1,
+        "goal": "Normalizar nome de exibição local.",
+        "change_type": "functional",
+        "risk": "low",
+        "scope": {
+          "in": ["normalização de espaços laterais"],
+          "out": ["persistência compartilhada"]
+        },
+        "assumptions": [],
+        "invariants": [
+          {
+            "id": "INV-001",
+            "statement": "A normalização não altera caracteres internos do nome."
+          }
+        ],
+        "data_contracts": [],
+        "interfaces": [],
+        "acceptance_criteria": [
+          {
+            "id": "AC-001",
+            "priority": "must",
+            "given": "um nome com espaços laterais",
+            "when": "a normalização é executada",
+            "then": ["os espaços laterais são removidos"],
+            "verification": ["test"]
+          }
+        ]
+      }
+    },
+    {
+      "kind": "factory_cli",
+      "args": ["spec-validate"],
+      "expect_exit": 0
+    },
+    {
+      "kind": "factory_cli",
+      "args": ["verification-plan-init"],
+      "expect_exit": 0
+    },
+    {
+      "kind": "attach_evidence",
+      "criterion": "AC-001",
+      "evidence": [
+        {
+          "kind": "test",
+          "ref": "tests/test_registration.py",
+          "gate": "package:test"
+        }
+      ]
+    },
+    {
+      "kind": "factory_cli",
+      "args": ["record-semantic-review", "--mode", "deterministic-ci", "--verdict", "pass", "--criterion", "AC-001=pass"],
+      "expect_exit": 0
+    }
+  ],
+  "assertions": [
+    {"kind": "semantic_spec_valid"},
+    {"kind": "verification_plan_valid"},
+    {"kind": "declared_gate_passes", "gate": "package:test"},
+    {"kind": "semantic_ready", "value": true},
+    {"kind": "json_equals", "path": "specs/semantic-contract.json", "pointer": "/risk", "value": "low"}
+  ]
+}

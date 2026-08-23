@@ -14,9 +14,11 @@ REQUIRED = [
     "engine/learning_engine.py",
     "engine/execution_engine.py",
     "scripts/factory.py",
+    "scripts/skill_routing.py",
     "skills/learning-engine/SKILL.md",
     "tests/v1_3/test_learning_engine.py",
     "tests/v1_3/test_cli_integration.py",
+    "tests/v1_3/test_skill_routing.py",
     ".github/workflows/validate-v1-3-learning.yml",
 ]
 
@@ -33,11 +35,11 @@ def validate_structure() -> None:
 
     root_ignore = (ROOT / ".gitignore").read_text(encoding="utf-8")
     starter_ignore = (ROOT / "starters/web-admin/template/.gitignore").read_text(encoding="utf-8")
-    marker = ".factory/learning.json"
-    if marker not in root_ignore:
-        fail("root .gitignore must keep learning.json local")
-    if marker not in starter_ignore:
-        fail("web-admin starter .gitignore must keep learning.json local")
+    for marker in (".factory/learning.json", ".factory/skill-routing.json"):
+        if marker not in root_ignore:
+            fail(f"root .gitignore must keep {marker} local")
+        if marker not in starter_ignore:
+            fail(f"web-admin starter .gitignore must keep {marker} local")
 
     learning = (ROOT / "engine/learning_engine.py").read_text(encoding="utf-8")
     for marker in (
@@ -46,9 +48,23 @@ def validate_structure() -> None:
         'PROTECTED_HEAVY_BACKENDS = {"local_full"}',
         '"external_telemetry": False',
         'return compact if compact in SAFE_ACTIONS else "other"',
+        "SKILL_ROUTING_SCHEMA_VERSION = 1",
+        "SKILL_ROUTING_MAX_SKILLS = 64",
+        '"used_for_backend_learning": False',
+        '"automatic_delete_recommendation": False',
     ):
         if marker not in learning:
             fail(f"Learning Engine contract marker missing: {marker}")
+
+    routing_doc = (ROOT / "core/LEARNING_ENGINE.md").read_text(encoding="utf-8")
+    for marker in (
+        "Skill Routing Telemetry",
+        ".factory/skill-routing.json",
+        "não afirma saber se um modelo leu",
+        "nunca remove ou desativa Skill automaticamente",
+    ):
+        if marker not in routing_doc:
+            fail(f"Skill routing documentation marker missing: {marker}")
 
 
 def run_tests() -> None:
@@ -72,7 +88,7 @@ def run_tests() -> None:
 def main() -> int:
     validate_structure()
     run_tests()
-    print("OK: V1.3 Learning Engine privacy, confidence, routing, persistence and CLI contracts validated.")
+    print("OK: V1.3 backend learning plus privacy-safe aggregate Skill routing telemetry validated.")
     return 0
 
 
