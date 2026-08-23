@@ -1,7 +1,7 @@
 {
   "name": "app-factory",
   "version": "1.4.0",
-  "description": "Portable AI software-development factory with system/API governance, independent verification, autonomous context, capability-based execution, local learning and semantic proof.",
+  "description": "Portable AI software-development factory with system/API governance, semantic assurance, independent verification, autonomous execution and semantic proof.",
   "author": {
     "name": "mcpmieda",
     "url": "https://github.com/mcpmieda"
@@ -10,16 +10,16 @@
   "skills": "./skills/",
   "interface": {
     "displayName": "App Factory",
-    "shortDescription": "Build real systems with proportional architecture and independent proof.",
-    "longDescription": "A portable software-development factory that activates from software intent, classifies real system architecture and API Engineering governance proportionally, recovers repository context and autonomous state, materializes semantic contracts for relevant work, routes each action to capable backends, uses GitHub CI and free/open-source Independent Verification for deterministic/adversarial proof, requires decoupled semantic review when risk warrants it, and conservatively learns from privacy-safe local execution metadata without making Codex or any vendor mandatory.",
+    "shortDescription": "Build real systems with semantic assurance and independent proof.",
+    "longDescription": "A portable software-development factory that activates from software intent, classifies real system architecture and API governance proportionally, improves specification quality with Semantic Assurance, materializes semantic contracts for relevant work, recovers repository context and autonomous state, routes actions to capable backends, uses GitHub CI plus free/open-source deterministic/adversarial/formal gates when warranted, requires decoupled semantic review for appropriate risk, and conservatively learns from privacy-safe local execution metadata without making Codex or any vendor mandatory.",
     "developerName": "mcpmieda",
     "category": "Productivity",
     "capabilities": ["Interactive"],
     "websiteURL": "https://github.com/mcpmieda/app-factory",
     "defaultPrompt": [
-      "Create a real software system with proportional architecture and prove intended behavior with independent checks when needed.",
-      "Resume this project, preserve its baseline and continue with the safest capable backend and proportional verification.",
-      "Design or evolve this API with proportional contracts, compatibility, security and adversarial evidence when warranted."
+      "Create a real software system, strengthen the specification semantically when needed, and prove intended behavior proportionally.",
+      "Resume this project, preserve its baseline and semantic contracts, and continue with the safest capable backend.",
+      "Design or evolve this system/API with proportional architecture, semantic assurance, compatibility, security and independent evidence."
     ]
   }
 }
