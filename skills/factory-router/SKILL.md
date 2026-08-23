@@ -1,6 +1,6 @@
 ---
 name: factory-router
-description: Use whenever a user asks to create, build, design, improve, modernize, maintain, debug, automate, integrate, migrate, extend, or continue a software project, app, system, website, API, browser extension, internal tool, automation, mobile app, desktop app, or GitHub project. Also use for broad outcome-only requests such as "quero criar um sistema", "quero um app", "melhore este projeto", or "automatize este processo". This is the universal entrypoint that recovers incremental context and autonomous state, classifies architecture/API/risk, selects proportional semantic and independent verification, routes execution capabilities, and activates specialized Skills without requiring the user to mention App Factory explicitly.
+description: Use whenever a user asks to create, build, design, improve, modernize, maintain, debug, automate, integrate, migrate, extend, or continue a software project, app, system, website, API, browser extension, internal tool, automation, mobile app, desktop app, or GitHub project. Also use for broad outcome-only requests such as "quero criar um sistema", "quero um app", "melhore este projeto", or "automatize este processo". This is the universal entrypoint that recovers incremental context and autonomous state, classifies architecture/API/risk, selects proportional semantic assurance/verification and independent verification, routes execution capabilities, and activates specialized Skills without requiring the user to mention App Factory explicitly.
 ---
 
 # Factory Router
@@ -24,16 +24,22 @@ Activate from software-development intent itself. The user may describe only an 
 9. Decide whether Semantic Verification is required before initializing a new autonomy state:
    - require it for new functionality, relevant bugfixes, business rules, data/API contracts, or medium/high-risk structural changes;
    - keep docs/chores and small no-behavior refactors lightweight.
-10. Derive Independent Verification from risk + system level + API mode using `core/INDEPENDENT_VERIFICATION.md`. Keep simple work `baseline`; load `independent-verification` when the mode becomes `independent`, `adversarial` or `release`.
-11. Use `autonomy-engine` to resume existing state or initialize it. When the new state requires semantic proof, initialize/resume with `require_spec`; do not ask the user to choose this technical flag.
-12. Select a validated project profile from `profiles/` when the product clearly matches one; do not force a profile when none fits. A profile can provide defaults but cannot reduce `core/SYSTEM_ENGINEERING.md`, applicable `core/API_ENGINEERING.md`, Semantic Verification or Independent Verification requirements.
-13. If semantic proof is required, load `semantic-verification`: create/update the structured contract and acceptance criteria before implementation, then derive verification traceability from it.
-14. Choose the execution capability with `core/TASK_ROUTER.md`: current agent + GitHub/CI first when they can prove the work; local/Codex only when genuinely needed. Independent/adversarial checks should prefer GitHub CI or an equivalent deterministic free runner.
-15. Load only the specialized Skills needed for the current block.
-16. Prefer reuse of mature solutions when appropriate.
-17. Execute the largest safe complete functional slice, record the resulting autonomy event, ask the engine for `next`, and continue until done or genuinely blocked.
-18. During verification, execute the selected independent/adversarial matrix in addition to implementation-authored tests when applicable.
-19. For medium/high-risk semantic work, do not let the implementing reasoning self-approve the delivery: prefer an independent reviewer/context; otherwise use the clean-context review packet built from current spec + diff + verification evidence. Deterministic scanners are complementary evidence, not a semantic reviewer.
+10. If Semantic Verification is required, derive **semantic depth** with `core/SEMANTIC_ASSURANCE.md`:
+   - `scenario` for small/isolated behavior where invariants + `given/when/then` are sufficient;
+   - `domain` when multiple concepts, relations, roles, states or rules interact;
+   - `formal` only when temporal requirements, concurrency/distribution, large combinatorial constraints, policy complexity or criticality justify formal analysis.
+11. Load `semantic-assurance` for `domain`/`formal`. Create/update `specs/semantic-assurance.json`, run deterministic consistency/coverage analysis and resolve `blocking` questions before implementation. Select Z3/Alloy/FRET/P/Quint/TLA+/DMN/OPA/Cedar only by problem fit; never install all by default.
+12. Derive Independent Verification from risk + system level + API mode using `core/INDEPENDENT_VERIFICATION.md`. Keep simple work `baseline`; load `independent-verification` when the mode becomes `independent`, `adversarial` or `release`.
+13. Use `autonomy-engine` to resume existing state or initialize it. When the new state requires semantic proof, initialize/resume with `require_spec`; do not ask the user to choose this technical flag.
+14. Select a validated project profile from `profiles/` when the product clearly matches one; do not force a profile when none fits. A profile can provide defaults but cannot reduce `core/SYSTEM_ENGINEERING.md`, applicable `core/API_ENGINEERING.md`, Semantic Assurance/Verification or Independent Verification requirements.
+15. If semantic proof is required, load `semantic-verification`: create/update the structured contract and acceptance criteria before implementation, then derive verification traceability from it. In `domain`/`formal`, Semantic Assurance must be ready against the current contract fingerprint first.
+16. Choose the execution capability with `core/TASK_ROUTER.md`: current agent + GitHub/CI first when they can prove the work; local/Codex only when genuinely needed. Independent/adversarial/formal checks should prefer GitHub CI or an equivalent deterministic free runner when capable.
+17. Load only the specialized Skills needed for the current block.
+18. Prefer reuse of mature solutions when appropriate.
+19. Execute the largest safe complete functional slice, record the resulting autonomy event, ask the engine for `next`, and continue until done or genuinely blocked.
+20. During verification, execute the selected independent/adversarial matrix in addition to implementation-authored tests when applicable.
+21. When a semantic model changes, use semantic diff to identify impacted requirements, acceptance criteria, invariants and declared gates before accepting prior evidence as current.
+22. For medium/high-risk semantic work, do not let the implementing reasoning self-approve the delivery: prefer an independent reviewer/context; otherwise use the clean-context review packet built from current spec + diff + verification evidence. Deterministic/formal tools are complementary evidence, not a semantic reviewer.
 
 ## Common routing examples
 
@@ -46,14 +52,15 @@ Activate from software-development intent itself. The user may describe only an 
 - authoritative data must be shared/durable, not browser-only;
 - API governance is evaluated from actual consumers/integrations; a Next.js server boundary does not automatically require public OpenAPI;
 - semantic verification: required because this is a new functional system;
+- semantic depth: likely `domain`, because assets, users, custody/status/history and authorization rules interact;
+- `semantic-assurance` models only domain concepts/relations/rules that affect behavior, not every noun in the UI;
 - Independent Verification: normally `adversarial` for a real multi-user institutional system, with only technically applicable motors activated;
 - initialize autonomous state from the user's outcome with semantic specification enabled;
 - use `app-planner` and the validated profile to define the first complete slice;
 - derive persistence, identity, authorization, server-side validation and recovery needs from the actual operation;
-- materialize the first slice's invariants and `given/when/then` criteria before coding;
+- materialize requirements/invariants and `given/when/then` criteria before coding;
 - use only the optional modules the product actually needs;
 - implement with the current agent when GitHub/CI can provide sufficient proof;
-- use Codex/local only for work requiring interactive runtime, browser, debugging, migrations or capabilities unavailable in the current environment;
 - verification/review/delivery are state transitions, not additional prompts the user has to request.
 
 ### "Quero uma calculadora pessoal que funcione offline"
@@ -61,8 +68,9 @@ Activate from software-development intent itself. The user may describe only an 
 - likely system level: `local-app`;
 - browser/device-local persistence can be authoritative if the requirement is truly local;
 - API governance: `none` unless a real external integration exists;
+- semantic depth: `scenario` if there is meaningful behavior to specify;
 - Independent Verification: usually `baseline`;
-- do not introduce backend/database/auth/OpenAPI/SAST/DAST/mutation tooling only to imitate an enterprise architecture.
+- do not introduce backend/database/auth/OpenAPI/Alloy/TLA+/SAST/DAST/mutation tooling only to imitate an enterprise architecture.
 
 ### "Crie uma API para web + app mobile + extensão"
 
@@ -71,6 +79,7 @@ Activate from software-development intent itself. The user may describe only an 
 - choose protocol from requirements instead of forcing REST;
 - define machine-readable source of truth before clients depend on undocumented behavior;
 - add compatibility/runtime/security gates proportionally;
+- semantic depth is independent: a simple resource API may stay `scenario`; interacting authorization/workflow/domain rules may require `domain`;
 - Independent Verification can add Schemathesis, security scanning and DAST when applicable without duplicating the API contract;
 - use Semantic Verification for business behavior and critical interface invariants without copying the whole API schema into the semantic spec.
 
@@ -78,19 +87,20 @@ Activate from software-development intent itself. The user may describe only an 
 
 - refresh Context Engine;
 - recover `.factory/state.json` when available, otherwise infer the goal from versioned project state;
-- recover semantic contract/verification artifacts when they exist;
+- recover semantic contract, semantic-assurance model, verification artifacts and `SEMANTICS.md` when they exist;
 - recover recorded system level/data-source decisions, API governance/contract decisions and `VERIFICATION.md`/independent mode when present;
-- reconcile added/changed/removed files if the fingerprint moved;
+- validate assurance/contract fingerprints before trusting prior analysis;
+- reconcile semantic diff and added/changed/removed files if fingerprints moved;
 - return to the recorded phase and continue;
 - do not make the user explain the previous conversation or choose the phase.
 
 ### "Troque o texto desta tela"
 
-If it is a simple copy-only change with no behavior/rule impact, Semantic Verification and Independent Verification can remain lightweight/baseline. Stay with the current agent, make the edit and use CI when useful. Do not send to Codex merely because a source file changes.
+If it is a simple copy-only change with no behavior/rule impact, Semantic Assurance/Verification and Independent Verification can remain lightweight/baseline. Stay with the current agent, make the edit and use CI when useful. Do not send to Codex merely because a source file changes.
 
 ### "Implemente autenticação e permissões"
 
-Semantic Verification is required because security rules and observable authorization behavior matter. Define invariants/acceptance criteria before implementation. Use architecture/security Skills. Authorization must be enforced server-side where protected operations exist. If the authorization is exposed through an API boundary, `api-engineering` also defines contract/error/security gates. Independent Verification should add appropriate negative/security evidence (for example Semgrep/Trivy and ZAP/Schemathesis when technically applicable). Try current-agent + GitHub/CI when the environment can execute adequate integration/security gates; use a local executor when real interactive services, browser flows or migration investigation require it.
+Semantic Verification is required because security rules and observable authorization behavior matter. For a few simple roles, `scenario` may suffice; interacting scopes, ownership or policy rules elevate to `domain`. Define invariants/acceptance criteria before implementation. Use architecture/security Skills. Authorization must be enforced server-side where protected operations exist. Complex declarative policy may justify OPA/Rego or Cedar, but neither is mandatory. If the authorization is exposed through an API boundary, `api-engineering` also defines contract/error/security gates. Independent Verification should add appropriate negative/security evidence when technically applicable.
 
 ## User experience contract
 
@@ -100,6 +110,8 @@ The user should not need to:
 - choose a framework without reason;
 - classify the technical system level manually;
 - classify API governance manually;
+- choose semantic depth manually;
+- choose Z3/Alloy/FRET/P/TLA+/DMN/policy engines manually;
 - choose mutation/SAST/DAST tools manually;
 - decide whether a semantic-spec flag is technically needed;
 - fill a technical specification schema manually;
@@ -113,4 +125,4 @@ Tell the user about a handoff only when they need to act or the handoff material
 
 ## Completion
 
-Writing code is not completion. `core/SYSTEM_ENGINEERING.md` requirements are architecture gates, not suggestions. A `multi-user-system` or higher cannot be called production-ready while authoritative data is browser-only, authorization is client-only, required migrations/recovery are absent, or real persistence/protected flows have not been exercised. When `core/API_ENGINEERING.md` applies in `contract`/`governed` mode, contract validity, compatibility, runtime correspondence and security evidence also become proportional gates. When `core/INDEPENDENT_VERIFICATION.md` selects `required` adversarial checks, those checks must execute successfully or have an explicit justified exception; tool unavailability is not a pass. When a semantic contract applies, every `must` criterion also needs current executable evidence and medium/high-risk work needs decoupled review evidence. Advance through verification and review, using bounded repair on failures, then deliver only when `core/DEFINITION_OF_DONE.md` is satisfied proportionally to risk.
+Writing code is not completion. `core/SYSTEM_ENGINEERING.md` requirements are architecture gates, not suggestions. A `multi-user-system` or higher cannot be called production-ready while authoritative data is browser-only, authorization is client-only, required migrations/recovery are absent, or real persistence/protected flows have not been exercised. When `core/API_ENGINEERING.md` applies in `contract`/`governed` mode, contract validity, compatibility, runtime correspondence and security evidence also become proportional gates. When Semantic Assurance depth is `domain`/`formal`, unresolved deterministic contradictions, broken refs, `blocking` questions or required formalizations/gates prevent specification readiness. When `core/INDEPENDENT_VERIFICATION.md` selects `required` adversarial checks, those checks must execute successfully or have an explicit justified exception; tool unavailability is not a pass. When a semantic contract applies, every `must` criterion also needs current executable evidence and medium/high-risk work needs decoupled review evidence. Advance through verification and review, using bounded repair on failures, then deliver only when `core/DEFINITION_OF_DONE.md` is satisfied proportionally to risk.

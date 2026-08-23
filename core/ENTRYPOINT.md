@@ -24,7 +24,7 @@ Também ative quando o usuário expressar apenas o resultado, por exemplo:
 - "Quero automatizar este processo."
 - "Continue o projeto X."
 
-O usuário não precisa conhecer stack, arquitetura, perfis, Skills, estados internos, semantic-spec, scanners ou agentes.
+O usuário não precisa conhecer stack, arquitetura, perfis, Skills, estados internos, semantic-spec, semantic depth, scanners ou agentes.
 
 ## Primeira passagem obrigatória
 
@@ -39,15 +39,20 @@ O usuário não precisa conhecer stack, arquitetura, perfis, Skills, estados int
 9. Classifique se o trabalho exige Semantic Verification:
    - **sim** para funcionalidade nova, bugfix relevante, regra de negócio, contrato de dados/API ou mudança estrutural de médio/alto risco;
    - **não por padrão** para documentação/chore e refactor pequeno que não muda comportamento observável.
-10. Derive o modo de `core/INDEPENDENT_VERIFICATION.md` a partir do risco, nível do sistema, API mode e sinais técnicos do projeto. Use `baseline`, `independent`, `adversarial` ou `release` sem pedir ao usuário para escolher scanners. Carregue `independent-verification` somente quando o modo ficar acima de `baseline`.
-11. Se existir `.factory/state.json`, use o Autonomy Engine para retomar. Se não existir, inicialize/infera o objetivo; quando a classificação anterior exigir prova semântica, crie o novo estado com `require_spec` sem perguntar ao usuário por essa decisão técnica.
-12. Verifique `profiles/` e selecione um perfil validado quando o produto corresponder claramente; não force perfil quando nenhum servir. Nenhum perfil pode reduzir requisitos mínimos de `core/SYSTEM_ENGINEERING.md`, `core/API_ENGINEERING.md` nem `core/INDEPENDENT_VERIFICATION.md` quando estes se aplicarem.
-13. Quando Semantic Verification se aplicar, carregue `semantic-verification` e materialize o contrato estruturado antes da implementação. O agente preenche a spec; o usuário só entra se faltar uma regra genuinamente humana.
-14. Escolha o executor com `core/TASK_ROUTER.md`, priorizando as capacidades do agente atual + GitHub/CI antes de handoff. Para verificadores independentes determinísticos, prefira `github_ci` ou runner gratuito/equivalente capaz.
-15. Carregue apenas as demais Skills necessárias.
-16. Pesquise solução existente antes de construir equivalente do zero quando houver ganho real.
-17. Defina o próximo bloco funcional completo e, quando aplicável, seus critérios `given/when/then` antes do código.
-18. Execute imediatamente tudo que o ambiente atual permitir com segurança e continue o loop técnico sem pedir ao usuário o próximo passo rotineiro.
+10. Quando Semantic Verification for necessária, derive o **semantic depth** com `core/SEMANTIC_ASSURANCE.md`:
+   - `scenario` quando uma spec pequena com invariantes + `given/when/then` é suficiente;
+   - `domain` quando conceitos, relações, papéis, estados, decisões ou regras interagem e interpretação divergente é risco material;
+   - `formal` somente quando temporalidade, concorrência/distribuição, safety/liveness, combinatória de regras ou criticidade justificarem métodos formais.
+11. Para `domain`/`formal`, carregue `semantic-assurance`, materialize `specs/semantic-assurance.json` e exija consistência/referências/cobertura estrutural válidas antes da implementação. Métodos como Z3, Alloy, NASA FRET, P, Quint/TLA+, DMN, OPA/Rego ou Cedar são selecionados pelo tipo de problema; não são dependências universais.
+12. Derive o modo de `core/INDEPENDENT_VERIFICATION.md` a partir do risco, nível do sistema, API mode e sinais técnicos do projeto. Use `baseline`, `independent`, `adversarial` ou `release` sem pedir ao usuário para escolher scanners. Carregue `independent-verification` somente quando o modo ficar acima de `baseline`.
+13. Se existir `.factory/state.json`, use o Autonomy Engine para retomar. Se não existir, inicialize/infera o objetivo; quando a classificação anterior exigir prova semântica, crie o novo estado com `require_spec` sem perguntar ao usuário por essa decisão técnica.
+14. Verifique `profiles/` e selecione um perfil validado quando o produto corresponder claramente; não force perfil quando nenhum servir. Nenhum perfil pode reduzir requisitos mínimos de `core/SYSTEM_ENGINEERING.md`, `core/API_ENGINEERING.md`, `core/SEMANTIC_ASSURANCE.md` nem `core/INDEPENDENT_VERIFICATION.md` quando estes se aplicarem.
+15. Quando Semantic Verification se aplicar, carregue `semantic-verification` e materialize o contrato estruturado antes da implementação. Em `domain`/`formal`, a qualidade da especificação é validada por Semantic Assurance antes de tratá-la como alvo pronto.
+16. Escolha o executor com `core/TASK_ROUTER.md`, priorizando as capacidades do agente atual + GitHub/CI antes de handoff. Para verificadores independentes/formais determinísticos, prefira `github_ci` ou runner gratuito/equivalente capaz.
+17. Carregue apenas as demais Skills necessárias.
+18. Pesquise solução existente antes de construir equivalente do zero quando houver ganho real.
+19. Defina o próximo bloco funcional completo e, quando aplicável, seus critérios `given/when/then` antes do código.
+20. Execute imediatamente tudo que o ambiente atual permitir com segurança e continue o loop técnico sem pedir ao usuário o próximo passo rotineiro.
 
 ## Contexto incremental
 
@@ -61,6 +66,8 @@ Ao retomar um projeto existente:
 - se o fingerprint tiver mudado durante uma fase ativa, reconcilie o delta antes de continuar.
 
 O grafo atual de imports é deliberadamente leve. Não fingir que ele é um call graph semântico universal; análises profundas devem ser promovidas somente após pilotos por stack/linguagem.
+
+`engine/semantic_assurance.py` mantém apenas o grafo semântico explícito que o projeto declarou por IDs/referências. Ele não inventa um call graph completo do código.
 
 ## Autonomia
 
@@ -89,6 +96,22 @@ Para `multi-user-system` ou superior, interface funcional sozinha não prova com
 Aplique quando existir API compartilhada, integração externa, múltiplos consumidores, webhook, evento/mensageria ou contrato de rede que precise evoluir com segurança. Para uma função/server action interna sem consumidor independente, mantenha o modo leve ou `none`.
 
 Quando a interface for `contract`/`governed`, preserve uma fonte de verdade machine-readable adequada ao protocolo e gates proporcionais de lint, compatibilidade, runtime e segurança. OpenAPI, GraphQL, gRPC/Protobuf, AsyncAPI e Arazzo são opções condicionais, não tecnologias obrigatórias universais.
+
+## Semantic Assurance
+
+`core/SEMANTIC_ASSURANCE.md` governa a qualidade da especificação **antes** de a implementação ser usada como objeto de prova.
+
+Profundidades:
+
+- `scenario` — invariantes + critérios observáveis normalmente bastam;
+- `domain` — acrescenta requisitos estruturados, vocabulário, entidades/relações, estados/restrições, consistency/coverage e semantic diff;
+- `formal` — acrescenta uma técnica formal específica quando custo de erro/natureza do problema justificarem.
+
+Em `domain`/`formal`, `specs/semantic-assurance.json` deve apontar para o fingerprint do `semantic-contract.json`. Referência quebrada, contradição determinística ou pergunta `blocking` impede a fase de especificação de ficar ready.
+
+Análise por IA pode sugerir ambiguidade, lacuna ou pressuposto, mas findings probabilísticos não viram automaticamente falha formal. Quando necessário, uma decisão humana/domain owner resolve a ambiguidade.
+
+Semantic coverage mede rastreabilidade estrutural, não “percentual de verdade”. 100% de cobertura não prova que a intenção humana foi modelada corretamente.
 
 ## Verificação independente
 
@@ -120,18 +143,20 @@ Regras fortes:
 Quando aplicável:
 
 - `specs/semantic-contract.json` define objetivo, invariantes e critérios observáveis;
+- `specs/semantic-assurance.json` complementa o contrato em profundidade `domain`/`formal`;
 - `specs/verification-plan.json` liga cada critério `must` a evidência executável/gate real;
 - risco médio/alto exige revisão desacoplada, preferencialmente outro agente/contexto ou, na ausência, um `clean-context` baseado em spec + diff + evidências atuais;
 - `specs/review-evidence.json` fica ligado por fingerprints àquilo que foi realmente revisado;
-- código/spec/plano alterados depois tornam a revisão anterior stale.
+- código/spec/plano alterados depois tornam a revisão anterior stale;
+- semantic diff material exige rever ACs/invariantes/gates impactados.
 
-Deterministic CI e Independent Verification continuam evidências importantes, mas não são sozinhos reviewers semânticos para risco médio/alto.
+Deterministic CI, formal methods e Independent Verification continuam evidências importantes, mas não são sozinhos reviewers semânticos para risco médio/alto.
 
 ## Regra de perfis
 
-Perfis transformam evidência real em defaults condicionais. Eles não substituem entendimento do produto, `core/SYSTEM_ENGINEERING.md`, `core/API_ENGINEERING.md` nem `core/INDEPENDENT_VERIFICATION.md` quando aplicáveis.
+Perfis transformam evidência real em defaults condicionais. Eles não substituem entendimento do produto, `core/SYSTEM_ENGINEERING.md`, `core/API_ENGINEERING.md`, `core/SEMANTIC_ASSURANCE.md` nem `core/INDEPENDENT_VERIFICATION.md` quando aplicáveis.
 
-Exemplo: um sistema de patrimônio com login, CRUD, filtros e dashboard provavelmente corresponde a `profiles/web-admin/PROFILE.md`. A Factory pode usar os defaults comprovados desse perfil e deve ativar persistência, autenticação/autorização, API/integração ou verificadores independentes quando o nível do sistema, risco e produto exigirem.
+Exemplo: um sistema de patrimônio com login, CRUD, filtros e dashboard provavelmente corresponde a `profiles/web-admin/PROFILE.md`. A Factory pode usar os defaults comprovados desse perfil e deve ativar persistência, autenticação/autorização, API/integração, Semantic Assurance ou verificadores independentes quando o nível do sistema, risco e produto exigirem.
 
 Requisitos específicos do projeto têm precedência sobre defaults do perfil, salvo conflito de segurança ou redução indevida dos requisitos mínimos do nível de sistema/interface/verificação.
 
@@ -149,7 +174,8 @@ Quando o projeto ganhar repositório próprio, grave nele pelo menos:
 - artefatos de produto/arquitetura proporcionais à escala;
 - nível de sistema e fonte autoritativa dos dados quando `persistent-app` ou superior;
 - modo/fonte de verdade da API quando `contract`/`governed` se aplicar;
-- `specs/` semânticos quando a mudança exigir esse nível de prova;
+- `specs/semantic-contract.json` quando Semantic Verification se aplicar;
+- `specs/semantic-assurance.json` e `SEMANTICS.md` quando semantic depth for `domain`/`formal`;
 - `VERIFICATION.md` e workflows/configs de verificação quando Independent Verification ficar acima de `baseline`;
 - perfil selecionado e desvios relevantes quando aplicável;
 - testes/CI quando aplicáveis.
@@ -164,7 +190,7 @@ Se o `AGENTS.md` do projeto indicar App Factory, use o plugin/Skills instalados 
 
 ## Regra de interação
 
-Não pergunte ao usuário qual framework, ORM, linter, biblioteca, protocolo, scanner ou modo interno de verificação usar quando isso for uma decisão técnica rotineira que o agente consegue avaliar.
+Não pergunte ao usuário qual framework, ORM, linter, biblioteca, protocolo, solver, model checker, scanner ou modo interno de verificação usar quando isso for uma decisão técnica rotineira que o agente consegue avaliar.
 
 Pergunte quando faltar:
 
@@ -176,7 +202,7 @@ Pergunte quando faltar:
 - credencial ou dado externo indisponível;
 - decisão legal/organizacional.
 
-Ferramenta paga é uma decisão de custo e nunca entra por inferência. Independent Verification permanece gratuita por padrão.
+Ferramenta paga é uma decisão de custo e nunca entra por inferência. Independent Verification permanece gratuita por padrão; métodos semânticos/formais preferem ferramentas gratuitas/open source quando equivalentes adequados existirem.
 
 ## Saída da primeira passagem
 
@@ -187,10 +213,11 @@ O agente deve saber, mesmo que não exponha todos os detalhes:
 - **nível do sistema**;
 - fonte autoritativa dos dados quando aplicável;
 - modo de governança da API e contrato autoritativo quando aplicável;
+- se Semantic Verification é exigida;
+- **semantic depth** (`scenario`/`domain`/`formal`) quando aplicável;
 - modo de Independent Verification e checks `required/advisory` quando acima de `baseline`;
 - perfil selecionado, se houver;
 - risco;
-- se Semantic Verification é exigida;
 - fingerprint/contexto atual;
 - fase e próxima ação do Autonomy Engine;
 - Skill(s) necessárias;

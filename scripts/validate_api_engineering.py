@@ -110,7 +110,7 @@ def main() -> int:
         [
             "governance hardening",
             "API Engineering Contract",
-            "18",
+            "19",
             "Validate API Engineering Contract",
         ],
     )
@@ -138,7 +138,7 @@ def main() -> int:
         "docs/CODEX_PLUGIN.md",
         [
             "1.4.0",
-            "18 Skills",
+            "19 Skills",
             "api-engineering",
             "System Engineering",
             "API Engineering",
@@ -200,7 +200,7 @@ def main() -> int:
         fail("Regressão: capacidades/recipes preservados ausentes: " + ", ".join(missing))
 
     readme = read("README.md")
-    if "18 Skills" not in readme:
+    if "19 Skills" not in readme:
         fail("README deve refletir as Skills atuais sem alterar a baseline dos engines")
 
     print(

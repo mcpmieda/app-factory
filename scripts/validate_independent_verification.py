@@ -47,9 +47,9 @@ WIRING_MARKERS = {
     "profiles/chrome-extension/PROFILE.md": ["Independent Verification", "StrykerJS"],
     "PORTABILITY.md": ["Independent Verification portátil", "free-only"],
     "APP_FACTORY_PLAN.md": ["Independent Verification", "free-only"],
-    "PROJECT_STATE.md": ["Independent Verification", "18"],
-    "README.md": ["Independent Verification", "18 Skills"],
-    "docs/CODEX_PLUGIN.md": ["Independent Verification", "18 Skills"],
+    "PROJECT_STATE.md": ["Independent Verification", "19"],
+    "README.md": ["Independent Verification", "19 Skills"],
+    "docs/CODEX_PLUGIN.md": ["Independent Verification", "19 Skills"],
     "docs/DECISIONS.md": ["D-045", "D-052", "Independent Verification"],
     ".codex-plugin/plugin.json": ["independent verification", "free/open-source"],
 }
