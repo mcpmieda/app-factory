@@ -37,6 +37,28 @@ export function normalizeRegistration(value: string) {
   return value.trim().toLocaleLowerCase("pt-BR");
 }
 
+function hasDuplicateRegistrations(students: StudentRecord[]) {
+  const seen = new Set<string>();
+
+  for (const student of students) {
+    const normalized = normalizeRegistration(student.registration);
+    if (seen.has(normalized)) return true;
+    seen.add(normalized);
+  }
+
+  return false;
+}
+
+export function parseStoredStudents(value: unknown): StudentRecord[] | null {
+  const parsed = recordsSchema.safeParse(value);
+
+  if (!parsed.success || hasDuplicateRegistrations(parsed.data)) {
+    return null;
+  }
+
+  return parsed.data;
+}
+
 export function migrateLegacyStudents(value: unknown): StudentRecord[] | null {
   const parsed = legacyRecordsSchema.safeParse(value);
 
@@ -53,17 +75,12 @@ export function migrateLegacyStudents(value: unknown): StudentRecord[] | null {
   }));
 }
 
-function parseCurrentStudents(value: unknown) {
-  const parsed = recordsSchema.safeParse(value);
-  return parsed.success ? parsed.data : null;
-}
-
 export function readStudents(): StorageReadResult {
   try {
     const currentRaw = window.localStorage.getItem(STORAGE_KEY);
 
     if (currentRaw) {
-      const current = parseCurrentStudents(JSON.parse(currentRaw));
+      const current = parseStoredStudents(JSON.parse(currentRaw));
 
       if (!current) {
         return {
@@ -108,18 +125,6 @@ export function readStudents(): StorageReadResult {
   }
 }
 
-function hasDuplicateRegistrations(students: StudentRecord[]) {
-  const seen = new Set<string>();
-
-  for (const student of students) {
-    const normalized = normalizeRegistration(student.registration);
-    if (seen.has(normalized)) return true;
-    seen.add(normalized);
-  }
-
-  return false;
-}
-
 export function writeStudents(students: StudentRecord[]) {
   const parsed = recordsSchema.parse(students);
 
@@ -145,10 +150,16 @@ export function hasRegistration(
 }
 
 export function createStudentBackup(students: StudentRecord[]): StudentBackup {
+  const parsedStudents = parseStoredStudents(students);
+
+  if (!parsedStudents) {
+    throw new Error("A coleção não pode ser exportada porque é inválida.");
+  }
+
   return studentBackupSchema.parse({
     version: 2,
     exportedAt: new Date().toISOString(),
-    students,
+    students: parsedStudents,
   });
 }
 
