@@ -16,13 +16,15 @@ app-factory/
 └── ...
 ```
 
-O manifest aponta `skills` para `./skills/`, que já é a fonte portátil usada pelos outros agentes. O runtime V1.3 em `engine/` é neutro e não depende do Codex.
+O manifest aponta `skills` para `./skills/`, que já é a fonte portátil usada pelos outros agentes. O runtime V1.4 em `engine/` é neutro e não depende do Codex.
 
 ## Estado
 
-`1.3.0` — **V1.3 estável**.
+`1.4.0` — **V1.4 estável**, com System Engineering e API Engineering como governance hardenings sobre a mesma baseline de engines.
 
-O Codex CLI oficial `0.149.0` reconhece o marketplace local, instala a App Factory e descobre as **15 Skills**, incluindo `factory-router`, `context-engine`, `autonomy-engine`, `execution-router` e `learning-engine`. O bootstrap isolado compara SHA-256 de todas as Skills entre checkout limpo e cache instalado e rejeita omissão, duplicação, divergência ou pacote pesado.
+O plugin descobre as **17 Skills** diretamente de `skills/`, incluindo `factory-router`, `api-engineering`, `semantic-verification`, `context-engine`, `autonomy-engine`, `execution-router` e `learning-engine`. O bootstrap isolado compara SHA-256 das Skills entre checkout limpo e cache instalado e rejeita omissão, duplicação, divergência ou pacote pesado.
+
+Adicionar uma Skill à fonte `skills/` não exige manter uma segunda lista dentro do plugin; essa fonte única é intencional.
 
 ## Papel do Codex
 
@@ -33,9 +35,15 @@ Codex não é destino automático para tarefa com código, múltiplos arquivos o
 3. sandbox leve disponível;
 4. executor local completo.
 
-Na V1.3, aprendizado local pode otimizar somente os backends leves que já são capazes/elegíveis. `local_full` não é promovido sobre um backend leve capaz apenas porque teve score histórico melhor.
+Aprendizado local pode otimizar somente os backends leves que já são capazes/elegíveis. `local_full` não é promovido sobre um backend leve capaz apenas porque teve score histórico melhor.
 
 Codex é uma implementação possível de `local_full` e continua indicado quando browser/runtime/debug/migrations interativos ou outra capacidade local forem realmente necessários.
+
+## Governança não depende do Codex
+
+`core/SYSTEM_ENGINEERING.md`, `core/API_ENGINEERING.md` e `core/SEMANTIC_VERIFICATION.md` pertencem ao núcleo portátil. Um projeto deve receber a mesma classificação arquitetural, governança de API e prova semântica independentemente de ser executado por Codex, ChatGPT, CI ou outro agente compatível.
+
+API Engineering continua condicional: o plugin não instala OpenAPI, Redocly, Pact ou outras ferramentas apenas porque a Skill existe. `api-engineering` escolhe os contratos/gates que o projeto realmente precisa.
 
 ## Learning Engine não depende do Codex
 
@@ -77,9 +85,12 @@ O usuário normalmente não executa esses comandos; o agente/adaptador faz isso 
 python scripts/validate_factory.py
 python scripts/validate_skills.py
 python scripts/validate_plugin.py
+python scripts/validate_system_engineering.py
+python scripts/validate_api_engineering.py
 python scripts/validate_v1_1.py
 python scripts/validate_v1_2.py
 python scripts/validate_v1_3.py
+python scripts/validate_v1_4.py
 python scripts/validate_v1_bootstrap.py
 python scripts/validate_v1_release.py
 ```
@@ -90,6 +101,9 @@ python scripts/validate_v1_release.py
 APP FACTORY CORE + ENGINE
 (portátil)
       │
+      ├── System Engineering
+      ├── API Engineering (condicional)
+      ├── Semantic Verification
       ├── Context Engine
       ├── Autonomy Engine
       ├── Execution Fabric
