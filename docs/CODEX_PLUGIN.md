@@ -20,9 +20,9 @@ O manifest aponta `skills` para `./skills/`, que já é a fonte portátil usada 
 
 ## Estado
 
-`1.4.0` — **V1.4 estável**, com System Engineering e API Engineering como governance hardenings sobre a mesma baseline de engines.
+`1.4.0` — **V1.4 estável**, com System Engineering, API Engineering e Independent Verification como governance hardenings sobre a mesma baseline de engines.
 
-O plugin descobre as **17 Skills** diretamente de `skills/`, incluindo `factory-router`, `api-engineering`, `semantic-verification`, `context-engine`, `autonomy-engine`, `execution-router` e `learning-engine`. O bootstrap isolado compara SHA-256 das Skills entre checkout limpo e cache instalado e rejeita omissão, duplicação, divergência ou pacote pesado.
+O plugin descobre as **18 Skills** diretamente de `skills/`, incluindo `factory-router`, `api-engineering`, `independent-verification`, `semantic-verification`, `context-engine`, `autonomy-engine`, `execution-router` e `learning-engine`. O bootstrap isolado compara SHA-256 das Skills entre checkout limpo e cache instalado e rejeita omissão, duplicação, divergência ou pacote pesado.
 
 Adicionar uma Skill à fonte `skills/` não exige manter uma segunda lista dentro do plugin; essa fonte única é intencional.
 
@@ -41,9 +41,11 @@ Codex é uma implementação possível de `local_full` e continua indicado quand
 
 ## Governança não depende do Codex
 
-`core/SYSTEM_ENGINEERING.md`, `core/API_ENGINEERING.md` e `core/SEMANTIC_VERIFICATION.md` pertencem ao núcleo portátil. Um projeto deve receber a mesma classificação arquitetural, governança de API e prova semântica independentemente de ser executado por Codex, ChatGPT, CI ou outro agente compatível.
+`core/SYSTEM_ENGINEERING.md`, `core/API_ENGINEERING.md`, `core/INDEPENDENT_VERIFICATION.md` e `core/SEMANTIC_VERIFICATION.md` pertencem ao núcleo portátil. Um projeto deve receber a mesma classificação arquitetural, governança de API, profundidade de verificação independente e prova semântica independentemente de ser executado por Codex, ChatGPT, CI ou outro agente compatível.
 
 API Engineering continua condicional: o plugin não instala OpenAPI, Redocly, Pact ou outras ferramentas apenas porque a Skill existe. `api-engineering` escolhe os contratos/gates que o projeto realmente precisa.
+
+Independent Verification também é condicional e `free-only`: a Skill não instala Trivy, Semgrep CE, Stryker/mutmut, Schemathesis, ZAP, axe ou Lighthouse em todo projeto. O planner seleciona a matriz pelo risco/arquitetura e GitHub CI é o executor preferido quando capaz. Essas ferramentas não substituem um reviewer semântico independente.
 
 ## Learning Engine não depende do Codex
 
@@ -75,6 +77,7 @@ python scripts/factory.py --root <projeto> execution-status
 python scripts/factory.py --root <projeto> learning-status
 python scripts/factory.py --root <projeto> learning-recommend verify
 python scripts/factory.py --root <projeto> gates
+python scripts/independent_verification.py --root <projeto> --risk high --system-level multi-user-system
 ```
 
 O usuário normalmente não executa esses comandos; o agente/adaptador faz isso internamente.
@@ -87,6 +90,7 @@ python scripts/validate_skills.py
 python scripts/validate_plugin.py
 python scripts/validate_system_engineering.py
 python scripts/validate_api_engineering.py
+python scripts/validate_independent_verification.py
 python scripts/validate_v1_1.py
 python scripts/validate_v1_2.py
 python scripts/validate_v1_3.py
@@ -103,6 +107,7 @@ APP FACTORY CORE + ENGINE
       │
       ├── System Engineering
       ├── API Engineering (condicional)
+      ├── Independent Verification (condicional/free-only)
       ├── Semantic Verification
       ├── Context Engine
       ├── Autonomy Engine
