@@ -42,6 +42,8 @@ Por padrão exige:
 - estratégia de concorrência/idempotência para operações suscetíveis a repetição ou conflito;
 - testes do fluxo crítico com persistência real ou ambiente equivalente.
 
+Ter backend não obriga uma API pública/formal. Quando existir uma fronteira de API, integração externa, múltiplos consumidores independentes, webhooks, eventos ou mensageria, aplique também `core/API_ENGINEERING.md` no modo proporcional ao risco da interface.
+
 ### 5. `production-system`
 
 Sistema destinado a operação real com dados importantes, múltiplos usuários, continuidade esperada ou impacto operacional relevante.
@@ -56,6 +58,8 @@ Além de `multi-user-system`, exige proporcionalmente:
 - rollout/rollback ou estratégia equivalente de recuperação;
 - proteção de operações destrutivas;
 - verificação de deploy/produção e não apenas build local.
+
+Detalhes de contrato, compatibilidade, timeout/retry, webhooks e gates específicos de API pertencem a `core/API_ENGINEERING.md`; este contrato mantém apenas a exigência arquitetural de alto nível.
 
 ### 6. `critical-system`
 
@@ -117,6 +121,7 @@ A Factory deve avaliar, sem instalar tudo por padrão:
 - paginação/filtros server-side;
 - arquivos/uploads;
 - importação/exportação;
+- APIs/contratos/integrações conforme `core/API_ENGINEERING.md`;
 - notificações;
 - jobs/filas/agendamentos;
 - rate limiting/abuse protection;
@@ -141,6 +146,8 @@ Para `persistent-app` ou superior, a arquitetura deve registrar pelo menos:
 - riscos de perda/duplicidade/conflito;
 - ambiente de deploy e recuperação proporcional.
 
+Quando houver API relevante, registre também o modo de governança e a fonte de verdade do contrato conforme `core/API_ENGINEERING.md`, sem duplicar detalhes que pertencem ao documento/API contract específico.
+
 ## Definition of Done adicional
 
 Um projeto classificado como `multi-user-system` ou superior não pode ser declarado pronto para produção se:
@@ -152,9 +159,12 @@ Um projeto classificado como `multi-user-system` ou superior não pode ser decla
 - não houver teste do fluxo crítico com a camada real de persistência/autorização aplicável;
 - recuperação/backup for requisito material e não houver estratégia definida.
 
+Se uma API `contract`/`governed` fizer parte do sistema, os gates específicos de `core/API_ENGINEERING.md` também integram a conclusão proporcional.
+
 ## Relação com os demais módulos
 
 - `core/PROJECT_SCALE.md` decide profundidade de processo; este arquivo decide profundidade mínima da arquitetura do produto.
+- `core/API_ENGINEERING.md` decide governança da interface quando existe API/integração relevante; não cria API por obrigação.
 - `core/RISK_MODEL.md` pode elevar exigências de segurança, revisão e recovery.
 - `core/SEMANTIC_VERIFICATION.md` transforma regras funcionais/arquiteturais relevantes em critérios observáveis.
 - `profiles/*` fornecem stacks/defaults comprovados, mas não podem reduzir os requisitos deste contrato.
