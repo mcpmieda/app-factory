@@ -1,0 +1,74 @@
+name: Validate Python Evidence
+
+on:
+  pull_request:
+    paths:
+      - "engine/**"
+      - "tests/**"
+      - ".coveragerc"
+      - "requirements/ci-evidence.txt"
+      - ".github/workflows/validate-python-evidence.yml"
+  push:
+    branches: [main]
+    paths:
+      - "engine/**"
+      - "tests/**"
+      - ".coveragerc"
+      - "requirements/ci-evidence.txt"
+      - ".github/workflows/validate-python-evidence.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  python-evidence:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install pinned CI evidence tools
+        run: python -m pip install --disable-pip-version-check -r requirements/ci-evidence.txt
+      - name: Run all Python engine tests with branch coverage
+        run: |
+          coverage erase
+          for suite in tests/v1_1 tests/v1_2 tests/v1_3 tests/v1_4 tests/semantic_assurance tests/agent_conformance; do
+            coverage run --parallel-mode -m unittest discover -s "$suite" -p 'test_*.py'
+          done
+          coverage combine
+          coverage report
+          coverage xml
+          coverage json
+      - name: Enforce coverage on changed engine lines
+        if: github.event_name == 'pull_request'
+        run: |
+          diff-cover coverage.xml \
+            --compare-branch="origin/${{ github.base_ref }}" \
+            --fail-under=100 \
+            --show-uncovered \
+            --format markdown:diff-coverage.md
+      - name: Publish coverage summary
+        if: always()
+        run: |
+          echo '## Python Engine Coverage' >> "$GITHUB_STEP_SUMMARY"
+          echo '' >> "$GITHUB_STEP_SUMMARY"
+          coverage report --format=markdown >> "$GITHUB_STEP_SUMMARY" || true
+          if [ -f diff-coverage.md ]; then
+            echo '' >> "$GITHUB_STEP_SUMMARY"
+            cat diff-coverage.md >> "$GITHUB_STEP_SUMMARY"
+          fi
+      - name: Upload evidence artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: python-engine-coverage
+          path: |
+            coverage.xml
+            coverage.json
+            diff-coverage.md
+          if-no-files-found: ignore

@@ -1,0 +1,27 @@
+{
+  "schema_version": 1,
+  "id": "docs-change-stays-light",
+  "prompt": "Corrija apenas um erro de documentação no README. Não introduza comportamento novo nem crie processo semântico pesado para uma alteração puramente documental.",
+  "reference_actions": [
+    {
+      "kind": "write_text",
+      "path": "README.md",
+      "content": "# Exemplo\n\nDocumentação correta, sem mudança de comportamento.\n"
+    },
+    {
+      "kind": "factory_cli",
+      "args": ["init", "--goal", "Corrigir documentação sem alterar comportamento"],
+      "expect_exit": 0
+    },
+    {
+      "kind": "factory_cli",
+      "args": ["record", "plan-ready", "--summary", "mudança apenas documental"],
+      "expect_exit": 0
+    }
+  ],
+  "assertions": [
+    {"kind": "file_absent", "path": "specs/semantic-contract.json"},
+    {"kind": "json_equals", "path": ".factory/state.json", "pointer": "/spec_required", "value": false},
+    {"kind": "text_contains", "path": "README.md", "text": "Documentação correta"}
+  ]
+}
