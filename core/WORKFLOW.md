@@ -16,21 +16,24 @@ A etapa `specification` usa `core/SEMANTIC_VERIFICATION.md`. Ela é proporcional
 
 A arquitetura do produto também deve respeitar `core/SYSTEM_ENGINEERING.md`: a Factory pode manter processo leve, mas não pode substituir persistência compartilhada/servidor/autorização necessários por uma demo local apenas para reduzir trabalho.
 
+Quando houver API/integração relevante, `core/API_ENGINEERING.md` entra como contrato especializado da interface. Ele não cria uma fase paralela obrigatória: suas decisões de protocolo, contrato, compatibilidade, segurança e gates são incorporadas a planejamento/especificação/verificação na profundidade necessária.
+
 ## Projeto novo
 
 1. Descoberta — entender problema, usuários e resultado desejado.
 2. Pesquisa — verificar soluções, repositórios, bibliotecas e padrões existentes.
 3. Produto — consolidar fluxos, escopo e critérios de sucesso.
 4. Classificação arquitetural — aplicar `core/SYSTEM_ENGINEERING.md`, registrar nível do produto e, para `persistent-app` ou superior, fonte autoritativa dos dados; para `multi-user-system` ou superior, derivar backend/server-side, persistência compartilhada, identidade/autorização, validação, migrations e recovery proporcionais.
-5. Especificação semântica — para trabalho funcional relevante, materializar objetivo, invariantes e critérios `given/when/then` antes do código.
-6. Arquitetura — escolher stack proporcional ao problema e suficiente ao nível de sistema, sem tratar demo/localStorage/mock como arquitetura final compartilhada quando o produto exigir persistência real.
-7. Bootstrap — criar projeto a partir do starter/template mais adequado.
-8. Construção — implementar por blocos funcionais completos.
-9. Verificação — derivar rastreabilidade da spec, executar testes estáticos/comportamento/browser e provar cada critério `must` aplicável; para sistemas persistentes/multiusuário, exercitar também persistência e autorização reais ou ambiente equivalente.
-10. Reparação — quando houver falha, corrigir e reverificar com limite explícito de tentativas.
-11. Revisão — preferir segundo agente/contexto independente; quando indisponível, usar clean-context review limitado a spec + conteúdo/evidências atuais.
-12. Entrega — PR/merge/deploy somente com checks, arquitetura e review evidence atuais.
-13. Aprendizado — atualizar Factory somente quando surgir padrão realmente reutilizável.
+5. Classificação da interface — se existir API, integração, webhook, evento ou contrato compartilhado, aplicar `core/API_ENGINEERING.md`, escolher `none`/`lightweight`/`contract`/`governed`, consumidores, protocolo e fonte de verdade; não formalizar API sem necessidade real.
+6. Especificação semântica — para trabalho funcional relevante, materializar objetivo, invariantes e critérios `given/when/then` antes do código. Quando houver API formal, o contrato machine-readable da interface e a spec semântica se complementam sem se duplicar.
+7. Arquitetura — escolher stack proporcional ao problema e suficiente ao nível de sistema, sem tratar demo/localStorage/mock como arquitetura final compartilhada quando o produto exigir persistência real; interfaces devem seguir o modo de governança decidido.
+8. Bootstrap — criar projeto a partir do starter/template mais adequado. Copiar templates/gates de API somente se a interface realmente exigir.
+9. Construção — implementar por blocos funcionais completos, mantendo contrato e implementação da API no mesmo bloco quando aplicável.
+10. Verificação — derivar rastreabilidade da spec, executar testes estáticos/comportamento/browser e provar cada critério `must` aplicável; para sistemas persistentes/multiusuário, exercitar também persistência e autorização reais ou ambiente equivalente; para APIs `contract`/`governed`, executar lint/compatibilidade/runtime/security gates proporcionais.
+11. Reparação — quando houver falha, corrigir e reverificar com limite explícito de tentativas.
+12. Revisão — preferir segundo agente/contexto independente; quando indisponível, usar clean-context review limitado a spec + conteúdo/evidências atuais. Mudanças de contrato devem incluir o contrato/diff relevante no pacote de revisão.
+13. Entrega — PR/merge/deploy somente com checks, arquitetura, contratos e review evidence atuais.
+14. Aprendizado — atualizar Factory somente quando surgir padrão realmente reutilizável.
 
 Use `TASK_ROUTER.md` para escolher a rota de execução mais leve e verificável, priorizando current-agent + GitHub/CI antes de handoff local.
 
@@ -42,20 +45,24 @@ Use `TASK_ROUTER.md` para escolher a rota de execução mais leve e verificável
 4. identificar baseline seguro;
 5. entender escopo e impacto;
 6. confirmar se o nível de sistema e a fonte autoritativa dos dados continuam coerentes com `core/SYSTEM_ENGINEERING.md`, sobretudo quando a evolução transforma demo/local app em sistema persistente ou multiusuário;
-7. decidir se a mudança altera comportamento/regra/contrato o suficiente para exigir Semantic Verification;
-8. quando exigir, atualizar a spec antes da implementação e regenerar a rastreabilidade afetada;
-9. revisar diff e dependências diretas;
-10. preservar comportamento fora do escopo;
-11. testar o que mudou e regressão diretamente relacionada;
-12. reparar automaticamente falhas verificadas dentro do limite configurado;
-13. ampliar auditoria apenas quando risco ou extensão justificarem;
-14. fazer revisão desacoplada quando exigida e registrar novo estado confiável.
+7. se houver API/integração relevante, confirmar se o modo de governança, consumidores e fonte de verdade continuam coerentes com `core/API_ENGINEERING.md`, principalmente antes de alteração potencialmente incompatível;
+8. decidir se a mudança altera comportamento/regra/contrato o suficiente para exigir Semantic Verification;
+9. quando exigir, atualizar a spec antes da implementação e regenerar a rastreabilidade afetada;
+10. para contrato machine-readable, atualizar o contrato no mesmo bloco da implementação e comparar breaking changes quando aplicável;
+11. revisar diff e dependências diretas;
+12. preservar comportamento fora do escopo e compatibilidade prometida a consumidores;
+13. testar o que mudou e regressão diretamente relacionada;
+14. reparar automaticamente falhas verificadas dentro do limite configurado;
+15. ampliar auditoria apenas quando risco ou extensão justificarem;
+16. fazer revisão desacoplada quando exigida e registrar novo estado confiável.
 
 ## Tamanho do trabalho
 
 Evite microtarefas artificiais e missões gigantes sem critérios verificáveis. Prefira uma fatia vertical completa, como `gerenciamento de usuários = listagem + busca + criação + edição + validação + persistência + estados + testes`.
 
 Para sistema multiusuário, uma fatia só é vertical de verdade quando atravessa UI + regras server-side + persistência + autorização aplicável, e não apenas quando a tela simula o fluxo.
+
+Se a fatia atravessar uma API formal, ela também inclui contrato + implementação + compatibilidade/gates aplicáveis; entregar apenas endpoint ou apenas spec não completa o comportamento.
 
 Critérios verificáveis devem nascer da intenção/spec, não somente depois de o agente ver o que implementou.
 
@@ -71,6 +78,8 @@ Falha semântica (critério `must` não provado ou review stale) é falha real d
 
 Falha arquitetural também é falha real: um sistema classificado acima de `local-app` não pode ser entregue como produção se a fonte autoritativa ainda estiver apenas no navegador ou se regras obrigatórias de acesso existirem apenas na interface.
 
+Falha de contrato também é falha real quando `core/API_ENGINEERING.md` exigir governança: contrato inválido, implementação divergente, breaking change não tratada ou endpoint protegido sem prova de autorização impedem conclusão proporcional.
+
 ## Handoff entre agentes
 
-Aponte para repositório/branch/PR, `PROJECT_STATE.md`, `.factory/state.json` quando versionado, Issue/bloco funcional e critérios de conclusão. Inclua também nível do sistema e decisões de persistência/identidade/recovery quando relevantes. Quando Semantic Verification se aplicar, inclua `specs/semantic-contract.json`, `specs/verification-plan.json` e o review evidence atual. Não use transcrição integral de conversa como mecanismo principal de continuidade.
+Aponte para repositório/branch/PR, `PROJECT_STATE.md`, `.factory/state.json` quando versionado, Issue/bloco funcional e critérios de conclusão. Inclua também nível do sistema e decisões de persistência/identidade/recovery quando relevantes. Quando houver API `contract`/`governed`, inclua modo, contrato autoritativo e baseline de compatibilidade relevante. Quando Semantic Verification se aplicar, inclua `specs/semantic-contract.json`, `specs/verification-plan.json` e o review evidence atual. Não use transcrição integral de conversa como mecanismo principal de continuidade.
