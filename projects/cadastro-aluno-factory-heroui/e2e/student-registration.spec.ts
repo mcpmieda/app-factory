@@ -5,17 +5,19 @@ async function fillStudent(
   registration = "202600123",
   name = "Ana Souza",
 ) {
-  await page.getByLabel("Nome completo").fill(name);
-  await page.getByLabel("Matrícula").fill(registration);
-  await page.getByLabel("Data de nascimento").fill("2007-05-20");
-  await page.getByLabel("E-mail").fill("ana@example.com");
-  await page.getByLabel("Telefone", { exact: true }).fill("71999999999");
-  await page.getByLabel("Curso / etapa").fill("Ensino Médio");
-  await page.getByLabel("Turma").fill("3º A");
-  await page.getByLabel("Turno").selectOption("morning");
-  await page.getByLabel("Responsável").fill("Maria Souza");
-  await page.getByLabel("Telefone do responsável").fill("71988887777");
-  await page.getByLabel("Observações").fill("Cadastro de teste.");
+  const form = page.locator("#student-form");
+
+  await form.getByLabel("Nome completo").fill(name);
+  await form.getByLabel("Matrícula").fill(registration);
+  await form.getByLabel("Data de nascimento").fill("2007-05-20");
+  await form.getByLabel("E-mail").fill("ana@example.com");
+  await form.getByLabel("Telefone", { exact: true }).fill("71999999999");
+  await form.getByLabel("Curso / etapa").fill("Ensino Médio");
+  await form.getByLabel("Turma", { exact: true }).fill("3º A");
+  await form.getByLabel("Turno", { exact: true }).selectOption("morning");
+  await form.getByLabel("Responsável", { exact: true }).fill("Maria Souza");
+  await form.getByLabel("Telefone do responsável").fill("71988887777");
+  await form.getByLabel("Observações").fill("Cadastro de teste.");
 }
 
 function studentRow(page: Page, name: string) {
@@ -65,8 +67,9 @@ test("edita, pesquisa, abre detalhes e arquiva aluno", async ({ page }) => {
   const row = studentRow(page, "Ana Souza");
   await row.getByRole("button", { name: "Editar" }).click();
 
-  await page.getByLabel("Nome completo").fill("Ana Silva");
-  await page.getByLabel("Status do aluno").selectOption("active");
+  const form = page.locator("#student-form");
+  await form.getByLabel("Nome completo").fill("Ana Silva");
+  await form.getByLabel("Status do aluno").selectOption("active");
   await page.getByRole("button", { name: "Salvar alterações" }).click();
 
   await expect(page.getByText("Cadastro atualizado")).toBeVisible();
