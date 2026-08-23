@@ -528,8 +528,30 @@ def formal_method_recommendations(assurance: dict[str, Any]) -> list[dict[str, s
             recommendations.append({"kind": "p-or-quint", "reason": "formal state-machine exploration is appropriate at formal depth"})
     if any(item.get("pattern") == "decision" for item in requirements):
         recommendations.append({"kind": "dmn", "reason": "decision-oriented requirements may be clearer as executable decision tables"})
-    if any(item.get("pattern") == "policy" for item in requirements):
-        recommendations.append({"kind": "opa-or-cedar", "reason": "policy-oriented requirements may benefit from declarative policy-as-code"})
+    access_policy_signal = re.compile(
+    r"(authorization|authorisation|autorização|autorizacao|permission|permissão|permissao|"
+    r"access control|controle de acesso|rbac|abac|role|roles|papel|papéis|papeis|tenant|"
+    r"least privilege|menor privilégio|menor privilegio|escopo de acesso)",
+    re.I,
+)
+policy_requirements = [item for item in requirements if item.get("pattern") == "policy"]
+policy_texts: list[str] = []
+for item in policy_requirements:
+    pieces: list[str] = []
+    for key in ("component", "trigger", "timing"):
+        value = item.get(key)
+        if isinstance(value, str):
+            pieces.append(value)
+    for key in ("scope", "preconditions", "response"):
+        value = item.get(key)
+        if isinstance(value, list):
+            pieces.extend(str(entry) for entry in value if isinstance(entry, str))
+    policy_texts.append(" ".join(pieces))
+if any(access_policy_signal.search(value) for value in policy_texts):
+    recommendations.append({
+        "kind": "opa-or-cedar",
+        "reason": "explicit authorization/access-control policy signals detected; policy-as-code may improve reviewability",
+    })
     return recommendations
 
 
