@@ -1,10 +1,12 @@
 # Gestão de Alunos online
 
-Produção conhecida:
+URL de produção registrada como homepage do repositório:
 
-`https://cadastro-aluno-factory-heroui.vercel.app`
+`https://cadastroaluno-ecru.vercel.app`
 
-## Configuração Vercel
+O conector Vercel disponível durante este field test não conseguiu confirmar o deploy ao vivo. Portanto, o endereço acima é o registro de configuração conhecido, não uma afirmação de disponibilidade verificada nesta execução.
+
+## Configuração esperada no Vercel
 
 Repositório: `mcpmieda/app-factory`
 

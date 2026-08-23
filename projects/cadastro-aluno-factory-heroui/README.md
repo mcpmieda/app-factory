@@ -2,7 +2,9 @@
 
 Aplicativo local de gestão de alunos construído com **Next.js 16 + HeroUI v3** e usado como teste de campo da App Factory.
 
-Produção atual: `https://cadastro-aluno-factory-heroui.vercel.app`
+URL de produção registrada no repositório: `https://cadastroaluno-ecru.vercel.app`
+
+> A URL está registrada como homepage do repositório. O conector Vercel disponível durante este field test não conseguiu confirmar o deploy ao vivo, portanto este documento não transforma esse registro em prova de disponibilidade.
 
 ## O que esta versão faz
 
@@ -48,16 +50,20 @@ Quando o `v2` ainda não existe e o navegador contém registros válidos no `v1`
 ## Verificação
 
 ```bash
+npm ci
 npm run test:all
+npm audit
 ```
 
-Executa:
+O conjunto cobre:
 
 1. ESLint;
 2. TypeScript;
-3. testes unitários;
+3. 15 testes unitários;
 4. build Next.js;
-5. Playwright E2E.
+5. 10 testes Playwright em desktop/mobile Chromium;
+6. auditoria completa das dependências;
+7. contrato semântico, Semantic Assurance e revisão por fingerprint no CI.
 
 Scripts individuais:
 

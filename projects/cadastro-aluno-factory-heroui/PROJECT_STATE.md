@@ -6,23 +6,24 @@ Manter uma **gestão local completa de alunos** para demonstração e teste da A
 
 ## Estado atual
 
-- fase: `field test v0.2`;
+- fase: `field test v0.2 — fechamento`;
 - versão do app: `0.2.0`;
 - escala de processo: `S/M — evolução funcional relevante`;
 - nível do sistema: `local-app`;
 - perfil: `web-admin` com HeroUI v3;
 - API mode: `none`;
 - semantic depth: `domain`;
-- Independent Verification: `independent` proporcional;
+- Independent Verification: `baseline` proporcional ao baixo risco e à ausência de backend/API;
 - fonte autoritativa dos dados: `localStorage` do navegador atual;
 - contrato de persistência: `v2`, com migração automática de `v1`;
 - backend/banco compartilhado: `não aplicável ao escopo atual`;
 - autenticação/autorização: `não aplicável ao escopo atual`;
 - stack: Next.js 16 + React 19 + TypeScript + Tailwind CSS 4 + HeroUI v3;
-- validação: Zod;
+- validação: Zod + invariantes de coleção;
 - testes: Vitest + Playwright;
 - publicação: Vercel;
-- URL de produção conhecida: `https://cadastro-aluno-factory-heroui.vercel.app`;
+- URL de produção registrada no repositório: `https://cadastroaluno-ecru.vercel.app`;
+- verificação ao vivo da URL: não confirmada pelo conector Vercel disponível nesta execução;
 - Motion Profile: `ambient`, atenuado para `subtle` em dados densos;
 - reduced motion: obrigatório.
 
@@ -47,6 +48,7 @@ Manter uma **gestão local completa de alunos** para demonstração e teste da A
 - a persistência local continua sendo a fonte de verdade deste produto;
 - migração não pode inventar dados que não existiam no contrato antigo;
 - backup inválido não pode substituir registros atuais;
+- unicidade de matrícula é invariante da coleção, não apenas do schema de um registro;
 - a interface deve continuar deixando explícito que os dados não são compartilhados.
 
 ## Verificação
@@ -56,19 +58,30 @@ Artefatos V1.4 usados neste field test:
 - `specs/semantic-contract.json`;
 - `specs/semantic-assurance.json`;
 - `specs/verification-plan.json`;
-- `specs/review-evidence.json` após a execução dos gates;
+- `specs/review-evidence.json` no fechamento semântico;
 - `SEMANTICS.md`;
 - `VERIFICATION.md`.
 
-Gates principais:
+Gates obrigatórios:
 
 - lint;
 - typecheck;
-- unit tests;
+- 15 testes unitários;
 - build;
-- E2E desktop/mobile;
-- dependency audit;
-- validação do contrato/assurance/rastreabilidade.
+- 10 E2E desktop/mobile;
+- `npm audit` completo;
+- validação do contrato/assurance/rastreabilidade;
+- revisão semântica válida e atual.
+
+## Resultado do field test até o fechamento
+
+- especificação e Semantic Assurance: verdes;
+- lint/typecheck/build: verdes;
+- testes unitários: 15/15 verdes;
+- Playwright: 10/10 verdes em Chromium desktop/mobile;
+- `npm audit`: verde após atualização compatível do ESLint;
+- `package-lock.json`: gerado em runner limpo e versionado antes do CI congelado;
+- instalação final: deve usar `npm ci`.
 
 ## Limitações conhecidas
 
@@ -80,4 +93,4 @@ Gates principais:
 
 ## Próxima ação
 
-Executar o field test completo em CI, materializar instalação reproduzível com lockfile, validar os critérios semânticos e integrar somente com todos os gates verdes. Depois, transformar os aprendizados generalizáveis em melhorias da App Factory sem aumentar a quantidade de Skills por reflexo.
+Gerar a revisão semântica no estado final, trocar o workflow transitório por CI somente leitura com `npm ci`, repetir todos os gates e integrar o PR. Em seguida, aplicar os aprendizados generalizáveis deste field test na App Factory em PR separado.
