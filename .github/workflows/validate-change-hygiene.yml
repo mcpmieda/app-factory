@@ -1,0 +1,42 @@
+name: Validate Change Hygiene
+
+on:
+  pull_request:
+    paths:
+      - "core/**"
+      - "skills/maintenance/**"
+      - "scripts/change_hygiene.py"
+      - "scripts/validate_change_hygiene.py"
+      - "tests/change_hygiene/**"
+      - "research/CHANGE_HYGIENE_RESEARCH.md"
+      - ".github/workflows/validate-change-hygiene.yml"
+  push:
+    branches: [main]
+    paths:
+      - "core/**"
+      - "skills/maintenance/**"
+      - "scripts/change_hygiene.py"
+      - "scripts/validate_change_hygiene.py"
+      - "tests/change_hygiene/**"
+      - "research/CHANGE_HYGIENE_RESEARCH.md"
+      - ".github/workflows/validate-change-hygiene.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  validate-change-hygiene:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Compile scanner and validator
+        run: python -m py_compile scripts/change_hygiene.py scripts/validate_change_hygiene.py
+      - name: Validate Change Hygiene
+        run: python scripts/validate_change_hygiene.py
+      - name: Validate App Factory wiring
+        run: python scripts/validate_factory.py
