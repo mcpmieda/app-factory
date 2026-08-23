@@ -139,6 +139,24 @@ def validate_professional_ui() -> None:
         ],
     )
     require_markers(
+        "starters/web-admin/template/AGENTS.md",
+        [
+            "Preserve shadcn/ui as the visual foundation",
+            "ReUI",
+            "professional-default",
+            "ui/PROFESSIONAL_UI_PROFILE.md",
+        ],
+    )
+    require_markers(
+        "starters/web-admin/template/ARCHITECTURE.md",
+        [
+            "Tailwind CSS + shadcn/ui",
+            "ReUI only when",
+            "Professional UI Profile: `professional-default`",
+            "HeroUI",
+        ],
+    )
+    require_markers(
         "research/SOURCES.md",
         ["HeroUI Pro", "INSPIRAR", "ui/PROFESSIONAL_UI_PROFILE.md"],
     )
