@@ -1,5 +1,6 @@
 .factory/context/
 .factory/execution.json
 .factory/learning.json
+.factory/skill-routing.json
 __pycache__/
 *.py[cod]
