@@ -1,7 +1,7 @@
 {
   "name": "app-factory",
   "version": "1.4.0",
-  "description": "Portable AI software-development factory with System/API Engineering governance, Semantic Assurance, independent verification and semantic proof.",
+  "description": "Portable AI software-development factory with system/API governance, API Engineering, Semantic Assurance, independent verification and semantic proof.",
   "author": {
     "name": "mcpmieda",
     "url": "https://github.com/mcpmieda"
@@ -11,7 +11,7 @@
   "interface": {
     "displayName": "App Factory",
     "shortDescription": "Build real systems with semantic assurance and independent proof.",
-    "longDescription": "A portable software-development factory that activates from software intent, applies System/API Engineering governance proportionally, improves specification quality with Semantic Assurance, materializes semantic contracts for relevant work, recovers repository context and autonomous state, routes actions to capable backends, uses GitHub CI plus free/open-source deterministic/adversarial/formal gates when warranted, requires decoupled semantic review for appropriate risk, and conservatively learns from privacy-safe local execution metadata without making Codex or any vendor mandatory.",
+    "longDescription": "A portable software-development factory that activates from software intent, applies API governance through API Engineering proportionally, improves specification quality with Semantic Assurance, materializes semantic contracts for relevant work, recovers repository context and autonomous state, routes actions to capable backends, uses GitHub CI plus free/open-source deterministic/adversarial/formal gates when warranted, requires decoupled semantic review for appropriate risk, and conservatively learns from privacy-safe local execution metadata without making Codex or any vendor mandatory.",
     "developerName": "mcpmieda",
     "category": "Productivity",
     "capabilities": ["Interactive"],
