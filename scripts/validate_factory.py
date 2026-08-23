@@ -42,6 +42,7 @@ REQUIRED = [
     "scripts/semantic_assurance.py",
     "scripts/independent_verification.py",
     "ui/UI_POLICY.md",
+    "ui/PROFESSIONAL_UI_PROFILE.md",
     "ui/MOTION_POLICY.md",
     "skills/factory-router/SKILL.md",
     "skills/api-engineering/SKILL.md",
@@ -69,6 +70,80 @@ def fail(message: str) -> None:
     raise SystemExit(1)
 
 
+def require_markers(path: str, markers: list[str]) -> None:
+    text = (ROOT / path).read_text(encoding="utf-8")
+    missing = [marker for marker in markers if marker not in text]
+    if missing:
+        fail(f"{path} sem marcadores obrigatórios: {missing}")
+
+
+def validate_professional_ui() -> None:
+    require_markers(
+        "ui/PROFESSIONAL_UI_PROFILE.md",
+        [
+            "professional-default",
+            "shadcn/ui",
+            "ReUI",
+            "HeroUI",
+            "quality bar",
+            "não armazena nem reproduz código",
+            "Visual QA",
+            "prefers-reduced-motion",
+        ],
+    )
+    require_markers(
+        "ui/UI_POLICY.md",
+        [
+            "professional-default",
+            "ui/PROFESSIONAL_UI_PROFILE.md",
+            "Base preferencial: **shadcn/ui**",
+            "ReUI seletivamente",
+            "HeroUI",
+        ],
+    )
+    require_markers(
+        "skills/ui-builder/SKILL.md",
+        [
+            "professional-default",
+            "ui/PROFESSIONAL_UI_PROFILE.md",
+            "shadcn/ui como base",
+            "ReUI seletivamente",
+            "HeroUI",
+            "Inventário antes da implementação",
+        ],
+    )
+    require_markers(
+        "templates/project/PRODUCT.md",
+        ["Professional UI Profile", "professional-default", "density"],
+    )
+    require_markers(
+        "templates/project/ARCHITECTURE.md",
+        [
+            "Professional UI Profile",
+            "professional-default",
+            "UI profissional, quando aplicável",
+        ],
+    )
+    require_markers(
+        "templates/project/AGENTS.md",
+        ["ui/PROFESSIONAL_UI_PROFILE.md", "professional-default"],
+    )
+    # Guardrail: o novo quality bar não pode inverter a escolha validada do
+    # perfil administrativo.
+    require_markers(
+        "profiles/web-admin/PROFILE.md",
+        [
+            "shadcn/ui como base do design system",
+            "ReUI",
+            "HeroUI é perfil visual alternativo",
+        ],
+    )
+    require_markers(
+        "research/SOURCES.md",
+        ["HeroUI Pro", "INSPIRAR", "ui/PROFESSIONAL_UI_PROFILE.md"],
+    )
+
+
 def main() -> int:
     missing = [path for path in REQUIRED if not (ROOT / path).is_file()]
     if missing:
@@ -83,7 +158,11 @@ def main() -> int:
         if not SKILL_HEADER.search(text):
             fail(f"Frontmatter inválido ou incompleto: {skill.relative_to(ROOT)}")
 
-    print(f"OK: {len(REQUIRED)} arquivos obrigatórios e {len(skill_files)} Skills validados.")
+    validate_professional_ui()
+
+    print(
+        f"OK: {len(REQUIRED)} arquivos obrigatórios, {len(skill_files)} Skills e Professional UI validados."
+    )
     return 0
 
 
