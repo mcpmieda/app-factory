@@ -5,6 +5,7 @@ on:
     paths:
       - "engine/**"
       - "tests/**"
+      - "scripts/validate_independent_verification.py"
       - ".coveragerc"
       - "requirements/ci-evidence.txt"
       - ".github/workflows/validate-python-evidence.yml"
@@ -13,6 +14,7 @@ on:
     paths:
       - "engine/**"
       - "tests/**"
+      - "scripts/validate_independent_verification.py"
       - ".coveragerc"
       - "requirements/ci-evidence.txt"
       - ".github/workflows/validate-python-evidence.yml"
@@ -34,12 +36,13 @@ jobs:
           python-version: "3.12"
       - name: Install pinned CI evidence tools
         run: python -m pip install --disable-pip-version-check -r requirements/ci-evidence.txt
-      - name: Run all Python engine tests with branch coverage
+      - name: Run Python engine tests and executable planner scenarios with branch coverage
         run: |
           coverage erase
           for suite in tests/v1_1 tests/v1_2 tests/v1_3 tests/v1_4 tests/semantic_assurance tests/agent_conformance; do
             coverage run --parallel-mode -m unittest discover -s "$suite" -p 'test_*.py'
           done
+          coverage run --parallel-mode scripts/validate_independent_verification.py
           coverage combine
           coverage report
           coverage xml
