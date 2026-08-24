@@ -54,7 +54,7 @@ Uso: alternativa de design system quando mais adequada que shadcn/ReUI. O invent
 - https://heroui.pro/docs/react/getting-started/figma
 - https://v2.heroui.pro/components
 
-Uso: **INSPIRAR** o quality bar e servir como catálogo autorizado de descoberta. A Factory registra nomes, categorias, variantes, templates, temas, URLs e padrões públicos em `ui/heroui/`, mas não copia código, templates, assets, screenshots ou Figma proprietários. Em projetos com licença válida, obter conteúdo Pro pelos mecanismos oficiais do projeto (CLI/MCP/dashboard) e nunca versionar `HEROUI_PERSONAL_TOKEN`.
+Uso: **INSPIRAR** o quality bar governado por `ui/PROFESSIONAL_UI_PROFILE.md` e servir como catálogo autorizado de descoberta. A Factory registra nomes, categorias, variantes, templates, temas, URLs e padrões públicos em `ui/heroui/`, mas não copia código, templates, assets, screenshots ou Figma proprietários. Em projetos com licença válida, obter conteúdo Pro pelos mecanismos oficiais do projeto (CLI/MCP/dashboard) e nunca versionar `HEROUI_PERSONAL_TOKEN`.
 
 ## Origem interna
 
