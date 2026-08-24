@@ -14,6 +14,7 @@ REQUIRED = [
     "AGENTS.md",
     "APP_FACTORY_PLAN.md",
     "core/ENTRYPOINT.md",
+    "core/PROJECT_ADOPTION_GATE.md",
     "core/PRINCIPLES.md",
     "core/HUMAN_INTERACTION.md",
     "core/TASK_ROUTER.md",
@@ -39,7 +40,9 @@ REQUIRED = [
     "engine/semantic_verification.py",
     "engine/independent_verification.py",
     "engine/review_packet.py",
+    "engine/project_adoption.py",
     "scripts/factory.py",
+    "scripts/project_adoption_gate.py",
     "scripts/semantic_assurance.py",
     "scripts/independent_verification.py",
     "scripts/agent_conformance.py",
@@ -52,6 +55,7 @@ REQUIRED = [
     "evals/agent-conformance/cases/docs-change-stays-light.json",
     "tests/agent_conformance/test_agent_conformance.py",
     "tests/change_hygiene/test_change_hygiene.py",
+    "tests/project_adoption/test_project_adoption.py",
     "research/EVALUATION_EVIDENCE_RESEARCH.md",
     "research/CHANGE_HYGIENE_RESEARCH.md",
     "research/AMBIENT_CONSTELLATION_RESEARCH.md",
@@ -66,6 +70,7 @@ REQUIRED = [
     "ui/AMBIENT_CONSTELLATION_PROFILE.md",
     "ui/heroui/README.md",
     "skills/factory-router/SKILL.md",
+    "skills/project-adoption/SKILL.md",
     "skills/maintenance/SKILL.md",
     "skills/api-engineering/SKILL.md",
     "skills/semantic-assurance/SKILL.md",
@@ -97,6 +102,104 @@ def require_markers(path: str, markers: list[str]) -> None:
     missing = [marker for marker in markers if marker not in text]
     if missing:
         fail(f"{path} sem marcadores obrigatórios: {missing}")
+
+
+def validate_project_adoption() -> None:
+    require_markers(
+        "core/PROJECT_ADOPTION_GATE.md",
+        [
+            "pre-implementation",
+            ".app-factory.json",
+            "schemaVersion",
+            "React + CSS próprio",
+            "shadcn/ui",
+            "ambient-constellation",
+            "Semantic-before-code",
+            "project_adoption_gate.py",
+            "compliance retroativo",
+        ],
+    )
+    require_markers(
+        "engine/project_adoption.py",
+        [
+            "schemaVersion",
+            "governance",
+            "AD_HOC_DESIGN_SYSTEMS",
+            "Semantic Verification required before code",
+            "ambient-constellation",
+            "review-evidence.json",
+            "VERIFICATION.md",
+        ],
+    )
+    require_markers(
+        "scripts/project_adoption_gate.py",
+        ["init", "check", "pre-implementation", "delivery", "audit_project", "initialize_project"],
+    )
+    require_markers(
+        "skills/project-adoption/SKILL.md",
+        [
+            "core/PROJECT_ADOPTION_GATE.md",
+            "Required order",
+            "React + custom/native CSS",
+            "ambient-constellation",
+            "delivery",
+        ],
+    )
+    require_markers(
+        "skills/factory-router/SKILL.md",
+        [
+            "project-adoption",
+            "PROJECT_ADOPTION_GATE.md",
+            "pre-implementation",
+            "React + custom/native CSS",
+            "delivery",
+        ],
+    )
+    require_markers(
+        "AGENTS.md",
+        [
+            "Project Adoption Gate",
+            "skills/project-adoption/SKILL.md",
+            ".app-factory.json",
+            "React + CSS próprio",
+            "pre-implementation",
+            "delivery",
+        ],
+    )
+    require_markers(
+        "templates/project/AGENTS.md",
+        [
+            "PROJECT_ADOPTION_GATE.md",
+            ".app-factory.json",
+            "React + CSS/custom/native UI",
+            "pre-implementation",
+            "delivery",
+        ],
+    )
+    require_markers(
+        "starters/web-admin/template/AGENTS.md",
+        [
+            "PROJECT_ADOPTION_GATE.md",
+            ".app-factory.json",
+            "React + CSS/custom/native UI",
+            "pre-implementation",
+            "delivery",
+        ],
+    )
+    require_markers(
+        "profiles/web-admin/PROFILE.md",
+        [
+            "Project Adoption Gate antes do código",
+            "React + CSS próprio",
+            "ui.deviation",
+            "pre-implementation",
+            "delivery",
+        ],
+    )
+    require_markers(
+        ".github/workflows/validate-python-evidence.yml",
+        ["tests/project_adoption", "scripts/project_adoption_gate.py"],
+    )
 
 
 def validate_professional_ui() -> None:
@@ -395,12 +498,13 @@ def main() -> int:
         if not SKILL_HEADER.search(text):
             fail(f"Frontmatter inválido ou incompleto: {skill.relative_to(ROOT)}")
 
+    validate_project_adoption()
     validate_professional_ui()
     validate_evaluation_evidence()
     validate_change_hygiene()
 
     print(
-        f"OK: {len(REQUIRED)} arquivos obrigatórios, {len(skill_files)} Skills, Professional UI/Ambient Constellation, Evaluation Evidence e Change Hygiene validados."
+        f"OK: {len(REQUIRED)} arquivos obrigatórios, {len(skill_files)} Skills, Project Adoption Gate, Professional UI/Ambient Constellation, Evaluation Evidence e Change Hygiene validados."
     )
     return 0
 
