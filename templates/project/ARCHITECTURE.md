@@ -15,6 +15,11 @@
 - surface: `flat` / `layered` / `immersive` quando relevante:
 - emphasis: `quiet` / `balanced` / `bold` quando relevante:
 - Motion Profile: `ambient` por padrão (`none`, `subtle`, `ambient`, `expressive`):
+- Ambient Surface Profile: [não aplicável / `ambient-constellation`]:
+- Constellation Intensity: [`strong` quando ativado]:
+- constellation implementation: [SVG/pseudo-elements + CSS transform/opacity; Motion só quando necessário]:
+- dense content strategy: [clean islands + constelação no shell/header/perímetro]:
+- reduced motion constellation fallback: [estático / não aplicável]:
 - motion implementation: recursos nativos do design system / CSS / biblioteca especializada somente se necessário:
 - testes:
 - semantic depth: [não aplicável / `scenario` / `domain` / `formal`]
@@ -23,12 +28,16 @@
 
 Para cada escolha importante, registrar motivo curto e evitar tecnologia sem necessidade.
 
-Interfaces devem seguir `ui/UI_POLICY.md`, `ui/PROFESSIONAL_UI_PROFILE.md` e `ui/MOTION_POLICY.md`:
+Interfaces devem seguir `ui/UI_POLICY.md`, `ui/PROFESSIONAL_UI_PROFILE.md`, `ui/MOTION_POLICY.md` e, quando ativo, `ui/AMBIENT_CONSTELLATION_PROFILE.md`:
 
 - `professional-default` define o quality bar, não instala biblioteca;
-- admin/dashboard/CRUD continua preferindo shadcn como base e ReUI seletivo quando componente avançado justificar;
-- HeroUI continua alternativa principal quando sua linguagem visual for mais adequada;
-- motion é independente do design system, `prefers-reduced-motion` é obrigatório para movimento não essencial e telas densas/leitura prolongada podem atenuar `ambient` para comportamento `subtle`.
+- admin/dashboard/CRUD continua preferindo shadcn como base e ReUI seletivo quando não houver preferência explícita por HeroUI;
+- escolha explícita de HeroUI para o sistema inteiro prevalece sobre o default administrativo e deve permanecer transversal;
+- sistema novo HeroUI herda `ambient-constellation strong` automaticamente salvo exceção explícita/real;
+- pedidos `ambient constellation`, `ambient constellarion`, `ambiente de constelação` e equivalentes ativam o mesmo perfil;
+- constelação forte usa presença por composição/profundidade, não velocidade/strobe;
+- tabelas/grids/forms densos ficam em superfícies limpas enquanto shell/header/perímetro preservam a assinatura;
+- `prefers-reduced-motion` é obrigatório para movimento não essencial e a constelação deve ter fallback estático.
 
 ## Componentes
 
@@ -57,7 +66,7 @@ Adapte ou remova o diagrama quando não ajudar. Se não houver API formal, não 
 - semantic diff/baseline:
 - formalizações selecionadas: [não aplicável / kind + artefato + gate]
 
-Use `core/SEMANTIC_ASSURANCE.md`. Não replique aqui o glossário/requisito inteiro: detalhes estruturados ficam em `semantic-assurance.json` e decisões/limites humanos específicos podem ficar em `SEMANTICS.md`. `scenario` não exige estes artefatos por cerimônia.
+Use `core/SEMANTIC_ASSURANCE.md`. Não replique aqui o glossário/requisito inteiro.
 
 ### API, quando aplicável
 - modo de governança: `none` / `lightweight` / `contract` / `governed`
@@ -68,7 +77,7 @@ Use `core/SEMANTIC_ASSURANCE.md`. Não replique aqui o glossário/requisito inte
 - compatibilidade/depreciação:
 - gates de contrato/runtime:
 
-Use `core/API_ENGINEERING.md`. Para API relevante/complexa, use também `API.md`; para interface pequena, mantenha apenas estas linhas. Não copie o contrato genérico da Factory para o projeto.
+Use `core/API_ENGINEERING.md`. Para API relevante/complexa, use também `API.md`.
 
 ### Independent Verification, quando acima de `baseline`
 - modo: `independent` / `adversarial` / `release`
@@ -79,12 +88,10 @@ Use `core/API_ENGINEERING.md`. Para API relevante/complexa, use também `API.md`
 - exceções/suppressions:
 - workflow/config autoritativo:
 
-Use `core/INDEPENDENT_VERIFICATION.md` e detalhe a matriz em `VERIFICATION.md`. Não copie a lista inteira de scanners da Factory para todo projeto; registre somente o que foi selecionado e por quê.
+Use `core/INDEPENDENT_VERIFICATION.md` e detalhe a matriz em `VERIFICATION.md`.
 
 ## Configuração por ambiente
 Separar valores variáveis da lógica. Nunca registrar segredos.
-
-Para Independent Verification, ambientes destrutivos/fuzz/DAST devem usar dados fictícios e alvo descartável/explicitamente autorizado. Produção não é alvo implícito.
 
 ## Segurança
 - autenticação:
@@ -92,8 +99,6 @@ Para Independent Verification, ambientes destrutivos/fuzz/DAST devem usar dados 
 - dados sensíveis:
 - secrets:
 - privilégio mínimo:
-
-Para APIs expostas, detalhes específicos ficam em `API.md`/contrato e seguem `core/API_ENGINEERING.md` + `skills/security-review`. Security Review define ameaças; Semantic Assurance pode estruturar policies complexas; Independent Verification executa somente os scanners/gates selecionados para riscos automatizáveis.
 
 ## UI profissional, quando aplicável
 - inventário de arquétipos: shell / page-header / stats / search-command / filters / data-view / form / detail-inspector / feedback / outros realmente necessários:
@@ -106,11 +111,25 @@ Para APIs expostas, detalhes específicos ficam em `API.md`/contrato e seguem `c
 
 Não copiar templates/ativos proprietários de referências comerciais para a Factory ou projeto sem licença explícita aplicável.
 
+## Ambient Constellation, quando ativo
+- superfícies fortes selecionadas: shell / page-header / hero / dashboard overview / auth / empty-waiting / highlight / modal-drawer / AI / special cards:
+- número de camadas animadas (default 2):
+- períodos/direções não sincronizados:
+- paleta/tokens usados:
+- conteúdo denso isolado em superfície limpa:
+- partículas decorativas `pointer-events: none` / fora da árvore acessível:
+- animações limitadas a `transform`/`opacity` quando possível:
+- blur/glow estático:
+- mobile attenuation:
+- offscreen/performance strategy quando material:
+
 ## Acessibilidade e movimento
 - reduced motion:
+- reduced transparency progressive enhancement:
 - teclado/foco:
-- telas/fluxos onde `ambient` deve ser atenuado:
+- telas/fluxos onde motion precisa ser atenuado:
 - sinais de atenção que precisam encerrar/reduzir após interação:
+- ausência de flash/strobe:
 - axe-core/Playwright: [não aplicável / advisory / required conforme VERIFICATION.md]
 
 ## Observabilidade
