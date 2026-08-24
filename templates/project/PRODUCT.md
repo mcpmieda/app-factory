@@ -16,11 +16,15 @@
 - density: `compact` / `comfortable` / `spacious` quando relevante:
 - surface/emphasis quando relevante:
 - Motion Profile: `ambient` por padrão, salvo decisão explícita (`none`, `subtle`, `ambient`, `expressive`):
+- Ambient Surface Profile: [não aplicável / `ambient-constellation`]:
+- Constellation Intensity: [`strong` quando explicitamente solicitada ou quando HeroUI for linguagem principal / não aplicável]:
+- dense content strategy: [quando constelação ativa: superfícies limpas + assinatura no shell/header/perímetro]:
+- reduced motion: [quando constelação ativa: fallback constelar estático]:
 - exceções relevantes de leitura, densidade, acessibilidade ou desempenho:
 
-`professional-default` é um quality bar, não uma biblioteca. Para admin/dashboard/CRUD, shadcn continua base preferencial e ReUI continua complemento seletivo; HeroUI continua alternativa quando a linguagem visual do produto justificar. Seguir `ui/UI_POLICY.md`, `ui/PROFESSIONAL_UI_PROFILE.md` e `ui/MOTION_POLICY.md`.
+`professional-default` é um quality bar, não uma biblioteca. Para admin/dashboard/CRUD, shadcn continua base preferencial e ReUI continua complemento seletivo quando não houver escolha explícita de HeroUI. HeroUI continua alternativa principal e, quando escolhido como **linguagem principal do sistema**, herda `ambient-constellation` com intensidade `strong` por padrão. Seguir `ui/UI_POLICY.md`, `ui/PROFESSIONAL_UI_PROFILE.md`, `ui/MOTION_POLICY.md` e `ui/AMBIENT_CONSTELLATION_PROFILE.md` quando aplicável.
 
-Não obrigar o usuário a escolher detalhes técnicos de radius, shadow, spacing, density ou animação. Registre aqui apenas preferência de produto/identidade quando ela existir; os defaults podem ser inferidos pela Factory.
+Pedidos como `ambient constellation`, `ambient constellarion`, `ambiente de constelação` ou equivalente ativam o perfil automaticamente. Não obrigar o usuário a escolher detalhes técnicos de radius, shadow, spacing, density, partículas ou animação.
 
 ## Fluxos principais
 1. ...
