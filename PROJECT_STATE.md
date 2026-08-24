@@ -4,13 +4,12 @@
 
 ## Objetivo atual
 
-Manter a **App Factory V1.4 estável** como baseline general-purpose, recuperável, autônomo, adaptativo e verificável, com **governance hardening** posterior que aumenta qualidade arquitetural, semântica, técnica, visual e de manutenção sem alterar a linha de engines V1.1–V1.4 nem transformar toda tarefa em processo pesado.
+Manter a **App Factory V1.4 estável** como baseline general-purpose, recuperável, autônomo, adaptativo e verificável, com **governance hardening** posterior que aumenta qualidade arquitetural, semântica, técnica, visual e de manutenção sem criar artificialmente uma nova linha de engines.
 
 ## Estado
 
-- fase: `V1.4.1 — estável + project adoption governance hardening`;
-- versão: `1.4.1`;
-- versão dos engines/plugin baseline: `1.4.1`;
+- fase: `V1.4 — estável + project adoption governance hardening`;
+- versão do plugin/baseline: `1.4.0`;
 - baseline histórica **`V1.4 — estável`**: **19 Skills** portáteis antes da inclusão de `project-adoption`; preservada como referência de compatibilidade dos validadores V1.4;
 - baseline publicada anterior preservada: tag/release `v1.0.0`;
 - Skills portáteis atuais: **20**;
@@ -18,7 +17,7 @@ Manter a **App Factory V1.4 estável** como baseline general-purpose, recuperáv
 - V1.2: **Execution Fabric + CI Executor**;
 - V1.3: **Learning Engine** local-only, bounded e privacy-safe;
 - V1.4: **Semantic Verification** com `specs/semantic-contract.json`, `specs/verification-plan.json`, `specs/review-evidence.json`, fingerprints e revisão desacoplada proporcional;
-- **V1.4.1 Project Adoption Gate**: `core/PROJECT_ADOPTION_GATE.md`, `engine/project_adoption.py`, `scripts/project_adoption_gate.py` e Skill `project-adoption` impedem que um projeto governado pela Factory comece implementação material antes de tornar routing/UI/semântica/verificação recuperáveis e passar o gate `pre-implementation`;
+- **Project Adoption Gate hardening sobre V1.4**: `core/PROJECT_ADOPTION_GATE.md`, `engine/project_adoption.py`, `scripts/project_adoption_gate.py` e Skill `project-adoption` impedem que um projeto governado pela Factory comece implementação material antes de tornar routing/UI/semântica/verificação recuperáveis e passar o gate `pre-implementation`;
 - `.app-factory.json` schema v2 passa a ser o resumo machine-readable de governança para projetos adotados, preservando documentos/código como fontes reais;
 - recuperação honesta: projetos já iniciados que não passaram pelo gate são auditados/adotados antes do próximo bloco, sem fingir compliance retroativo nem reconstruir infraestrutura estável por reflexo;
 - **web-admin anti-bypass**: shadcn/ui permanece default validado; HeroUI é override transversal; React + CSS/custom/native como fundação visual exige `ui.deviation` explícito em vez de virar fallback silencioso;
@@ -42,7 +41,7 @@ Manter a **App Factory V1.4 estável** como baseline general-purpose, recuperáv
 - **Change Hygiene**: `core/CHANGE_HYGIENE.md` vale para manutenção/revisão de projetos criados pela Factory ou externos; preserva comportamento sem preservar implementação obsoleta, exige consolidação após repair loop e impede que histórico de tentativas vire arquitetura final;
 - Change Hygiene scanner: `scripts/change_hygiene.py` bloqueia resíduos objetivos, marca shadow copies/suppressions/`!important`/workarounds como advisory e detecta tooling existente sem instalar scanners por checklist;
 - projetos externos: mapear baseline/caminho real, não reescrever dívida histórica fora do escopo, mas não adicionar nova camada de dívida na área tocada;
-- CI: gates V1 preservados + System Engineering + API Engineering + Semantic Assurance + Independent Verification + Agent Conformance + Python Evidence + Change Hygiene + Web Admin Starter + V1 Release; `scripts/validate_factory.py` agora protege também Project Adoption Gate e Ambient Constellation.
+- CI: gates V1 preservados + System Engineering + API Engineering + Semantic Assurance + Independent Verification + Agent Conformance + Python Evidence + Change Hygiene + Web Admin Starter + V1 Release; `scripts/validate_factory.py` protege também Project Adoption Gate e Ambient Constellation.
 
 ## Decisões vigentes
 
