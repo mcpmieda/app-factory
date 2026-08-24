@@ -11,8 +11,9 @@ Manter a **App Factory V1.4 estável** como baseline general-purpose, recuperáv
 - fase: `V1.4.1 — estável + project adoption governance hardening`;
 - versão: `1.4.1`;
 - versão dos engines/plugin baseline: `1.4.1`;
+- baseline histórica **`V1.4 — estável`**: **19 Skills** portáteis antes da inclusão de `project-adoption`; preservada como referência de compatibilidade dos validadores V1.4;
 - baseline publicada anterior preservada: tag/release `v1.0.0`;
-- Skills portáteis: **20**;
+- Skills portáteis atuais: **20**;
 - V1.1: **Context Engine + Autonomy Engine**;
 - V1.2: **Execution Fabric + CI Executor**;
 - V1.3: **Learning Engine** local-only, bounded e privacy-safe;
@@ -29,6 +30,7 @@ Manter a **App Factory V1.4 estável** como baseline general-purpose, recuperáv
 - property/stateful: Hypothesis/fast-check condicionais; **NIST ACTS**/covering arrays somente para combinatória finita material e modelo versionado;
 - formalização condicional: Z3/SMT, Alloy, FRET, P, Quint/TLA+, DMN e OPA/Rego/Cedar conforme o problema, nunca stack universal;
 - **Independent Verification**: `baseline`/`independent`/`adversarial`/`release`, `free-only`, diversidade de método por classe de falha; ferramentas continuam condicionais à superfície real;
+- CI self-check: **actionlint** valida workflows quando aplicável; zizmor complementa segurança de GitHub Actions conforme o modo de Independent Verification;
 - field-test hardening: CLI auto-inicializável, recuperação explícita de lockfile legado, invariantes de coleção, lifecycle/migração de storage local, policy-as-code só com sinal material e E2E sincronizado com hidratação;
 - Professional UI: `professional-default` é quality bar transversal; admin/dashboard/CRUD continua preferindo shadcn/ui + ReUI seletivo quando não houver escolha explícita de HeroUI; Motion Profile permanece contrato separado;
 - **Ambient Constellation**: `ui/AMBIENT_CONSTELLATION_PROFILE.md` é contrato oficial; aliases como `ambient constellation`, `ambient constellarion` e `ambiente de constelação` ativam intensidade `strong`; **sistemas novos HeroUI herdam `ambient-constellation strong` automaticamente**, com aplicação forte em shell/header/hero/auth/dashboard overview/empty/AI/modais importantes/destaques e clean islands para dados densos;
