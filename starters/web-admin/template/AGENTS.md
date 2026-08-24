@@ -5,19 +5,24 @@ This project follows **App Factory** (`mcpmieda/app-factory`) and uses the valid
 ## Start here
 
 1. Invoke/use `factory-router` for software-development work when the App Factory plugin is available.
-2. Read `PROJECT_STATE.md` before changing the project.
-3. Read `PRODUCT.md` and `ARCHITECTURE.md` for product or structural changes.
-4. Activate optional recipes only when the product requires them.
-5. Preserve shadcn/ui as the visual foundation; use ReUI only for a justified advanced component.
-6. For UI work, follow `ui/UI_POLICY.md`, `ui/PROFESSIONAL_UI_PROFILE.md` and `ui/MOTION_POLICY.md` from App Factory. Default quality bar is `professional-default`; default Motion Profile is `ambient` contextual; attenuate dense admin views and respect `prefers-reduced-motion`.
-7. `professional-default` does not authorize adding another design system. Use shadcn/ReUI composition to reach the quality bar; HeroUI remains an alternative only when the product explicitly follows a different visual system.
-8. Before building medium/large UI, inventory needed archetypes (shell, header, stats, search/command, filters, data view, form, detail, feedback) and reuse the current registry/design system first.
-9. Do not add another design system or motion library only to obtain an effect when the current stack/CSS can provide it cleanly.
-10. Verify visual hierarchy, loading/empty/error states, desktop/mobile, keyboard/focus, format, lint, typecheck, tests, build, critical browser behavior and relevant motion/reduced-motion behavior before completion.
+2. Before material feature/UI implementation, read `core/PROJECT_ADOPTION_GATE.md`, load `project-adoption`, upgrade/materialize `.app-factory.json` routing metadata and require the `pre-implementation` gate to pass. Starter generation is scaffolding, not proof that routing/semantic/system decisions are complete.
+3. Read `PROJECT_STATE.md` before changing the project.
+4. Read `PRODUCT.md` and `ARCHITECTURE.md` for product or structural changes.
+5. Activate optional recipes only when the product requires them.
+6. Preserve shadcn/ui as the visual foundation unless the product explicitly adopts HeroUI as the transversal design system; use ReUI only for a justified advanced component in the shadcn variant.
+7. React + CSS/custom/native UI is not an implicit fallback design system. If it must become the visual foundation, record a concrete `ui.deviation` in `.app-factory.json` before implementation.
+8. For UI work, follow `ui/UI_POLICY.md`, `ui/PROFESSIONAL_UI_PROFILE.md` and `ui/MOTION_POLICY.md` from App Factory. Default quality bar is `professional-default`; default Motion Profile is `ambient` contextual; attenuate dense admin views and respect `prefers-reduced-motion`.
+9. If HeroUI becomes the primary design system, automatically apply `ui/AMBIENT_CONSTELLATION_PROFILE.md` with `Ambient Surface Profile: ambient-constellation` and `Constellation Intensity: strong`, unless a documented real exception applies.
+10. `professional-default` does not authorize adding another design system merely for appearance.
+11. Before building medium/large UI, inventory needed archetypes (shell, header, stats, search/command, filters, data view, form, detail, feedback) and reuse the current registry/design system first.
+12. Do not add another design system or motion library only to obtain an effect when the current stack/CSS can provide it cleanly.
+13. When Semantic Verification is required, materialize the contract/assurance/verification plan required by the selected depth before product code.
+14. Verify visual hierarchy, loading/empty/error states, desktop/mobile, keyboard/focus, format, lint, typecheck, tests, build, critical browser behavior and relevant motion/reduced-motion behavior before completion.
+15. Before delivery, run the Project Adoption Gate in `delivery` phase or prove the equivalent checklist.
 
 ## Factory fallback
 
-If the plugin is unavailable, consult `mcpmieda/app-factory` starting at `AGENTS.md`, `core/ENTRYPOINT.md`, `profiles/web-admin/PROFILE.md`, `ui/UI_POLICY.md`, `ui/PROFESSIONAL_UI_PROFILE.md` and `ui/MOTION_POLICY.md`.
+If the plugin is unavailable, consult `mcpmieda/app-factory` starting at `AGENTS.md`, `core/ENTRYPOINT.md`, `core/PROJECT_ADOPTION_GATE.md`, `profiles/web-admin/PROFILE.md`, `ui/UI_POLICY.md`, `ui/PROFESSIONAL_UI_PROFILE.md` and `ui/MOTION_POLICY.md`.
 
 <!-- BEGIN:nextjs-agent-rules -->
 
