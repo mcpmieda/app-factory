@@ -13,6 +13,28 @@ Este diretório deve ser consultado pelo `ui-builder` quando:
 - for necessário localizar componente, padrão, template ou referência visual antes de criar algo próprio;
 - um projeto HeroUI precisar de design system, tema, motion, Figma ou tooling para agentes.
 
+## Regra nativa de atmosfera HeroUI
+
+Um **sistema novo baseado em HeroUI** deve ativar automaticamente:
+
+```text
+Motion Profile: ambient
+Ambient Surface Profile: ambient-constellation
+Constellation Intensity: strong
+Dense content: clean islands; constellation remains in shell/header/perimeter
+Reduced motion: static constellation fallback
+```
+
+Fonte canônica: `ui/AMBIENT_CONSTELLATION_PROFILE.md`.
+
+Não esperar que o usuário peça o efeito separadamente. HeroUI como linguagem principal implica constelação ambiental nativa, salvo opt-out explícito ou restrição real de produto, acessibilidade, plataforma ou desempenho.
+
+A aplicação deve ser **forte e reconhecível** em shell/background, page headers, hero/welcome, dashboard overview, login/auth, empty/waiting/onboarding, painéis de destaque, modais/drawers importantes, AI/assistant e cards/CTAs especiais quando essas superfícies existirem.
+
+Tabelas, Data Grids, formulários densos e leitura longa permanecem em superfícies limpas; a identidade constelar continua no shell, cabeçalho, perímetro ou zonas de respiro.
+
+A referência técnica pública é o próprio banner/modal Pro do repositório OSS HeroUI v3: gradiente frio, glow difuso e duas camadas de estrelas em drift lento, oposto e com períodos diferentes. A Factory usa esse padrão como DNA, adaptando cores aos tokens/temas do produto.
+
 ## Inventário auditado
 
 | Camada | Inventário atual |
@@ -31,22 +53,21 @@ Este diretório deve ser consultado pelo `ui-builder` quando:
 
 ### Importante sobre contagens
 
-A comunicação de lançamento do HeroUI v3 usa **75+ web components**. O índice `All Components` do snapshot contém 71 entradas top-level, enquanto o source público exporta módulos auxiliares adicionais. Por isso a Factory agora registra separadamente **catálogo documentado** e **superfície pública exportada**.
+A comunicação de lançamento do HeroUI v3 usa **75+ web components**. O índice `All Components` do snapshot contém 71 entradas top-level, enquanto o source público exporta módulos auxiliares adicionais. Por isso a Factory registra separadamente **catálogo documentado** e **superfície pública exportada**.
 
 A auditoria também corrigiu o HeroUI Pro Native: o snapshot anterior registrava 51 itens, mas o índice oficial atual lista 44. Os sete nomes que deixaram de aparecer foram preservados apenas como referência histórica/não confirmada no arquivo Native.
 
 ## Arquivos
 
-- `HEROUI_REACT_V3_CATALOG.md` — HeroUI React OSS: 71 componentes documentados, exports adicionais, hooks e building blocks públicos.
+- `HEROUI_REACT_V3_CATALOG.md` — HeroUI React OSS: componentes documentados, exports adicionais, hooks e building blocks públicos.
 - `HEROUI_PRO_REACT_CATALOG.md` — HeroUI Pro React atual: componentes, variantes, templates, themes e tooling.
 - `HEROUI_NATIVE_CATALOG.md` — HeroUI Native OSS + exports adicionais + HeroUI Pro Native atual.
 - `HEROUI_PRO_V2_VISUAL_ARCHIVE.md` — catálogo visual legado do Pro v2, útil como repertório de composição.
 - `OFFICIAL_SOURCES.md` — sites, documentação, repositórios, Storybook, Figma, CLI, MCP e Skills oficiais.
 - `CATALOG_AUDIT_2026-08-24.md` — comparação formal entre sites oficiais, repositórios oficiais e o catálogo da App Factory.
+- `../AMBIENT_CONSTELLATION_PROFILE.md` — contrato da assinatura ambiental obrigatória por padrão em sistemas HeroUI novos.
 
 ## Regra de autoridade
-
-Para evitar falsos positivos:
 
 1. **site `All Components`** define o catálogo nominal/documentado atual;
 2. **source/package oficial** revela exports auxiliares e recursos que podem não ter página top-level;
@@ -58,7 +79,7 @@ Para evitar falsos positivos:
 
 ### HeroUI OSS
 
-Pode ser usado como implementação conforme a licença do repositório/pacote e a política de dependências da Factory. Antes de implementar, verificar versão e documentação atuais.
+Pode ser usado como implementação conforme a licença do repositório/pacote e a política de dependências da Factory. O repositório v3 auditado usa Apache-2.0. Antes de implementar, verificar versão, documentação e obrigações de licença atuais.
 
 ### HeroUI Pro
 
@@ -74,7 +95,7 @@ Tratar como **arquivo de repertório visual**, não como default técnico. Para 
 
 ## Direção visual para sistema inteiro
 
-Quando HeroUI for escolhido, não usar apenas componentes isolados. Construir o produto de forma coerente com:
+Quando HeroUI for escolhido, construir o produto de forma coerente com:
 
 - tokens e CSS variables HeroUI;
 - composição compound;
@@ -83,6 +104,7 @@ Quando HeroUI for escolhido, não usar apenas componentes isolados. Construir o 
 - componentes Pro atuais quando autorizados e úteis;
 - `ui/PROFESSIONAL_UI_PROFILE.md`;
 - `ui/MOTION_POLICY.md`;
+- `ui/AMBIENT_CONSTELLATION_PROFILE.md` com intensidade strong;
 - acessibilidade, responsividade e browser QA.
 
 Não misturar shadcn/ReUI no mesmo produto apenas para preencher lacunas estéticas. Se uma capacidade não existir no HeroUI, primeiro compor com HeroUI; depois criar componente local compatível com seus tokens e padrões.
