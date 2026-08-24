@@ -20,14 +20,14 @@ A App Factory é **general-purpose**. Sistemas escolares são um domínio válid
 6. Use `core/AUTONOMY_ENGINE.md`/`autonomy-engine` para recuperar ou inicializar estado e calcular a próxima ação.
 7. Classifique a profundidade necessária em `core/PROJECT_SCALE.md`.
 8. Classifique também o nível arquitetural em `core/SYSTEM_ENGINEERING.md`. Para `persistent-app` ou superior, identifique fonte autoritativa; para `multi-user-system` ou superior, derive persistência compartilhada, backend/server-side, identidade, autorização, validação, migrations e recovery proporcionais antes de simplificar.
-9. Quando existir API/integração/webhook/evento/contrato compartilhado relevante, aplique `core/API_ENGINEERING.md` e `api-engineering`: classifique `none`/`lightweight`/`contract`/`governed`, escolha protocolo/fonte de verdade e gates proporcionais. Backend não implica API formal.
+9. Quando existir API/integração/webhook/evento/contrato compartilhado relevante, aplique `core/API_ENGINEERING.md` e `api-engineering`: classifique `none`/`lightweight`/`contract`/`governed`, escolha protocolo/fonte de verdade e gates proporcionais. Backend não implica API formal. Para telas/fluxos data-driven que cruzem rede, aplique também `core/DATA_ACCESS_EFFICIENCY.md`: evite frontend `chatty`, N+1 e chamadas redundantes; prefira composição orientada ao caso de uso, batching/paralelismo, paginação, retry/rate-limit e read models somente quando trouxerem ganho real. Esta regra também vale para Server Actions/Server Components/RPC mesmo sem API pública formal.
 10. Para funcionalidade nova, bugfix relevante, regra de negócio ou mudança de contrato/risco, aplique `core/SEMANTIC_ASSURANCE.md` + `core/SEMANTIC_VERIFICATION.md`: escolha semantic depth `scenario`/`domain`/`formal`, materialize spec antes do código e use `semantic-assurance` em `domain`/`formal`.
 11. Em `domain`/`formal`, `specs/semantic-assurance.json` deve estar coerente com fingerprint da spec, sem contradições determinísticas, refs quebradas ou perguntas `blocking`. Property/combinatorial/formal methods entram somente quando a estrutura do domínio justificar.
 12. Derive `core/INDEPENDENT_VERIFICATION.md`. Para `independent`/`adversarial`/`release`, carregue `independent-verification` e selecione a menor matriz gratuita/open source que cubra **classes de falha diferentes**. Projetos simples permanecem `baseline`.
 13. Ao montar essa matriz, considere superfícies objetivas, não catálogo: workflows GitHub, API, navegador, migrations PostgreSQL, arquitetura declarada, invariantes/estados, combinações finitas, workload/SLO, integrações externas e release. Não rode equivalentes redundantes sem ganho.
 14. Use `core/EXECUTION_FABRIC.md` + `execution-router` para traduzir a ação em capacidades e eliminar backends incapazes/indisponíveis. Verificadores independentes e gates formais preferem GitHub Actions/CI quando capaz.
 15. Quando houver histórico local suficiente, aplique `core/LEARNING_ENGINE.md`/`learning-engine` somente entre candidatos já elegíveis; sem evidência suficiente, preserve baseline.
-16. Aplique `core/RISK_MODEL.md`; risco, contrato semântico, Semantic Assurance, System Engineering, API Engineering, Independent Verification, Change Hygiene e Definition of Done vencem qualquer preferência aprendida.
+16. Aplique `core/RISK_MODEL.md`; risco, contrato semântico, Semantic Assurance, System Engineering, API Engineering, Data Access Efficiency, Independent Verification, Change Hygiene e Definition of Done vencem qualquer preferência aprendida.
 17. Para software real novo, use `projects/<slug>/` por padrão e siga `core/INSPECTION_ENVIRONMENT.md` para URL canônica, preview e hospedagem quando aplicável.
 18. Consulte `core/WORKFLOW.md` para projeto novo ou manutenção.
 19. Carregue somente Skills relevantes.
@@ -49,6 +49,7 @@ Prefira:
 - decisões técnicas rotineiras autônomas;
 - arquitetura simples, mas suficiente;
 - APIs/contratos somente na profundidade necessária;
+- aquisição de dados eficiente: cliente pede o caso de uso, backend compõe quando apropriado, sem regra artificial de "uma chamada por tela" nem endpoint gigante;
 - métodos formais/property/combinatorial somente quando o problema justificar;
 - verificadores independentes por **diversidade de método**, não quantidade de nomes;
 - ferramentas gratuitas/open source quando equivalentes adequados existirem;
@@ -66,7 +67,7 @@ Não aplicar o mesmo ritual a todo trabalho. Projetos pequenos usam planejamento
 
 Profundidade de processo não autoriza rebaixamento arquitetural. Semantic Assurance segue `scenario → domain → formal`; Independent Verification segue `baseline → independent → adversarial → release`.
 
-A mesma proporcionalidade vale aos motores: actionlint/zizmor exigem workflows; Squawk exige PostgreSQL+migrations; property/combinatorial exige modelo semântico adequado; k6 exige workload/SLO/baseline útil; Toxiproxy exige integração material; RESTler é escalonamento de REST/OpenAPI `governed`; cross-browser só entra quando o produto promete suporte multi-engine. Change Hygiene também é proporcional: scanner stdlib-first é leve; Knip/Stylelint/Vulture/jscpd entram somente quando stack, risco e configuração justificarem.
+A mesma proporcionalidade vale aos motores: actionlint/zizmor exigem workflows; Squawk exige PostgreSQL+migrations; property/combinatorial exige modelo semântico adequado; k6 exige workload/SLO/baseline útil; Toxiproxy exige integração material; RESTler é escalonamento de REST/OpenAPI `governed`; cross-browser só entra quando o produto promete suporte multi-engine. Change Hygiene também é proporcional: scanner stdlib-first é leve; Knip/Stylelint/Vulture/jscpd entram somente quando stack, risco e configuração justificarem. Data Access Efficiency também é proporcional: agregação, batching, cache, read model e request budget só entram quando custo/latência/quota/estabilidade justificarem.
 
 ## Continuidade
 
@@ -80,7 +81,7 @@ Em `domain`/`formal`, `specs/semantic-assurance.json` e decisões específicas e
 
 Quando System Engineering se aplicar, nível, fonte autoritativa, persistência, identidade, autorização e recovery relevantes ficam recuperáveis.
 
-Em API `contract`/`governed`, consumidores, contrato e compatibilidade/gates ficam recuperáveis em arquitetura/API/contrato machine-readable.
+Em API `contract`/`governed`, consumidores, contrato e compatibilidade/gates ficam recuperáveis em arquitetura/API/contrato machine-readable. Quando aquisição de dados for material, agregadores por caso de uso, paginação, batching/retry, read models/cache e request budget/evidência ficam recuperáveis em `ARCHITECTURE.md`, `API.md` ou equivalente conforme `core/DATA_ACCESS_EFFICIENCY.md`.
 
 Quando Independent Verification estiver acima de `baseline`, modo, checks `required/advisory`, ambiente seguro, thresholds/modelos e exceções ficam recuperáveis em `VERIFICATION.md` e workflows/configs.
 
@@ -98,7 +99,7 @@ Nunca declare concluído só porque código foi escrito. Use `core/DEFINITION_OF
 
 Em manutenção/revisão de sistema existente, rode a consolidação de `core/CHANGE_HYGIENE.md` antes da revisão final e reverifique depois da limpeza. O fato de um bug ter desaparecido não basta se a solução ainda depende de código morto, shadow implementation, override acumulado ou tentativa temporária.
 
-Quando Semantic Assurance for `domain`/`formal`, a spec precisa estar ready antes da implementação. Quando contrato semântico se aplicar, gates rastreiam critérios `must` e review evidence corresponde ao conteúdo atual. Em `multi-user-system`+, verifique persistência compartilhada real, autorização server-side e System Engineering. Em API `contract`/`governed`, verifique contrato/compatibilidade/runtime/segurança. Quando Independent Verification selecionar checks `required`, execute-os em GitHub CI/ambiente equivalente.
+Quando Semantic Assurance for `domain`/`formal`, a spec precisa estar ready antes da implementação. Quando contrato semântico se aplicar, gates rastreiam critérios `must` e review evidence corresponde ao conteúdo atual. Em `multi-user-system`+, verifique persistência compartilhada real, autorização server-side e System Engineering. Em API `contract`/`governed`, verifique contrato/compatibilidade/runtime/segurança. Em fluxo data-driven material, verifique N+1, chamadas redundantes, paginação, rate-limit/retry e request budget quando aplicáveis. Quando Independent Verification selecionar checks `required`, execute-os em GitHub CI/ambiente equivalente.
 
 Mutation/property/combinatorial testing, Schemathesis/RESTler, ZAP, SAST/supply-chain, migration/architecture checks, load/resilience, browser/accessibility e CI self-check são evidências complementares e condicionais. Nenhum substitui Semantic Assurance ou revisão semântica independente.
 
