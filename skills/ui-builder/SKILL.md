@@ -14,7 +14,27 @@ description: Escolhe e aplica padrões de interface modernos para páginas, dash
 5. Não misturar HeroUI com shadcn/ReUI apenas para obter variedade visual, animações ou aparência premium.
 6. Quando o projeto seguir o perfil `web-admin`, consultar `profiles/web-admin/PROFILE.md`.
 
-A seleção da biblioteca e o acabamento profissional são decisões diferentes: **shadcn/ReUI continuam preferenciais no admin mesmo quando `professional-default` estiver ativo**.
+A seleção da biblioteca e o acabamento profissional são decisões diferentes: **shadcn/ReUI continuam preferenciais no admin mesmo quando `professional-default` estiver ativo**, salvo decisão explícita do projeto de usar HeroUI como linguagem principal.
+
+## Catálogo HeroUI obrigatório quando HeroUI for selecionado
+
+Antes de criar componente, tela ou padrão próprio em um projeto HeroUI, ler `ui/heroui/README.md` e consultar o catálogo adequado:
+
+- `ui/heroui/HEROUI_REACT_V3_CATALOG.md` — HeroUI React OSS atual;
+- `ui/heroui/HEROUI_PRO_REACT_CATALOG.md` — HeroUI Pro React atual, variantes, templates, themes e tooling;
+- `ui/heroui/HEROUI_NATIVE_CATALOG.md` — HeroUI Native OSS + Pro Native;
+- `ui/heroui/HEROUI_PRO_V2_VISUAL_ARCHIVE.md` — repertório visual legado do Pro v2;
+- `ui/heroui/OFFICIAL_SOURCES.md` — documentação, GitHub, Storybook, CLI, MCP, Skills e Figma oficiais.
+
+Regras:
+
+1. pesquisar no catálogo e na fonte oficial antes de recriar capacidade existente;
+2. para projetos novos Web, preferir HeroUI v3 atual; usar v2 somente como repertório visual/funcional;
+3. confirmar versão/release atual antes de instalar ou depender de uma API;
+4. quando houver licença HeroUI Pro válida no projeto, preferir CLI/MCP/Skills oficiais para obter conteúdo autorizado;
+5. nunca armazenar `HEROUI_PERSONAL_TOKEN`, código Pro, assets, screenshots, Figma ou templates comerciais na Factory;
+6. sem licença Pro, usar nomes/padrões públicos como referência e implementar com HeroUI OSS ou componente local compatível;
+7. quando o usuário pedir um sistema inteiro no visual HeroUI, manter HeroUI como linguagem transversal — shell, formulários, dados, overlays, estados, motion, tokens e temas — em vez de aplicar HeroUI apenas a alguns cards/botões.
 
 ## Professional UI Profile
 
