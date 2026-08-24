@@ -1,6 +1,6 @@
 # HeroUI Reference Catalog
 
-Snapshot pesquisado em **2026-08-24** a partir de fontes oficiais HeroUI/HeroUI Pro e repositórios `heroui-inc`.
+Snapshot auditado em **2026-08-24** a partir dos sites oficiais HeroUI/HeroUI Pro e repositórios públicos `heroui-inc`.
 
 ## Objetivo
 
@@ -10,31 +10,49 @@ Este diretório deve ser consultado pelo `ui-builder` quando:
 
 - o projeto escolher HeroUI como design system principal;
 - o usuário pedir explicitamente linguagem HeroUI/HeroUI Pro;
-- for necessário localizar um componente, padrão, template ou referência visual antes de criar algo próprio;
+- for necessário localizar componente, padrão, template ou referência visual antes de criar algo próprio;
 - um projeto HeroUI precisar de design system, tema, motion, Figma ou tooling para agentes.
 
-## Inventário do snapshot
+## Inventário auditado
 
-| Camada | Inventário registrado |
+| Camada | Inventário atual |
 | --- | ---: |
-| HeroUI React v3 OSS | 71 componentes top-level listados na página oficial atual |
+| HeroUI React v3 — site `All Components` | 71 componentes top-level |
+| HeroUI React v3 — exports adicionais no repo | 11 módulos de componente adicionais |
+| HeroUI React v3 — total de módulos no índice público de componentes | 82, sendo 1 marcado `in progress` |
 | HeroUI Pro React atual | 65 componentes / 477 variantes-exemplos |
 | HeroUI Pro React templates | 4 templates completos |
-| HeroUI Native OSS | 39 componentes top-level listados na página oficial atual |
-| HeroUI Pro Native | 51 componentes |
+| HeroUI Native OSS — site `All Components` | 39 componentes top-level |
+| HeroUI Native OSS — exports adicionais no repo | 4 módulos de componente adicionais |
+| HeroUI Pro Native atual | 44 componentes top-level |
 | HeroUI Pro Native templates | 2 templates completos |
-| HeroUI Pro v2 visual archive | 220 blocos agrupados em 34 famílias |
-| Pro themes atuais documentados | 3: Brutalism, Glass, Mouve |
+| HeroUI Pro v2 visual archive | 220 blocos / 34 famílias |
+| Pro themes atuais documentados | Brutalism, Glass, Mouve |
 
-A comunicação de lançamento do HeroUI v3 usa a expressão **75+ web components**. A página oficial `All Components (React)` do snapshot lista 71 entradas top-level; manter ambos os fatos e preferir a lista oficial atual como inventário nominal.
+### Importante sobre contagens
+
+A comunicação de lançamento do HeroUI v3 usa **75+ web components**. O índice `All Components` do snapshot contém 71 entradas top-level, enquanto o source público exporta módulos auxiliares adicionais. Por isso a Factory agora registra separadamente **catálogo documentado** e **superfície pública exportada**.
+
+A auditoria também corrigiu o HeroUI Pro Native: o snapshot anterior registrava 51 itens, mas o índice oficial atual lista 44. Os sete nomes que deixaram de aparecer foram preservados apenas como referência histórica/não confirmada no arquivo Native.
 
 ## Arquivos
 
-- `HEROUI_REACT_V3_CATALOG.md` — catálogo HeroUI React open source atual.
-- `HEROUI_PRO_REACT_CATALOG.md` — catálogo Pro React atual, variantes, templates e temas.
-- `HEROUI_NATIVE_CATALOG.md` — HeroUI Native OSS + HeroUI Pro Native.
+- `HEROUI_REACT_V3_CATALOG.md` — HeroUI React OSS: 71 componentes documentados, exports adicionais, hooks e building blocks públicos.
+- `HEROUI_PRO_REACT_CATALOG.md` — HeroUI Pro React atual: componentes, variantes, templates, themes e tooling.
+- `HEROUI_NATIVE_CATALOG.md` — HeroUI Native OSS + exports adicionais + HeroUI Pro Native atual.
 - `HEROUI_PRO_V2_VISUAL_ARCHIVE.md` — catálogo visual legado do Pro v2, útil como repertório de composição.
 - `OFFICIAL_SOURCES.md` — sites, documentação, repositórios, Storybook, Figma, CLI, MCP e Skills oficiais.
+- `CATALOG_AUDIT_2026-08-24.md` — comparação formal entre sites oficiais, repositórios oficiais e o catálogo da App Factory.
+
+## Regra de autoridade
+
+Para evitar falsos positivos:
+
+1. **site `All Components`** define o catálogo nominal/documentado atual;
+2. **source/package oficial** revela exports auxiliares e recursos que podem não ter página top-level;
+3. **release notes** definem status, novidades, deprecações e itens experimentais;
+4. **HeroUI Pro v2** é repertório legado, não default técnico;
+5. o catálogo local é índice de descoberta e deve ser revalidado antes de implementação material.
 
 ## Regra de uso
 
@@ -44,41 +62,27 @@ Pode ser usado como implementação conforme a licença do repositório/pacote e
 
 ### HeroUI Pro
 
-O catálogo da Factory registra **nomes, categorias, quantidades, URLs, finalidade e padrões públicos observáveis**. Ele não contém código-fonte Pro, assets, screenshots ou templates comerciais copiados.
+A Factory registra **nomes, categorias, contagens, URLs, finalidade e padrões públicos observáveis**. Não armazena código-fonte Pro, assets, screenshots ou templates comerciais copiados.
 
-Se o projeto possuir licença HeroUI Pro válida:
+Quando um projeto tiver acesso autorizado ao HeroUI Pro, obter componentes/templates pelos mecanismos oficiais e tratar o material como dependência licenciada daquele projeto, não como patrimônio redistribuível da Factory.
 
-1. usar instalação/CLI/MCP/Skills oficiais;
-2. obter componentes e templates diretamente da conta/licença do projeto;
-3. nunca armazenar `HEROUI_PERSONAL_TOKEN` no Git;
-4. tratar o material obtido como dependência licenciada do projeto, não como patrimônio redistribuível da Factory.
-
-Sem licença Pro, usar o catálogo como referência de arquitetura e composição e implementar com HeroUI OSS ou componentes próprios compatíveis.
+Sem acesso Pro, usar o catálogo como referência de arquitetura e composição e implementar com HeroUI OSS ou componentes próprios compatíveis.
 
 ### HeroUI Pro v2
 
-Tratar como **arquivo de repertório visual**, não como default técnico. Para projetos novos, preferir HeroUI v3 atual e adaptar apenas o padrão de tarefa/composição que continuar útil.
+Tratar como **arquivo de repertório visual**, não como default técnico. Para projetos novos, preferir HeroUI v3 atual e adaptar apenas padrões de tarefa/composição que continuem úteis.
 
-## Regra de atualização
+## Direção visual para sistema inteiro
 
-Este catálogo é um índice, não uma cópia congelada da documentação. Antes de uma implementação material:
-
-1. consultar `OFFICIAL_SOURCES.md`;
-2. verificar `All Components` e releases atuais;
-3. confirmar se componente/template ainda existe e se mudou de API;
-4. preferir MCP/Skills oficiais quando disponíveis no ambiente/licença;
-5. atualizar este catálogo quando a diferença for material.
-
-## Direção visual
-
-Quando HeroUI for escolhido, não usar apenas componentes isolados. Construir o sistema inteiro de forma coerente com:
+Quando HeroUI for escolhido, não usar apenas componentes isolados. Construir o produto de forma coerente com:
 
 - tokens e CSS variables HeroUI;
 - composição compound;
 - superfícies, tipografia, radius, sombras e estados do mesmo design system;
 - tema claro/escuro ou tema customizado coerente;
+- componentes Pro atuais quando autorizados e úteis;
 - `ui/PROFESSIONAL_UI_PROFILE.md`;
 - `ui/MOTION_POLICY.md`;
-- acessibilidade, responsive e browser QA.
+- acessibilidade, responsividade e browser QA.
 
-Não misturar shadcn/ReUI no mesmo produto apenas para preencher lacunas estéticas. Se uma capacidade não existir no HeroUI, primeiro compor com HeroUI; depois criar um componente local compatível com seus tokens e padrões.
+Não misturar shadcn/ReUI no mesmo produto apenas para preencher lacunas estéticas. Se uma capacidade não existir no HeroUI, primeiro compor com HeroUI; depois criar componente local compatível com seus tokens e padrões.
