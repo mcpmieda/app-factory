@@ -13,7 +13,7 @@ ROOT = Path(__file__).resolve().parents[2]
 
 def base_config(**overrides):
     config = {
-        "factoryBaseline": "v1.4.1",
+        "factoryBaseline": "v1.4.0",
         "adoption": {"mode": "existing"},
         "routing": {
             "scale": "L",
