@@ -42,9 +42,10 @@ Por padrão exige:
 - modelo de domínio e relacionamentos explícitos;
 - migrations/versionamento de schema quando houver banco próprio;
 - estratégia de concorrência/idempotência para operações suscetíveis a repetição ou conflito;
+- estratégia de aquisição de dados que evite N+1, round trips redundantes e cliente atuando como orquestrador de infraestrutura quando isso for material;
 - testes do fluxo crítico com persistência real ou ambiente equivalente.
 
-Ter backend não obriga uma API pública/formal. Quando existir uma fronteira de API, integração externa, múltiplos consumidores independentes, webhooks, eventos ou mensageria, aplique também `core/API_ENGINEERING.md` no modo proporcional ao risco da interface.
+Ter backend não obriga uma API pública/formal. Quando existir uma fronteira de API, integração externa, múltiplos consumidores independentes, webhooks, eventos ou mensageria, aplique também `core/API_ENGINEERING.md` no modo proporcional ao risco da interface. Quando telas/fluxos cruzarem rede de forma material, aplique `core/DATA_ACCESS_EFFICIENCY.md` mesmo que a aplicação use Server Actions, Server Components, RPC ou outra interface não pública.
 
 ### 5. `production-system`
 
@@ -61,7 +62,7 @@ Além de `multi-user-system`, exige proporcionalmente:
 - proteção de operações destrutivas;
 - verificação de deploy/produção e não apenas build local.
 
-Detalhes de contrato, compatibilidade, timeout/retry, webhooks e gates específicos de API pertencem a `core/API_ENGINEERING.md`; este contrato mantém apenas a exigência arquitetural de alto nível.
+Detalhes de contrato, compatibilidade, timeout/retry, webhooks e gates específicos de API pertencem a `core/API_ENGINEERING.md`; eficiência de aquisição/composição de dados, batching, paginação, read models/cache e request budgets pertencem a `core/DATA_ACCESS_EFFICIENCY.md`; este contrato mantém apenas a exigência arquitetural de alto nível.
 
 ### 6. `critical-system`
 
@@ -142,6 +143,7 @@ A Factory deve avaliar, sem instalar tudo por padrão:
 - arquivos/uploads;
 - importação/exportação;
 - APIs/contratos/integrações conforme `core/API_ENGINEERING.md`;
+- eficiência de aquisição de dados conforme `core/DATA_ACCESS_EFFICIENCY.md` — agregação por caso de uso, prevenção de N+1, batching/paralelismo, request budget, read model/cache apenas quando materiais;
 - notificações;
 - jobs/filas/agendamentos;
 - rate limiting/abuse protection;
@@ -170,6 +172,8 @@ Para `local-app` com dados persistentes relevantes, registre de forma leve a fon
 
 Quando houver API relevante, registre também o modo de governança e a fonte de verdade do contrato conforme `core/API_ENGINEERING.md`, sem duplicar detalhes que pertencem ao documento/API contract específico.
 
+Quando aquisição de dados for material para custo, latência, quota ou estabilidade, registre também a estratégia das telas/fluxos críticos conforme `core/DATA_ACCESS_EFFICIENCY.md`: quais dados chegam juntos, onde ocorre composição, paginação, batching/retry e request budget/evidência quando necessário.
+
 ## Definition of Done adicional
 
 Um projeto classificado como `multi-user-system` ou superior não pode ser declarado pronto para produção se:
@@ -179,16 +183,18 @@ Um projeto classificado como `multi-user-system` ou superior não pode ser decla
 - mutações não tiverem validação server-side;
 - banco/schema tiver sido alterado sem migration/estratégia equivalente;
 - não houver teste do fluxo crítico com a camada real de persistência/autorização aplicável;
+- um fluxo data-driven material depender de N+1 evitável, coleção ilimitada ou round trips redundantes que ameacem custo/latência/quota sem decisão justificada;
 - recuperação/backup for requisito material e não houver estratégia definida.
 
 Um `local-app` com migração de dados relevante não deve ser declarado concluído se a evolução pode apagar/sobrescrever dados anteriores sem validação e recovery proporcional.
 
-Se uma API `contract`/`governed` fizer parte do sistema, os gates específicos de `core/API_ENGINEERING.md` também integram a conclusão proporcional.
+Se uma API `contract`/`governed` fizer parte do sistema, os gates específicos de `core/API_ENGINEERING.md` também integram a conclusão proporcional. Se Data Access Efficiency for material, seus gates/evidências também integram a conclusão proporcional.
 
 ## Relação com os demais módulos
 
 - `core/PROJECT_SCALE.md` decide profundidade de processo; este arquivo decide profundidade mínima da arquitetura do produto.
 - `core/API_ENGINEERING.md` decide governança da interface quando existe API/integração relevante; não cria API por obrigação.
+- `core/DATA_ACCESS_EFFICIENCY.md` decide como evitar cliente chatty, N+1 e round trips desnecessários sem criar API gigante ou cache artificial.
 - `core/RISK_MODEL.md` pode elevar exigências de segurança, revisão e recovery.
 - `core/SEMANTIC_VERIFICATION.md` transforma regras funcionais/arquiteturais relevantes em critérios observáveis.
 - `profiles/*` fornecem stacks/defaults comprovados, mas não podem reduzir os requisitos deste contrato.
