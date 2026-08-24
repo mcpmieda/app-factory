@@ -61,6 +61,16 @@ Quando o produto expuser/consumir API relevante, tiver web + mobile/extensão, i
 - GraphQL, gRPC, AsyncAPI e Arazzo entram somente quando o comportamento do produto justificar;
 - Redocly/oasdiff/Schemathesis/Pact são ferramentas condicionais, não parte obrigatória do bootstrap mínimo.
 
+Para telas administrativas orientadas a dados, aplicar também `core/DATA_ACCESS_EFFICIENCY.md` quando houver round trips materiais:
+
+- evitar frontend `chatty`, N+1 e waterfalls sem dependência real;
+- quando vários dados são sempre necessários juntos, preferir endpoint/Server Action/composição orientada ao caso de uso em vez de o cliente montar a tela com muitas chamadas pequenas;
+- não substituir isso por um endpoint monolítico `/api/tudo`;
+- manter serviços internos pequenos e composáveis mesmo quando a fronteira externa é agregada;
+- usar batching/paralelismo, paginação, seleção de campos, retry/`Retry-After`, read models e cache somente quando trouxerem ganho real;
+- para telas críticas, registrar/testar request budget quando custo, latência, quota ou estabilidade forem materiais;
+- não usar threshold universal de chamadas por tela: a justificativa vem do fluxo real.
+
 ### Independent Verification
 
 Este perfil não instala scanners no bootstrap. A profundidade vem de `core/INDEPENDENT_VERIFICATION.md`.
@@ -99,9 +109,13 @@ Adicionar React Hook Form, TanStack Form ou equivalente somente quando complexid
 
 Não adicionar TanStack Query, Zustand ou equivalente por padrão. Usar somente quando cache, sincronização cliente, optimistic updates ou estado compartilhado trouxerem ganho real.
 
+Cache no cliente não deve mascarar uma arquitetura excessivamente `chatty`. Primeiro elimine chamadas redundantes/N+1 e defina a fronteira de dados adequada; depois use cache quando houver benefício próprio de UX/sincronização.
+
 ### Observabilidade
 
 Sentry/OpenTelemetry e similares entram conforme criticidade, produção e necessidade operacional. Não fazem parte do bootstrap mínimo.
+
+Quando `core/DATA_ACCESS_EFFICIENCY.md` for material, observabilidade pode incluir contagem de requests por fluxo crítico, chamadas ao provedor, `429`/retries e latência, sem registrar dados sensíveis.
 
 ## UI
 
@@ -132,7 +146,7 @@ Atenuar automaticamente para comportamento `subtle` em tabelas, leitura prolonga
 
 Preferir Server Components/Server Actions e estado local simples quando suficientes.
 
-Adicionar camadas somente quando o comportamento do produto exigir. `core/SYSTEM_ENGINEERING.md` define a profundidade mínima do sistema; `core/API_ENGINEERING.md` define a profundidade da interface quando houver uma API/integração real; `core/INDEPENDENT_VERIFICATION.md` define a profundidade da prova externa.
+Adicionar camadas somente quando o comportamento do produto exigir. `core/SYSTEM_ENGINEERING.md` define a profundidade mínima do sistema; `core/API_ENGINEERING.md` define a profundidade da interface quando houver uma API/integração real; `core/DATA_ACCESS_EFFICIENCY.md` define eficiência de aquisição/composição quando a tela cruza rede de forma material; `core/INDEPENDENT_VERIFICATION.md` define a profundidade da prova externa.
 
 Estrutura inicial sugerida:
 
@@ -172,7 +186,8 @@ Quando os scripts existirem:
 11. console sem erro relevante;
 12. motion coerente com o perfil e `prefers-reduced-motion` quando UI relevante for alterada;
 13. para API `contract`/`governed`, gates de contrato/compatibilidade/runtime/security definidos em `core/API_ENGINEERING.md`;
-14. para Independent Verification acima de `baseline`, checks `required` selecionados em `core/INDEPENDENT_VERIFICATION.md`.
+14. para fluxo data-driven em que quota/custo/latência sejam materiais, evidência proporcional de `core/DATA_ACCESS_EFFICIENCY.md` — por exemplo request count, ausência de N+1, batching/paginação/retry quando aplicável;
+15. para Independent Verification acima de `baseline`, checks `required` selecionados em `core/INDEPENDENT_VERIFICATION.md`.
 
 Mudanças de recipe também exigem geração limpa direta de cada caminho de provider/dependência. PostgreSQL/Auth deve exercitar serviço PostgreSQL efêmero real, login/sessão, migration/query e smoke de produção com `next start`.
 
@@ -192,6 +207,7 @@ Mudanças de recipe também exigem geração limpa direta de cada caminho de pro
 - migrations versionadas;
 - excluir permanentemente apenas quando o domínio permitir e o comportamento estiver testado;
 - APIs expostas seguem `core/API_ENGINEERING.md` + `skills/security-review` em vez de duplicar um checklist específico neste perfil;
+- superfícies data-driven seguem `core/DATA_ACCESS_EFFICIENCY.md` para evitar que otimização de cliente enfraqueça autorização, cache scope ou limites de provedor;
 - scanners independentes seguem `core/INDEPENDENT_VERIFICATION.md`; ZAP/fuzz ativo usa apenas alvo efêmero/autorizado.
 
 ## Evidência de origem
