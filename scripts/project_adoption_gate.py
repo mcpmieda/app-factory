@@ -14,6 +14,11 @@ sys.path.insert(0, str(ROOT))
 from engine.project_adoption import audit_project, initialize_project  # noqa: E402
 
 
+def _current_factory_baseline() -> str:
+    manifest = json.loads((ROOT / ".codex-plugin" / "plugin.json").read_text(encoding="utf-8"))
+    return f"v{manifest['version']}"
+
+
 def _parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(description="App Factory Project Adoption Gate")
     subparsers = parser.add_subparsers(dest="command", required=True)
@@ -21,7 +26,7 @@ def _parser() -> argparse.ArgumentParser:
     init = subparsers.add_parser("init", help="Materialize durable App Factory adoption metadata")
     init.add_argument("--project", required=True)
     init.add_argument("--mode", choices=["new", "existing"], default="existing")
-    init.add_argument("--factory-baseline", default="unknown")
+    init.add_argument("--factory-baseline", default=None)
     init.add_argument("--scale", choices=["S", "M", "L", "XL"], required=True)
     init.add_argument("--risk", choices=["low", "medium", "high", "critical"], required=True)
     init.add_argument(
@@ -60,7 +65,7 @@ def _parser() -> argparse.ArgumentParser:
 def _init(args: argparse.Namespace) -> int:
     ui_enabled = None if args.ui is None else args.ui == "true"
     config = {
-        "factoryBaseline": args.factory_baseline,
+        "factoryBaseline": args.factory_baseline or _current_factory_baseline(),
         "adoption": {"mode": args.mode},
         "routing": {
             "scale": args.scale,
