@@ -15,6 +15,7 @@ description: Revisa segurança de aplicações e mudanças com foco em autentica
 - permissões/privilégio mínimo;
 - dependências e supply chain;
 - XSS/CSRF/injection e classes relevantes à stack;
+- compatibilidade entre `Referrer-Policy` e defesas CSRF baseadas em `Origin`: em navegação POST não-CORS, `no-referrer` pode serializar `Origin: null`; teste o fluxo real e não aceite origem nula indiscriminadamente para contornar o conflito;
 - uploads/arquivos;
 - logs sem dados sensíveis;
 - endpoints administrativos;
