@@ -30,15 +30,31 @@ Uso: registry distribuindo componentes, páginas, regras, workflows, testes e au
 
 Uso: componentes e padrões avançados para sistemas sobre ecossistema shadcn. Continua complemento seletivo, não segunda base obrigatória.
 
-### HeroUI
-- https://www.heroui.com/
+### HeroUI OSS
+- https://heroui.com/
+- https://heroui.com/en/docs/react/components
+- https://heroui.com/en/docs/native/components
+- https://github.com/heroui-inc/heroui
+- https://github.com/heroui-inc/heroui-native
+- https://github.com/heroui-inc/heroui-cli
+- https://storybook-v3.heroui.com/
 
-Uso: alternativa de design system quando mais adequada que shadcn/ReUI.
+Uso: alternativa de design system quando mais adequada que shadcn/ReUI. O inventário pesquisável da Factory está em `ui/heroui/` e deve ser consultado quando HeroUI for escolhido.
 
 ### HeroUI Pro
 - https://heroui.pro/
+- https://heroui.pro/docs/react/components
+- https://heroui.pro/docs/react/templates
+- https://heroui.pro/docs/native/components
+- https://heroui.pro/docs/native/templates
+- https://heroui.pro/docs/react/getting-started/theming
+- https://heroui.pro/docs/react/getting-started/mcp-server
+- https://heroui.pro/docs/react/getting-started/agent-skills
+- https://heroui.pro/docs/react/getting-started/design-taste
+- https://heroui.pro/docs/react/getting-started/figma
+- https://v2.heroui.pro/components
 
-Uso: **INSPIRAR** o quality bar `professional-default`, especialmente composição visual profissional e organização por arquétipos de produto. Não é fonte de código redistribuível da Factory: não copiar templates, assets, screenshots ou componentes proprietários sem licença específica aplicável ao projeto. Ver `research/PROFESSIONAL_UI_PROFILE_REVIEW.md` e `ui/PROFESSIONAL_UI_PROFILE.md`.
+Uso: **INSPIRAR** o quality bar e servir como catálogo autorizado de descoberta. A Factory registra nomes, categorias, variantes, templates, temas, URLs e padrões públicos em `ui/heroui/`, mas não copia código, templates, assets, screenshots ou Figma proprietários. Em projetos com licença válida, obter conteúdo Pro pelos mecanismos oficiais do projeto (CLI/MCP/dashboard) e nunca versionar `HEROUI_PERSONAL_TOKEN`.
 
 ## Origem interna
 
