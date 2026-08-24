@@ -1,7 +1,7 @@
 {
   "name": "app-factory",
-  "version": "1.4.0",
-  "description": "Portable AI software-development factory with system/API governance, API Engineering, Semantic Assurance, independent verification and semantic proof.",
+  "version": "1.4.1",
+  "description": "Portable AI software-development factory with durable project adoption, system/API governance, semantic assurance, independent verification and semantic proof.",
   "author": {
     "name": "mcpmieda",
     "url": "https://github.com/mcpmieda"
@@ -10,15 +10,15 @@
   "skills": "./skills/",
   "interface": {
     "displayName": "App Factory",
-    "shortDescription": "Build real systems with semantic assurance and independent proof.",
-    "longDescription": "A portable software-development factory that activates from software intent, applies API governance through API Engineering proportionally, improves specification quality with Semantic Assurance, materializes semantic contracts for relevant work, recovers repository context and autonomous state, routes actions to capable backends, uses GitHub CI plus free/open-source deterministic/adversarial/formal gates when warranted, requires decoupled semantic review for appropriate risk, and conservatively learns from privacy-safe local execution metadata without making Codex or any vendor mandatory.",
+    "shortDescription": "Build real systems with durable routing and executable proof.",
+    "longDescription": "A portable software-development factory that activates from software intent, durably adopts governed projects before material implementation, applies API governance through API Engineering proportionally, improves specification quality with Semantic Assurance, materializes semantic contracts for relevant work, recovers repository context and autonomous state, routes actions to capable backends, uses GitHub CI plus free/open-source deterministic/adversarial/formal gates when warranted, requires decoupled semantic review for appropriate risk, and conservatively learns from privacy-safe local execution metadata without making Codex or any vendor mandatory.",
     "developerName": "mcpmieda",
     "category": "Productivity",
     "capabilities": ["Interactive"],
     "websiteURL": "https://github.com/mcpmieda/app-factory",
     "defaultPrompt": [
-      "Build a real system with proportional architecture, semantic assurance and executable proof.",
-      "Resume this project, preserve its baseline and semantic contracts, and continue safely.",
+      "Build a real system with durable App Factory adoption, proportional architecture, semantic assurance and executable proof.",
+      "Resume this project, verify its App Factory adoption state, preserve its baseline and semantic contracts, and continue safely.",
       "Design or evolve this API with proportional contracts, security and independent evidence."
     ]
   }
