@@ -10,30 +10,47 @@ Leia `core/ENTRYPOINT.md` para o contrato de ativação automática.
 
 A App Factory é **general-purpose**. Sistemas escolares são um domínio válido entre muitos; regras locais de escola, comércio, governo, SaaS, logística, saúde, automação ou outro domínio pertencem ao projeto/perfil e não limitam o Core.
 
+## Project Adoption Gate
+
+Quando o usuário escolher explicitamente a App Factory para um projeto, quando o projeto vier de um starter da Factory ou quando o repositório já declarar governança pela Factory, **carregue `skills/project-adoption/SKILL.md` e aplique `core/PROJECT_ADOPTION_GATE.md` antes da primeira alteração funcional/visual material**.
+
+Adoção não pode ser apenas nominal ou retroativa. Antes do código, o projeto governado deve tornar recuperáveis pelo menos `AGENTS.md`, `PROJECT_STATE.md`, `.app-factory.json`, classificações de escala/risco/system level/API/Semantic/Independent Verification e, em UI material, design system + Professional UI + Motion Profile. Quando Semantic Verification for requerida, specs/planos exigidos entram antes da implementação.
+
+Execute quando disponível:
+
+```text
+project_adoption_gate.py check --phase pre-implementation
+```
+
+Um `web-admin` não pode cair silenciosamente em React + CSS próprio como fundação visual: shadcn/ui é o default validado, HeroUI é override transversal quando escolhido e base ad hoc exige desvio explícito. HeroUI principal herda `ambient-constellation strong`.
+
+Projetos legados externos usados apenas para correção pontual não recebem governança durável por reflexo; o gate passa a ser obrigatório quando a Factory é a governança do projeto.
+
 ## Antes de agir
 
 1. Entenda o objetivo real do usuário.
 2. Leia `core/PRINCIPLES.md`.
 3. Siga `core/HUMAN_INTERACTION.md` para decidir o que o agente deve fazer sozinho e o que realmente depende do usuário.
 4. Em repositório existente, use `core/CONTEXT_ENGINE.md`/`context-engine` para recuperar mapa incremental e arquivos relevantes.
-5. Em evolução, manutenção, refactor, debugging, modernização ou revisão de código existente, aplique `core/CHANGE_HYGIENE.md` e `maintenance`: preserve comportamento estável sem preservar implementação obsoleta, consolide repair loops e não entregue camadas de tentativas acumuladas.
-6. Use `core/AUTONOMY_ENGINE.md`/`autonomy-engine` para recuperar ou inicializar estado e calcular a próxima ação.
-7. Classifique a profundidade necessária em `core/PROJECT_SCALE.md`.
-8. Classifique também o nível arquitetural em `core/SYSTEM_ENGINEERING.md`. Para `persistent-app` ou superior, identifique fonte autoritativa; para `multi-user-system` ou superior, derive persistência compartilhada, backend/server-side, identidade, autorização, validação, migrations e recovery proporcionais antes de simplificar.
-9. Quando existir API/integração/webhook/evento/contrato compartilhado relevante, aplique `core/API_ENGINEERING.md` e `api-engineering`: classifique `none`/`lightweight`/`contract`/`governed`, escolha protocolo/fonte de verdade e gates proporcionais. Backend não implica API formal. Para telas/fluxos data-driven que cruzem rede, aplique também `core/DATA_ACCESS_EFFICIENCY.md`: evite frontend `chatty`, N+1 e chamadas redundantes; prefira composição orientada ao caso de uso, batching/paralelismo, paginação, retry/rate-limit e read models somente quando trouxerem ganho real. Esta regra também vale para Server Actions/Server Components/RPC mesmo sem API pública formal.
-10. Para funcionalidade nova, bugfix relevante, regra de negócio ou mudança de contrato/risco, aplique `core/SEMANTIC_ASSURANCE.md` + `core/SEMANTIC_VERIFICATION.md`: escolha semantic depth `scenario`/`domain`/`formal`, materialize spec antes do código e use `semantic-assurance` em `domain`/`formal`.
-11. Em `domain`/`formal`, `specs/semantic-assurance.json` deve estar coerente com fingerprint da spec, sem contradições determinísticas, refs quebradas ou perguntas `blocking`. Property/combinatorial/formal methods entram somente quando a estrutura do domínio justificar.
-12. Derive `core/INDEPENDENT_VERIFICATION.md`. Para `independent`/`adversarial`/`release`, carregue `independent-verification` e selecione a menor matriz gratuita/open source que cubra **classes de falha diferentes**. Projetos simples permanecem `baseline`.
-13. Ao montar essa matriz, considere superfícies objetivas, não catálogo: workflows GitHub, API, navegador, migrations PostgreSQL, arquitetura declarada, invariantes/estados, combinações finitas, workload/SLO, integrações externas e release. Não rode equivalentes redundantes sem ganho.
-14. Use `core/EXECUTION_FABRIC.md` + `execution-router` para traduzir a ação em capacidades e eliminar backends incapazes/indisponíveis. Verificadores independentes e gates formais preferem GitHub Actions/CI quando capaz.
-15. Quando houver histórico local suficiente, aplique `core/LEARNING_ENGINE.md`/`learning-engine` somente entre candidatos já elegíveis; sem evidência suficiente, preserve baseline.
-16. Aplique `core/RISK_MODEL.md`; risco, contrato semântico, Semantic Assurance, System Engineering, API Engineering, Data Access Efficiency, Independent Verification, Change Hygiene e Definition of Done vencem qualquer preferência aprendida.
-17. Para software real novo, use `projects/<slug>/` por padrão e siga `core/INSPECTION_ENVIRONMENT.md` para URL canônica, preview e hospedagem quando aplicável.
-18. Consulte `core/WORKFLOW.md` para projeto novo ou manutenção.
-19. Carregue somente Skills relevantes.
-20. Consulte templates, políticas e referências apenas quando necessários.
-21. Antes de criar algo do zero, verifique solução consolidada, componente, biblioteca, template, formalismo ou registry adequado.
-22. Não misture tecnologias, protocolos, solvers, scanners ou design systems sem ganho claro.
+5. Se o Project Adoption Gate se aplicar, materialize/valide a adoção **antes** de implementação material; recuperação de um projeto já iniciado deve registrar honestamente a lacuna em vez de fingir conformidade retroativa.
+6. Em evolução, manutenção, refactor, debugging, modernização ou revisão de código existente, aplique `core/CHANGE_HYGIENE.md` e `maintenance`: preserve comportamento estável sem preservar implementação obsoleta, consolide repair loops e não entregue camadas de tentativas acumuladas.
+7. Use `core/AUTONOMY_ENGINE.md`/`autonomy-engine` para recuperar ou inicializar estado e calcular a próxima ação.
+8. Classifique a profundidade necessária em `core/PROJECT_SCALE.md`.
+9. Classifique também o nível arquitetural em `core/SYSTEM_ENGINEERING.md`. Para `persistent-app` ou superior, identifique fonte autoritativa; para `multi-user-system` ou superior, derive persistência compartilhada, backend/server-side, identidade, autorização, validação, migrations e recovery proporcionais antes de simplificar.
+10. Quando existir API/integração/webhook/evento/contrato compartilhado relevante, aplique `core/API_ENGINEERING.md` e `api-engineering`: classifique `none`/`lightweight`/`contract`/`governed`, escolha protocolo/fonte de verdade e gates proporcionais. Backend não implica API formal. Para telas/fluxos data-driven que cruzem rede, aplique também `core/DATA_ACCESS_EFFICIENCY.md`: evite frontend `chatty`, N+1 e chamadas redundantes; prefira composição orientada ao caso de uso, batching/paralelismo, paginação, retry/rate-limit e read models somente quando trouxerem ganho real. Esta regra também vale para Server Actions/Server Components/RPC mesmo sem API pública formal.
+11. Para funcionalidade nova, bugfix relevante, regra de negócio ou mudança de contrato/risco, aplique `core/SEMANTIC_ASSURANCE.md` + `core/SEMANTIC_VERIFICATION.md`: escolha semantic depth `scenario`/`domain`/`formal`, materialize spec antes do código e use `semantic-assurance` em `domain`/`formal`.
+12. Em `domain`/`formal`, `specs/semantic-assurance.json` deve estar coerente com fingerprint da spec, sem contradições determinísticas, refs quebradas ou perguntas `blocking`. Property/combinatorial/formal methods entram somente quando a estrutura do domínio justificar.
+13. Derive `core/INDEPENDENT_VERIFICATION.md`. Para `independent`/`adversarial`/`release`, carregue `independent-verification` e selecione a menor matriz gratuita/open source que cubra **classes de falha diferentes**. Projetos simples permanecem `baseline`.
+14. Ao montar essa matriz, considere superfícies objetivas, não catálogo: workflows GitHub, API, navegador, migrations PostgreSQL, arquitetura declarada, invariantes/estados, combinações finitas, workload/SLO, integrações externas e release. Não rode equivalentes redundantes sem ganho.
+15. Use `core/EXECUTION_FABRIC.md` + `execution-router` para traduzir a ação em capacidades e eliminar backends incapazes/indisponíveis. Verificadores independentes e gates formais preferem GitHub Actions/CI quando capaz.
+16. Quando houver histórico local suficiente, aplique `core/LEARNING_ENGINE.md`/`learning-engine` somente entre candidatos já elegíveis; sem evidência suficiente, preserve baseline.
+17. Aplique `core/RISK_MODEL.md`; risco, Project Adoption Gate, contrato semântico, Semantic Assurance, System Engineering, API Engineering, Data Access Efficiency, Independent Verification, Change Hygiene e Definition of Done vencem qualquer preferência aprendida.
+18. Para software real novo, use `projects/<slug>/` por padrão e siga `core/INSPECTION_ENVIRONMENT.md` para URL canônica, preview e hospedagem quando aplicável.
+19. Consulte `core/WORKFLOW.md` para projeto novo ou manutenção.
+20. Carregue somente Skills relevantes.
+21. Consulte templates, políticas e referências apenas quando necessários.
+22. Antes de criar algo do zero, verifique solução consolidada, componente, biblioteca, template, formalismo ou registry adequado.
+23. Não misture tecnologias, protocolos, solvers, scanners ou design systems sem ganho claro.
 
 ## Regra de serviço ao usuário
 
@@ -45,6 +62,7 @@ Prefira:
 - contexto incremental;
 - grandes blocos funcionais completos;
 - critérios de aceite derivados da intenção antes da implementação;
+- Project Adoption Gate verde antes do código em projetos governados pela Factory;
 - Semantic Assurance proporcional antes de tratar spec complexa como pronta;
 - decisões técnicas rotineiras autônomas;
 - arquitetura simples, mas suficiente;
@@ -75,6 +93,8 @@ GitHub é fonte técnica de verdade. Conversas ajudam a pensar, mas estado, deci
 
 Ao retomar, prefira `resume`: contexto incremental + `.factory/state.json` quando existente + `PROJECT_STATE.md`. `.factory/execution.json` e `.factory/learning.json` ficam locais/bounded por padrão; `.factory/context/` é regenerável.
 
+Projetos governados pela Factory mantêm `.app-factory.json` schema v2 como resumo machine-readable da adoção/roteamento; ele não substitui documentos ou código, mas impede que outra conversa perca a decisão de processo/design/risco.
+
 Quando Semantic Verification se aplicar, `specs/semantic-contract.json`, `specs/verification-plan.json` e `specs/review-evidence.json` são artefatos duráveis/versionáveis. Mudanças podem tornar evidência stale.
 
 Em `domain`/`formal`, `specs/semantic-assurance.json` e decisões específicas em `SEMANTICS.md` permanecem recuperáveis. Semantic diff deve ser considerado antes de reutilizar prova antiga. Modelos property/combinatorial/formal que virarem gates também ficam versionados.
@@ -96,6 +116,8 @@ Escopo fechado não significa tarefa minúscula. Prefira fatias funcionais compl
 ## Validação
 
 Nunca declare concluído só porque código foi escrito. Use `core/DEFINITION_OF_DONE.md` e Skill `verification`.
+
+Em projeto governado pela Factory, `project_adoption_gate.py check --phase delivery` (ou checklist equivalente) faz parte da revisão final.
 
 Em manutenção/revisão de sistema existente, rode a consolidação de `core/CHANGE_HYGIENE.md` antes da revisão final e reverifique depois da limpeza. O fato de um bug ter desaparecido não basta se a solução ainda depende de código morto, shadow implementation, override acumulado ou tentativa temporária.
 
