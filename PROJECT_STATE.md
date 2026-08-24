@@ -22,17 +22,19 @@ Manter a **App Factory V1.4 estável** como baseline general-purpose, recuperáv
 - **Semantic Assurance**: profundidade `scenario`/`domain`/`formal`, requisitos EARS/FRET-inspired, domínio/referências, consistência, cobertura estrutural e semantic diff; gate `Validate Semantic Assurance` ativo;
 - property/stateful: Hypothesis/fast-check condicionais; **NIST ACTS**/covering arrays somente para combinatória finita material e modelo versionado;
 - formalização condicional: Z3/SMT, Alloy, FRET, P, Quint/TLA+, DMN e OPA/Rego/Cedar conforme o problema, nunca stack universal;
-- **Independent Verification**: `baseline`/`independent`/`adversarial`/`release`, `free-only`, diversidade de método por classe de falha; actionlint/zizmor verificam GitHub Actions quando aplicável; Trivy, Semgrep CE, StrykerJS/mutmut, Schemathesis, ZAP, axe/Playwright, Lighthouse, Squawk, dependency-cruiser, k6 e Toxiproxy continuam condicionais;
+- **Independent Verification**: `baseline`/`independent`/`adversarial`/`release`, `free-only`, diversidade de método por classe de falha; ferramentas continuam condicionais à superfície real;
 - field-test hardening: CLI auto-inicializável, recuperação explícita de lockfile legado, invariantes de coleção, lifecycle/migração de storage local, policy-as-code só com sinal material e E2E sincronizado com hidratação;
-- Professional UI: `professional-default` é quality bar transversal; admin/dashboard/CRUD continua preferindo shadcn/ui + ReUI seletivo, HeroUI segue alternativa; Motion Profile permanece contrato separado;
+- Professional UI: `professional-default` é quality bar transversal; admin/dashboard/CRUD continua preferindo shadcn/ui + ReUI seletivo quando não houver escolha explícita de HeroUI; Motion Profile permanece contrato separado;
+- **Ambient Constellation**: `ui/AMBIENT_CONSTELLATION_PROFILE.md` é contrato oficial; aliases como `ambient constellation`, `ambient constellarion` e `ambiente de constelação` ativam intensidade `strong`; **sistemas novos HeroUI herdam `ambient-constellation strong` automaticamente**, com aplicação forte em shell/header/hero/auth/dashboard overview/empty/AI/modais importantes/destaques e clean islands para dados densos;
+- Ambient Constellation accessibility/performance: reduced motion congela a constelação em fallback estático; `prefers-reduced-transparency` é progressive enhancement; loops privilegiam `transform`/`opacity`, 2 camadas assíncronas e zero strobe/blinking;
+- HeroUI catalog: `ui/heroui/` mantém catálogo auditado React/Pro/Native/v2 e passa a vincular a assinatura constelar como parte nativa da linguagem HeroUI;
 - Agent Conformance: corpus versionado + executor de referência + scorer determinístico de worktree; agentes reais são adaptadores opcionais e chain-of-thought não é avaliado;
 - Python Evidence: `coverage.py` branch-aware como diagnóstico + `diff-cover` com 100% das linhas executáveis novas/modificadas de `engine/`; sem threshold global arbitrário nem SaaS obrigatório;
 - Skill Routing Telemetry: `.factory/skill-routing.json`, local/bounded, registra apenas slugs/origens allowlisted explicitamente roteados; não registra prompt/conteúdo nem desativa Skill automaticamente;
 - **Change Hygiene**: `core/CHANGE_HYGIENE.md` vale para manutenção/revisão de projetos criados pela Factory ou externos; preserva comportamento sem preservar implementação obsoleta, exige consolidação após repair loop e impede que histórico de tentativas vire arquitetura final;
-- Change Hygiene scanner: `scripts/change_hygiene.py` bloqueia resíduos objetivos (conflitos/temporários rastreados), marca shadow copies/suppressions/`!important`/workarounds como advisory e detecta tooling existente sem instalar scanners por checklist;
-- ferramentas de higiene condicionais: lint/typecheck primeiro; Knip para dead files/exports/dependencies JS/TS; Ruff/Pyflakes + Vulture configurado em Python; Stylelint para dívida CSS; jscpd para hotspots/delta sem percentual universal;
+- Change Hygiene scanner: `scripts/change_hygiene.py` bloqueia resíduos objetivos, marca shadow copies/suppressions/`!important`/workarounds como advisory e detecta tooling existente sem instalar scanners por checklist;
 - projetos externos: mapear baseline/caminho real, não reescrever dívida histórica fora do escopo, mas não adicionar nova camada de dívida na área tocada;
-- CI: gates V1 preservados + System Engineering + **Validate API Engineering Contract** + Semantic Assurance + Independent Verification + Agent Conformance + Python Evidence + Change Hygiene + Web Admin Starter + V1 Release.
+- CI: gates V1 preservados + System Engineering + API Engineering + Semantic Assurance + Independent Verification + Agent Conformance + Python Evidence + Change Hygiene + Web Admin Starter + V1 Release; `scripts/validate_factory.py` agora também protege os contratos/caminhos de Ambient Constellation.
 
 ## Decisões vigentes
 
@@ -41,32 +43,34 @@ Manter a **App Factory V1.4 estável** como baseline general-purpose, recuperáv
 - GitHub é fonte técnica de verdade; chat não é continuidade operacional;
 - `resume`/Context Engine recuperam contexto antes de depender de memória;
 - arquitetura, API mode, semantic depth, matriz independente e executor são decisões técnicas da Factory;
-- System Engineering decide profundidade arquitetural mínima; processo leve não autoriza falsa persistência/segurança;
-- Semantic Assurance avalia qualidade da especificação; Semantic Verification prova implementação↔intenção; API Engineering governa interfaces; Independent Verification tenta quebrar/provar tecnicamente por métodos distintos;
 - ferramentas formais, scanners, load/fault/cross-browser entram apenas com pré-condição real;
 - ferramenta indisponível nunca vira `pass`;
 - critérios `must` apontam para evidência executável; risco médio/alto exige revisão desacoplada proporcional;
-- Evaluation Evidence mede resultados observáveis: Agent Conformance não avalia raciocínio privado; coverage é diagnóstico/diff gate; Skill Routing é telemetria agregada local;
+- **escolha explícita de HeroUI para o sistema inteiro prevalece sobre o default visual administrativo shadcn/ReUI**;
+- **HeroUI novo implica Ambient Surface Profile `ambient-constellation`, intensidade `strong`, salvo exceção explícita/real**;
+- intensidade forte é alcançada por composição, profundidade, área, gradiente/glow e camadas assíncronas — nunca por movimento rápido, strobe ou partículas sobre conteúdo;
+- conteúdo denso não desliga a identidade constelar: usa superfícies limpas com a assinatura mantida no shell/header/perímetro;
+- reduced motion remove drift/parallax e preserva fallback constelar estático quando legível;
 - **preservar comportamento não significa preservar implementação obsoleta**;
 - todo trabalho em código existente aplica Change Hygiene, independentemente da origem do projeto;
-- repair loop pode experimentar, mas a entrega passa por consolidação: remover tentativas descartadas, código morto/orfandade, shadow implementations, overrides/suppressions/temporários desnecessários e reverificar depois;
-- duas implementações só coexistem quando há compatibilidade/migração real, consumidor/razão identificável, condição objetiva de remoção e testes de transição;
+- repair loop pode experimentar, mas a entrega passa por consolidação;
+- duas implementações só coexistem quando há compatibilidade/migração real com condição objetiva de remoção e testes;
 - CSS deve corrigir a causa antes de acumular specificity/`!important`;
-- tooling de dead code/duplicação é proporcional; heurística não autoriza remoção automática de código dinâmico;
-- refactor grande deve, quando possível, ser separado da mudança funcional; refactor local necessário pode acompanhar a correção;
 - a árvore final deve representar a solução vigente que escolheríamos se já soubéssemos qual abordagem funcionaria; histórico de tentativas permanece no Git/PR.
 
 ## Evidência corrente
 
 - Core/engines: `core/`, `engine/`, `skills/`, `scripts/`, `tests/`;
+- Ambient Constellation: `ui/AMBIENT_CONSTELLATION_PROFILE.md`, `research/AMBIENT_CONSTELLATION_RESEARCH.md`, `ui/MOTION_POLICY.md`, `ui/UI_POLICY.md`, `skills/ui-builder/SKILL.md`, `ui/heroui/README.md`, templates de projeto e `scripts/validate_factory.py`;
+- HeroUI catalog: `ui/heroui/`;
 - Change Hygiene: `core/CHANGE_HYGIENE.md`, `scripts/change_hygiene.py`, `tests/change_hygiene/`, `research/CHANGE_HYGIENE_RESEARCH.md`, `.github/workflows/validate-change-hygiene.yml`;
 - Evaluation Evidence: `evals/agent-conformance/`, `.github/workflows/validate-agent-conformance.yml`, `.github/workflows/validate-python-evidence.yml`;
-- decisões duráveis: `docs/DECISIONS.md` (D-086–D-090 para Change Hygiene; D-081–D-085 para Evaluation Evidence);
+- decisões duráveis: `docs/DECISIONS.md`;
 - manutenção: `skills/maintenance/SKILL.md`, `core/WORKFLOW.md`, `core/DEFINITION_OF_DONE.md`, `templates/project/AGENTS.md`.
 
 ## Próxima ação
 
-Usar este baseline em criação e evolução. Em projeto existente: recuperar baseline → caracterizar comportamento → implementar/reparar → verificar → **consolidar com Change Hygiene** → reverificar → revisar/entregar. Em projeto externo, adotar o mesmo fluxo sem exigir documentos históricos da Factory como pré-condição para começar.
+Usar este baseline em criação e evolução. Em qualquer novo projeto HeroUI, inferir e registrar `ambient-constellation strong` antes da implementação visual; validar em browser real, desktop/mobile e reduced motion. Em projeto existente: recuperar baseline → caracterizar comportamento → implementar/reparar → verificar → consolidar com Change Hygiene → reverificar → revisar/entregar.
 
 ## Handoff
 
@@ -76,6 +80,6 @@ Outro agente deve começar por:
 2. `PROJECT_STATE.md` quando estiver modificando a própria Factory;
 3. `core/ENTRYPOINT.md` e `core/WORKFLOW.md`;
 4. `core/CHANGE_HYGIENE.md` + `skills/maintenance/SKILL.md` para código existente;
-5. `core/SYSTEM_ENGINEERING.md`, `core/API_ENGINEERING.md`, `core/SEMANTIC_ASSURANCE.md`, `core/SEMANTIC_VERIFICATION.md` e `core/INDEPENDENT_VERIFICATION.md` quando aplicáveis;
-6. `core/CONTEXT_ENGINE.md`, `core/AUTONOMY_ENGINE.md`, `core/EXECUTION_FABRIC.md`, `core/LEARNING_ENGINE.md`;
-7. perfil/UI policies apenas quando o produto exigir.
+5. contratos Core conforme o problema;
+6. para UI: `ui/UI_POLICY.md`, `ui/PROFESSIONAL_UI_PROFILE.md`, `ui/MOTION_POLICY.md` e, quando ativo ou quando HeroUI for a linguagem principal, `ui/AMBIENT_CONSTELLATION_PROFILE.md`;
+7. para HeroUI: `ui/heroui/README.md` e catálogos oficiais indexados.
