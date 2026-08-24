@@ -38,6 +38,8 @@ jobs:
           python-version: "3.12"
       - name: Install pinned CI evidence tools
         run: python -m pip install --disable-pip-version-check -r requirements/ci-evidence.txt
+      - name: Compile Project Adoption Gate
+        run: python -m py_compile engine/project_adoption.py scripts/project_adoption_gate.py
       - name: Run Python engine tests and executable planner scenarios with branch coverage
         run: |
           coverage erase
