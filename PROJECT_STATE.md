@@ -8,15 +8,21 @@ Manter a **App Factory V1.4 estável** como baseline general-purpose, recuperáv
 
 ## Estado
 
-- fase: `V1.4 — estável + governance hardening`;
-- versão: `1.4.0`;
-- versão dos engines/plugin baseline: `1.4.0`;
+- fase: `V1.4.1 — estável + project adoption governance hardening`;
+- versão: `1.4.1`;
+- versão dos engines/plugin baseline: `1.4.1`;
 - baseline publicada anterior preservada: tag/release `v1.0.0`;
-- Skills portáteis: **19**;
+- Skills portáteis: **20**;
 - V1.1: **Context Engine + Autonomy Engine**;
 - V1.2: **Execution Fabric + CI Executor**;
 - V1.3: **Learning Engine** local-only, bounded e privacy-safe;
 - V1.4: **Semantic Verification** com `specs/semantic-contract.json`, `specs/verification-plan.json`, `specs/review-evidence.json`, fingerprints e revisão desacoplada proporcional;
+- **V1.4.1 Project Adoption Gate**: `core/PROJECT_ADOPTION_GATE.md`, `engine/project_adoption.py`, `scripts/project_adoption_gate.py` e Skill `project-adoption` impedem que um projeto governado pela Factory comece implementação material antes de tornar routing/UI/semântica/verificação recuperáveis e passar o gate `pre-implementation`;
+- `.app-factory.json` schema v2 passa a ser o resumo machine-readable de governança para projetos adotados, preservando documentos/código como fontes reais;
+- recuperação honesta: projetos já iniciados que não passaram pelo gate são auditados/adotados antes do próximo bloco, sem fingir compliance retroativo nem reconstruir infraestrutura estável por reflexo;
+- **web-admin anti-bypass**: shadcn/ui permanece default validado; HeroUI é override transversal; React + CSS/custom/native como fundação visual exige `ui.deviation` explícito em vez de virar fallback silencioso;
+- HeroUI governado continua herdando `ambient-constellation strong` por padrão;
+- Project Adoption delivery gate exige review evidence proporcional para risco semântico médio/alto e estado recuperável de Independent Verification acima de baseline;
 - System Engineering Contract: níveis `website`/`local-app`/`persistent-app`/`multi-user-system`/`production-system`/`critical-system`, fonte autoritativa, persistência/identidade/autorização/recovery proporcionais;
 - **API Engineering Contract**: `none`/`lightweight`/`contract`/`governed`, protocolo pela necessidade, contract/compatibilidade/runtime/security quando aplicável; gate **Validate API Engineering Contract** ativo;
 - **Semantic Assurance**: profundidade `scenario`/`domain`/`formal`, requisitos EARS/FRET-inspired, domínio/referências, consistência, cobertura estrutural e semantic diff; gate `Validate Semantic Assurance` ativo;
@@ -34,18 +40,23 @@ Manter a **App Factory V1.4 estável** como baseline general-purpose, recuperáv
 - **Change Hygiene**: `core/CHANGE_HYGIENE.md` vale para manutenção/revisão de projetos criados pela Factory ou externos; preserva comportamento sem preservar implementação obsoleta, exige consolidação após repair loop e impede que histórico de tentativas vire arquitetura final;
 - Change Hygiene scanner: `scripts/change_hygiene.py` bloqueia resíduos objetivos, marca shadow copies/suppressions/`!important`/workarounds como advisory e detecta tooling existente sem instalar scanners por checklist;
 - projetos externos: mapear baseline/caminho real, não reescrever dívida histórica fora do escopo, mas não adicionar nova camada de dívida na área tocada;
-- CI: gates V1 preservados + System Engineering + API Engineering + Semantic Assurance + Independent Verification + Agent Conformance + Python Evidence + Change Hygiene + Web Admin Starter + V1 Release; `scripts/validate_factory.py` agora também protege os contratos/caminhos de Ambient Constellation.
+- CI: gates V1 preservados + System Engineering + API Engineering + Semantic Assurance + Independent Verification + Agent Conformance + Python Evidence + Change Hygiene + Web Admin Starter + V1 Release; `scripts/validate_factory.py` agora protege também Project Adoption Gate e Ambient Constellation.
 
 ## Decisões vigentes
 
 - o Core é **general-purpose**; domínio escolar é apenas um dos domínios possíveis;
 - intenção de desenvolvimento ativa `factory-router`; usuário não precisa nomear App Factory;
+- **projeto explicitamente governado pela App Factory precisa passar Project Adoption Gate antes da implementação material**;
+- ativação universal do router não injeta governança permanente em repositório legado usado apenas para um reparo pontual;
+- `.app-factory.json` schema v2 registra adoção/roteamento sem substituir `PROJECT_STATE.md`, arquitetura, specs ou código;
 - GitHub é fonte técnica de verdade; chat não é continuidade operacional;
 - `resume`/Context Engine recuperam contexto antes de depender de memória;
-- arquitetura, API mode, semantic depth, matriz independente e executor são decisões técnicas da Factory;
+- arquitetura, API mode, semantic depth, matriz independente, perfil/UI e executor são decisões técnicas da Factory;
+- Semantic Verification exigida é materializada antes do código; spec criada depois do código é recuperação, não conformidade normal;
 - ferramentas formais, scanners, load/fault/cross-browser entram apenas com pré-condição real;
 - ferramenta indisponível nunca vira `pass`;
 - critérios `must` apontam para evidência executável; risco médio/alto exige revisão desacoplada proporcional;
+- **web-admin não pode usar React + CSS próprio como fallback silencioso**; base ad hoc exige desvio explícito;
 - **escolha explícita de HeroUI para o sistema inteiro prevalece sobre o default visual administrativo shadcn/ReUI**;
 - **HeroUI novo implica Ambient Surface Profile `ambient-constellation`, intensidade `strong`, salvo exceção explícita/real**;
 - intensidade forte é alcançada por composição, profundidade, área, gradiente/glow e camadas assíncronas — nunca por movimento rápido, strobe ou partículas sobre conteúdo;
@@ -60,6 +71,7 @@ Manter a **App Factory V1.4 estável** como baseline general-purpose, recuperáv
 
 ## Evidência corrente
 
+- Project Adoption Gate: `core/PROJECT_ADOPTION_GATE.md`, `engine/project_adoption.py`, `scripts/project_adoption_gate.py`, `skills/project-adoption/SKILL.md`, `tests/project_adoption/`, templates/AGENTS, `profiles/web-admin/PROFILE.md` e `scripts/validate_factory.py`;
 - Core/engines: `core/`, `engine/`, `skills/`, `scripts/`, `tests/`;
 - Ambient Constellation: `ui/AMBIENT_CONSTELLATION_PROFILE.md`, `research/AMBIENT_CONSTELLATION_RESEARCH.md`, `ui/MOTION_POLICY.md`, `ui/UI_POLICY.md`, `skills/ui-builder/SKILL.md`, `ui/heroui/README.md`, templates de projeto e `scripts/validate_factory.py`;
 - HeroUI catalog: `ui/heroui/`;
@@ -70,7 +82,7 @@ Manter a **App Factory V1.4 estável** como baseline general-purpose, recuperáv
 
 ## Próxima ação
 
-Usar este baseline em criação e evolução. Em qualquer novo projeto HeroUI, inferir e registrar `ambient-constellation strong` antes da implementação visual; validar em browser real, desktop/mobile e reduced motion. Em projeto existente: recuperar baseline → caracterizar comportamento → implementar/reparar → verificar → consolidar com Change Hygiene → reverificar → revisar/entregar.
+Usar este baseline em criação e evolução. Em projeto governado: detectar adoção → classificar → materializar `.app-factory.json`/estado/specs → passar `pre-implementation` → implementar → verificar/consolidar → passar `delivery`. Em qualquer novo projeto HeroUI, inferir e registrar `ambient-constellation strong` antes da implementação visual. Em projeto existente: recuperar baseline → caracterizar comportamento → implementar/reparar → verificar → consolidar com Change Hygiene → reverificar → revisar/entregar.
 
 ## Handoff
 
@@ -78,8 +90,9 @@ Outro agente deve começar por:
 
 1. `AGENTS.md`;
 2. `PROJECT_STATE.md` quando estiver modificando a própria Factory;
-3. `core/ENTRYPOINT.md` e `core/WORKFLOW.md`;
-4. `core/CHANGE_HYGIENE.md` + `skills/maintenance/SKILL.md` para código existente;
-5. contratos Core conforme o problema;
-6. para UI: `ui/UI_POLICY.md`, `ui/PROFESSIONAL_UI_PROFILE.md`, `ui/MOTION_POLICY.md` e, quando ativo ou quando HeroUI for a linguagem principal, `ui/AMBIENT_CONSTELLATION_PROFILE.md`;
-7. para HeroUI: `ui/heroui/README.md` e catálogos oficiais indexados.
+3. `core/ENTRYPOINT.md`, `core/PROJECT_ADOPTION_GATE.md` e `core/WORKFLOW.md`;
+4. `skills/factory-router/SKILL.md` e `skills/project-adoption/SKILL.md` quando o projeto for governado;
+5. `core/CHANGE_HYGIENE.md` + `skills/maintenance/SKILL.md` para código existente;
+6. contratos Core conforme o problema;
+7. para UI: `ui/UI_POLICY.md`, `ui/PROFESSIONAL_UI_PROFILE.md`, `ui/MOTION_POLICY.md` e, quando ativo ou quando HeroUI for a linguagem principal, `ui/AMBIENT_CONSTELLATION_PROFILE.md`;
+8. para HeroUI: `ui/heroui/README.md` e catálogos oficiais indexados.
