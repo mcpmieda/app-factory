@@ -54,6 +54,7 @@ REQUIRED = [
     "tests/change_hygiene/test_change_hygiene.py",
     "research/EVALUATION_EVIDENCE_RESEARCH.md",
     "research/CHANGE_HYGIENE_RESEARCH.md",
+    "research/AMBIENT_CONSTELLATION_RESEARCH.md",
     ".coveragerc",
     "requirements/ci-evidence.txt",
     ".github/workflows/validate-agent-conformance.yml",
@@ -62,6 +63,8 @@ REQUIRED = [
     "ui/UI_POLICY.md",
     "ui/PROFESSIONAL_UI_PROFILE.md",
     "ui/MOTION_POLICY.md",
+    "ui/AMBIENT_CONSTELLATION_PROFILE.md",
+    "ui/heroui/README.md",
     "skills/factory-router/SKILL.md",
     "skills/maintenance/SKILL.md",
     "skills/api-engineering/SKILL.md",
@@ -118,6 +121,56 @@ def validate_professional_ui() -> None:
             "Base preferencial: **shadcn/ui**",
             "ReUI seletivamente",
             "HeroUI",
+            "ambient-constellation",
+            "Constellation Intensity: strong",
+            "ui/AMBIENT_CONSTELLATION_PROFILE.md",
+        ],
+    )
+    require_markers(
+        "ui/MOTION_POLICY.md",
+        [
+            "Ambient Surface Profile",
+            "ambient-constellation",
+            "HeroUI como design system principal",
+            "fallback constelar estático",
+            "prefers-reduced-transparency",
+        ],
+    )
+    require_markers(
+        "ui/AMBIENT_CONSTELLATION_PROFILE.md",
+        [
+            "ambient-constellation",
+            "ambient constellarion",
+            "Constellation Intensity: strong",
+            "HeroUI obrigatório por padrão",
+            "Multi-layer asynchronous drift",
+            "pointer-events: none",
+            "prefers-reduced-motion",
+            "prefers-reduced-transparency",
+            "transform",
+            "opacity",
+            "Three Flashes",
+            "Dense content: clean islands",
+        ],
+    )
+    require_markers(
+        "ui/heroui/README.md",
+        [
+            "Regra nativa de atmosfera HeroUI",
+            "Ambient Surface Profile: ambient-constellation",
+            "Constellation Intensity: strong",
+            "ui/AMBIENT_CONSTELLATION_PROFILE.md",
+        ],
+    )
+    require_markers(
+        "research/AMBIENT_CONSTELLATION_RESEARCH.md",
+        [
+            "Multi-layer asynchronous drift",
+            "HeroUI OSS",
+            "web.dev",
+            "W3C",
+            "Motion for React",
+            "ADOTAR",
         ],
     )
     require_markers(
@@ -129,11 +182,20 @@ def validate_professional_ui() -> None:
             "ReUI seletivamente",
             "HeroUI",
             "Inventário antes da implementação",
+            "ambient-constellation strong",
+            "ambient constellarion",
+            "ui/AMBIENT_CONSTELLATION_PROFILE.md",
         ],
     )
     require_markers(
         "templates/project/PRODUCT.md",
-        ["Professional UI Profile", "professional-default", "density"],
+        [
+            "Professional UI Profile",
+            "professional-default",
+            "density",
+            "Ambient Surface Profile",
+            "Constellation Intensity",
+        ],
     )
     require_markers(
         "templates/project/ARCHITECTURE.md",
@@ -141,11 +203,18 @@ def validate_professional_ui() -> None:
             "Professional UI Profile",
             "professional-default",
             "UI profissional, quando aplicável",
+            "Ambient Surface Profile",
+            "Ambient Constellation, quando ativo",
         ],
     )
     require_markers(
         "templates/project/AGENTS.md",
-        ["ui/PROFESSIONAL_UI_PROFILE.md", "professional-default"],
+        [
+            "ui/PROFESSIONAL_UI_PROFILE.md",
+            "professional-default",
+            "ui/AMBIENT_CONSTELLATION_PROFILE.md",
+            "ambient-constellation strong",
+        ],
     )
     require_markers(
         "profiles/web-admin/PROFILE.md",
@@ -331,7 +400,7 @@ def main() -> int:
     validate_change_hygiene()
 
     print(
-        f"OK: {len(REQUIRED)} arquivos obrigatórios, {len(skill_files)} Skills, Professional UI, Evaluation Evidence e Change Hygiene validados."
+        f"OK: {len(REQUIRED)} arquivos obrigatórios, {len(skill_files)} Skills, Professional UI/Ambient Constellation, Evaluation Evidence e Change Hygiene validados."
     )
     return 0
 
