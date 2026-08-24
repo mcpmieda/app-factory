@@ -1,6 +1,6 @@
 ---
 name: factory-router
-description: Use whenever a user asks to create, build, design, improve, modernize, maintain, debug, automate, integrate, migrate, extend, or continue a software project, app, system, website, API, browser extension, internal tool, automation, mobile app, desktop app, or GitHub project. Also use for broad outcome-only requests such as "quero criar um sistema", "quero um app", "melhore este projeto", or "automatize este processo". This is the universal entrypoint that recovers incremental context and autonomous state, classifies architecture/API/risk, selects proportional semantic assurance/verification and independent verification, routes execution capabilities, and activates specialized Skills without requiring the user to mention App Factory explicitly.
+description: Use whenever a user asks to create, build, design, improve, modernize, maintain, debug, automate, integrate, migrate, extend, or continue a software project, app, system, website, API, browser extension, internal tool, automation, mobile app, desktop app, or GitHub project. Also use for broad outcome-only requests such as "quero criar um sistema", "quero um app", "melhore este projeto", or "automatize este processo". This is the universal entrypoint that recovers incremental context and autonomous state, enforces durable project adoption when App Factory governs the project, classifies architecture/API/risk, selects proportional semantic assurance/verification and independent verification, routes execution capabilities, and activates specialized Skills without requiring the user to mention App Factory explicitly.
 ---
 
 # Factory Router
@@ -17,32 +17,36 @@ Activate from software-development intent itself. The user may describe only an 
 2. Understand the real outcome.
 3. Classify mode: new project, evolution/feature, maintenance/refactor, bug/debugging, automation/integration, or technical research/decision.
 4. If a project repository already exists, use `context-engine` to refresh the incremental repository map and inspect authoritative state instead of planning from chat memory.
-5. For any existing-code evolution, maintenance, refactor, debugging, modernization or review, apply `core/CHANGE_HYGIENE.md`; load `maintenance` when code/config/styles are being changed. This applies equally to Factory-built and external projects. Preserve stable behavior, not obsolete implementation; a repair loop must end in consolidation, not stacked patches.
-6. Classify three independent axes before architecture: process scale with `core/PROJECT_SCALE.md`, risk with `core/RISK_MODEL.md`, and product/system level with `core/SYSTEM_ENGINEERING.md`.
-7. For `persistent-app` or above, identify the authoritative data source. Do not let browser-local storage, mocks or static JSON become the final shared persistence by convenience.
-8. For `multi-user-system` or above, derive server-side/backend, durable shared persistence, identity/auth, authorization, validation, migrations and recovery needs before choosing a simplified implementation.
-9. If there is a meaningful API/integration/webhook/event boundary, apply `core/API_ENGINEERING.md`; classify API governance as `none`, `lightweight`, `contract` or `governed`, then load `api-engineering` when API-specific design/implementation is in scope. Do not formalize an API only because a backend exists.
-10. Decide whether Semantic Verification is required before initializing a new autonomy state:
+5. Determine whether the project is **durably governed by App Factory**: explicit user choice, `.app-factory.json`, Factory-linked `AGENTS.md`/project docs, Factory starter provenance, or durable `.factory`/semantic state. If yes, load `project-adoption`, apply `core/PROJECT_ADOPTION_GATE.md`, materialize/upgrade adoption metadata and require the `pre-implementation` gate to be green **before material functional/visual code**. A tiny repair in an unrelated legacy repository does not require permanent adoption merely because this router activated.
+6. For any existing-code evolution, maintenance, refactor, debugging, modernization or review, apply `core/CHANGE_HYGIENE.md`; load `maintenance` when code/config/styles are being changed. This applies equally to Factory-built and external projects. Preserve stable behavior, not obsolete implementation; a repair loop must end in consolidation, not stacked patches.
+7. Classify three independent axes before architecture: process scale with `core/PROJECT_SCALE.md`, risk with `core/RISK_MODEL.md`, and product/system level with `core/SYSTEM_ENGINEERING.md`.
+8. For `persistent-app` or above, identify the authoritative data source. Do not let browser-local storage, mocks or static JSON become the final shared persistence by convenience.
+9. For `multi-user-system` or above, derive server-side/backend, durable shared persistence, identity/auth, authorization, validation, migrations and recovery needs before choosing a simplified implementation.
+10. If there is a meaningful API/integration/webhook/event boundary, apply `core/API_ENGINEERING.md`; classify API governance as `none`, `lightweight`, `contract` or `governed`, then load `api-engineering` when API-specific design/implementation is in scope. Do not formalize an API only because a backend exists.
+11. Decide whether Semantic Verification is required before initializing a new autonomy state:
    - require it for new functionality, relevant bugfixes, business rules, data/API contracts, or medium/high-risk structural changes;
    - keep docs/chores and small no-behavior refactors lightweight.
-11. If Semantic Verification is required, derive **semantic depth** with `core/SEMANTIC_ASSURANCE.md`:
+12. If Semantic Verification is required, derive **semantic depth** with `core/SEMANTIC_ASSURANCE.md`:
    - `scenario` for small/isolated behavior where invariants + `given/when/then` are sufficient;
    - `domain` when multiple concepts, relations, roles, states or rules interact;
    - `formal` only when temporal requirements, concurrency/distribution, large combinatorial constraints, policy complexity or criticality justify formal analysis.
-12. Load `semantic-assurance` for `domain`/`formal`. Create/update `specs/semantic-assurance.json`, run deterministic consistency/coverage analysis and resolve `blocking` questions before implementation. Select Z3/Alloy/FRET/P/Quint/TLA+/DMN/OPA/Cedar only by problem fit; never install all by default.
-13. Derive Independent Verification from risk + system level + API mode using `core/INDEPENDENT_VERIFICATION.md`. Keep simple work `baseline`; load `independent-verification` when the mode becomes `independent`, `adversarial` or `release`.
-14. Use `autonomy-engine` to resume existing state or initialize it. When the new state requires semantic proof, initialize/resume with `require_spec`; do not ask the user to choose this technical flag.
-15. Select a validated project profile from `profiles/` when the product clearly matches one; do not force a profile when none fits. A profile can provide defaults but cannot reduce `core/SYSTEM_ENGINEERING.md`, applicable `core/API_ENGINEERING.md`, Semantic Assurance/Verification, Independent Verification or Change Hygiene requirements.
-16. If semantic proof is required, load `semantic-verification`: create/update the structured contract and acceptance criteria before implementation, then derive verification traceability from it. In `domain`/`formal`, Semantic Assurance must be ready against the current contract fingerprint first.
-17. Choose the execution capability with `core/TASK_ROUTER.md`: current agent + GitHub/CI first when they can prove the work; local/Codex only when genuinely needed. Independent/adversarial/formal checks should prefer GitHub CI or an equivalent deterministic free runner when capable.
-18. Load only the specialized Skills needed for the current block.
-19. Once the routing decision has explicitly selected specialized Skills, record only their installed slugs when the local Factory CLI is available: `python scripts/skill_routing.py --root <project> record --skill <slug> ...`. This is advisory aggregate telemetry only; never include prompt/task text and never block work if local routing telemetry is unavailable.
-20. Prefer reuse of mature solutions when appropriate.
-21. Execute the largest safe complete functional slice, record the resulting autonomy event, ask the engine for `next`, and continue until done or genuinely blocked.
-22. During verification, execute the selected independent/adversarial matrix in addition to implementation-authored tests when applicable.
-23. When existing code was changed, run the Change Hygiene consolidation pass after successful repair/verification, remove discarded attempts/orphan residue, review advisories, then rerun applicable regressions before final review.
-24. When a semantic model changes, use semantic diff to identify impacted requirements, acceptance criteria, invariants and declared gates before accepting prior evidence as current.
-25. For medium/high-risk semantic work, do not let the implementing reasoning self-approve the delivery: prefer an independent reviewer/context; otherwise use the clean-context review packet built from current spec + diff + verification evidence. Deterministic/formal tools are complementary evidence, not a semantic reviewer.
+13. Load `semantic-assurance` for `domain`/`formal`. Create/update `specs/semantic-assurance.json`, run deterministic consistency/coverage analysis and resolve `blocking` questions before implementation. Select Z3/Alloy/FRET/P/Quint/TLA+/DMN/OPA/Cedar only by problem fit; never install all by default.
+14. Derive Independent Verification from risk + system level + API mode using `core/INDEPENDENT_VERIFICATION.md`. Keep simple work `baseline`; load `independent-verification` when the mode becomes `independent`, `adversarial` or `release`.
+15. Use `autonomy-engine` to resume existing state or initialize it. When the new state requires semantic proof, initialize/resume with `require_spec`; do not ask the user to choose this technical flag.
+16. Select a validated project profile from `profiles/` when the product clearly matches one; do not force a profile when none fits. A profile can provide defaults but cannot reduce `core/SYSTEM_ENGINEERING.md`, applicable `core/API_ENGINEERING.md`, Semantic Assurance/Verification, Independent Verification, Project Adoption Gate or Change Hygiene requirements.
+17. If semantic proof is required, load `semantic-verification`: create/update the structured contract and acceptance criteria before implementation, then derive verification traceability from it. In `domain`/`formal`, Semantic Assurance must be ready against the current contract fingerprint first.
+18. If the Project Adoption Gate applies, finish/update `.app-factory.json`, `AGENTS.md`, `PROJECT_STATE.md` and the semantic/verification artifacts required by the selected routing, then run `project_adoption_gate.py check --phase pre-implementation` (or prove the equivalent checklist when the script cannot run). Only after this passes may implementation begin.
+19. For UI material, load `ui-builder` before creating visual foundations. `web-admin` defaults to shadcn/ui with selective ReUI; React + custom/native CSS is not a silent fallback and requires a recorded deviation. Explicit HeroUI remains a transversal override and inherits `ambient-constellation strong` by default.
+20. Choose the execution capability with `core/TASK_ROUTER.md`: current agent + GitHub/CI first when they can prove the work; local/Codex only when genuinely needed. Independent/adversarial/formal checks should prefer GitHub CI or an equivalent deterministic free runner when capable.
+21. Load only the specialized Skills needed for the current block.
+22. Once the routing decision has explicitly selected specialized Skills, record only their installed slugs when the local Factory CLI is available: `python scripts/skill_routing.py --root <project> record --skill <slug> ...`. This is advisory aggregate telemetry only; never include prompt/task text and never block work if local routing telemetry is unavailable.
+23. Prefer reuse of mature solutions when appropriate.
+24. Execute the largest safe complete functional slice, record the resulting autonomy event, ask the engine for `next`, and continue until done or genuinely blocked.
+25. During verification, execute the selected independent/adversarial matrix in addition to implementation-authored tests when applicable.
+26. When existing code was changed, run the Change Hygiene consolidation pass after successful repair/verification, remove discarded attempts/orphan residue, review advisories, then rerun applicable regressions before final review.
+27. When a semantic model changes, use semantic diff to identify impacted requirements, acceptance criteria, invariants and declared gates before accepting prior evidence as current.
+28. For medium/high-risk semantic work, do not let the implementing reasoning self-approve the delivery: prefer an independent reviewer/context; otherwise use the clean-context review packet built from current spec + diff + verification evidence. Deterministic/formal tools are complementary evidence, not a semantic reviewer.
+29. If the project is Factory-governed, run the Project Adoption Gate in `delivery` phase before declaring completion.
 
 ## Common routing examples
 
@@ -58,6 +62,8 @@ Activate from software-development intent itself. The user may describe only an 
 - semantic depth: likely `domain`, because assets, users, custody/status/history and authorization rules interact;
 - `semantic-assurance` models only domain concepts/relations/rules that affect behavior, not every noun in the UI;
 - Independent Verification: normally `adversarial` for a real multi-user institutional system, with only technically applicable motors activated;
+- project adoption: materialize `.app-factory.json` + durable `AGENTS.md`/state and pass `pre-implementation` before code;
+- UI: shadcn/ui is the web-admin default unless HeroUI is deliberately selected; ad-hoc CSS foundation is not implicit;
 - initialize autonomous state from the user's outcome with semantic specification enabled;
 - use `app-planner` and the validated profile to define the first complete slice;
 - derive persistence, identity, authorization, server-side validation and recovery needs from the actual operation;
@@ -89,6 +95,7 @@ Activate from software-development intent itself. The user may describe only an 
 ### "Continue este projeto"
 
 - refresh Context Engine;
+- detect whether the repo is Factory-governed and, if so, verify/upgrade Project Adoption Gate state before the next material implementation;
 - recover `.factory/state.json` when available, otherwise infer the goal from versioned project state;
 - recover semantic contract, semantic-assurance model, verification artifacts and `SEMANTICS.md` when they exist;
 - recover recorded system level/data-source decisions, API governance/contract decisions and `VERIFICATION.md`/independent mode when present;
@@ -100,12 +107,12 @@ Activate from software-development intent itself. The user may describe only an 
 
 ### "Troque o texto desta tela"
 
-If it is a simple copy-only change with no behavior/rule impact, Semantic Assurance/Verification and Independent Verification can remain lightweight/baseline. Stay with the current agent, make the edit and use CI when useful. Do not send to Codex merely because a source file changes. If the edit touches existing code/style structure, Change Hygiene still forbids leaving temporary copies or override residue, but stays lightweight.
+If it is a simple copy-only change with no behavior/rule impact, Semantic Assurance/Verification and Independent Verification can remain lightweight/baseline. Stay with the current agent, make the edit and use CI when useful. Do not send to Codex merely because a source file changes. If the edit touches existing code/style structure, Change Hygiene still forbids leaving temporary copies or override residue, but stays lightweight. A legacy external repo does not need permanent App Factory adoption for this tiny task unless it is already governed by the Factory.
 
 ### "Corrija este projeto legado que não foi criado pela App Factory"
 
 - recover the real repository baseline and execution path first;
-- do not require App Factory historical artifacts to begin;
+- do not require App Factory historical artifacts to begin unless the user explicitly chooses ongoing App Factory governance;
 - load `maintenance` and apply `core/CHANGE_HYGIENE.md` to the touched area;
 - characterize the stable behavior that must survive;
 - do not rewrite unrelated legacy debt merely to make the repository look new;
@@ -122,6 +129,7 @@ Semantic Verification is required because security rules and observable authoriz
 The user should not need to:
 
 - name the Factory;
+- remember to ask for the Project Adoption Gate;
 - choose a framework without reason;
 - classify the technical system level manually;
 - classify API governance manually;
@@ -140,4 +148,4 @@ Tell the user about a handoff only when they need to act or the handoff material
 
 ## Completion
 
-Writing code is not completion. `core/SYSTEM_ENGINEERING.md` requirements are architecture gates, not suggestions. A `multi-user-system` or higher cannot be called production-ready while authoritative data is browser-only, authorization is client-only, required migrations/recovery are absent, or real persistence/protected flows have not been exercised. When `core/API_ENGINEERING.md` applies in `contract`/`governed` mode, contract validity, compatibility, runtime correspondence and security evidence also become proportional gates. When Semantic Assurance depth is `domain`/`formal`, unresolved deterministic contradictions, broken refs, `blocking` questions or required formalizations/gates prevent specification readiness. When `core/INDEPENDENT_VERIFICATION.md` selects `required` adversarial checks, those checks must execute successfully or have an explicit justified exception; tool unavailability is not a pass. When a semantic contract applies, every `must` criterion also needs current executable evidence and medium/high-risk work needs decoupled review evidence. Existing-code work additionally must satisfy `core/CHANGE_HYGIENE.md`: a bug disappearing is not completion if the final tree still depends on discarded attempts, shadow implementations, unnecessary override layers or temporary residue. Advance through verification, consolidation and review, using bounded repair on failures, then deliver only when `core/DEFINITION_OF_DONE.md` is satisfied proportionally to risk.
+Writing code is not completion. For Factory-governed projects, a green `pre-implementation` adoption gate is a prerequisite to normal implementation and a green `delivery` adoption gate is part of completion. `core/SYSTEM_ENGINEERING.md` requirements are architecture gates, not suggestions. A `multi-user-system` or higher cannot be called production-ready while authoritative data is browser-only, authorization is client-only, required migrations/recovery are absent, or real persistence/protected flows have not been exercised. When `core/API_ENGINEERING.md` applies in `contract`/`governed` mode, contract validity, compatibility, runtime correspondence and security evidence also become proportional gates. When Semantic Assurance depth is `domain`/`formal`, unresolved deterministic contradictions, broken refs, `blocking` questions or required formalizations/gates prevent specification readiness. When `core/INDEPENDENT_VERIFICATION.md` selects `required` adversarial checks, those checks must execute successfully or have an explicit justified exception; tool unavailability is not a pass. When a semantic contract applies, every `must` criterion also needs current executable evidence and medium/high-risk work needs decoupled review evidence. Existing-code work additionally must satisfy `core/CHANGE_HYGIENE.md`: a bug disappearing is not completion if the final tree still depends on discarded attempts, shadow implementations, unnecessary override layers or temporary residue. Advance through verification, consolidation and review, using bounded repair on failures, then deliver only when `core/DEFINITION_OF_DONE.md` is satisfied proportionally to risk.
