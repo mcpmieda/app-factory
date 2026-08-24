@@ -8,6 +8,21 @@ Este perfil consolida somente decisões comprovadas pelo piloto V0.3 e pelos har
 
 Aplicações administrativas, CRUDs, dashboards, ferramentas internas e sistemas de gestão com UI orientada a dados.
 
+## Project Adoption Gate antes do código
+
+Quando o projeto for governado pela App Factory, este perfil **não pode ser aplicado apenas depois que a primeira UI já foi construída**.
+
+Antes da primeira implementação funcional/visual material:
+
+1. aplicar `core/PROJECT_ADOPTION_GATE.md` / `project-adoption`;
+2. registrar `.app-factory.json` schema v2 com `profile = web-admin`;
+3. registrar system level, risco, API mode, Semantic Verification/depth e Independent Verification;
+4. registrar design system + Professional UI + Motion Profile;
+5. materializar specs/verification plan exigidos pela classificação;
+6. passar `project_adoption_gate.py check --phase pre-implementation` ou checklist equivalente.
+
+**React + CSS próprio, HTML/CSS nativo ou UI hand-rolled não são fallback silencioso deste perfil.** Se virarem a fundação visual, precisam de `ui.deviation` explícito com uma restrição real que justifique não usar o default validado. O fato de a aplicação existente usar React/Vite não é, sozinho, uma justificativa.
+
 ## Base padrão
 
 Instalar por padrão neste perfil, salvo restrição real do projeto **ou escolha explícita de HeroUI como linguagem principal**:
@@ -21,6 +36,8 @@ Instalar por padrão neste perfil, salvo restrição real do projeto **ou escolh
 - Vitest para testes unitários e de integração adequados;
 - Playwright para o fluxo E2E crítico;
 - ESLint/configuração oficial do Next para lint específico da stack.
+
+A stack do projeto existente pode ser preservada quando reconstruí-la seria inadequado. Preservar React/Vite/Cloudflare ou outra infraestrutura **não implica** preservar uma camada visual ad hoc: o design system deve ser avaliado separadamente e integrado de forma compatível quando possível.
 
 Se o produto for explicitamente definido como **sistema HeroUI**, não instalar shadcn/ReUI por reflexo deste perfil. Usar HeroUI transversalmente e seguir a seção `HeroUI override` abaixo.
 
@@ -129,7 +146,7 @@ Quando HeroUI for a linguagem principal:
 1. consultar `ui/heroui/README.md` e os catálogos HeroUI antes de construir equivalentes;
 2. não instalar shadcn/ReUI por padrão deste perfil;
 3. ativar automaticamente `ui/AMBIENT_CONSTELLATION_PROFILE.md`;
-4. registrar:
+4. registrar no `.app-factory.json` e estado do projeto:
 
 ```text
 Motion Profile: ambient
@@ -187,20 +204,22 @@ A estrutura pode ser simplificada para apps menores.
 
 Quando os scripts existirem:
 
-1. instalação reproduzível;
-2. setup/migrations/seed quando aplicável;
-3. format check;
-4. lint;
-5. typecheck;
-6. testes unit/integration relevantes;
-7. build;
-8. auditoria de dependências proporcional ao risco;
-9. Playwright do fluxo crítico;
-10. desktop e viewport móvel;
-11. console sem erro relevante;
-12. motion coerente com o perfil e `prefers-reduced-motion`;
-13. quando `ambient-constellation` estiver ativo: efeito perceptível, partículas sem interação, dense content limpo, fallback estático e zero flashing/strobe;
-14. para API/fluxos data-driven/Independent Verification, executar gates proporcionais selecionados.
+1. Project Adoption Gate `pre-implementation` verde antes do código em projeto governado;
+2. instalação reproduzível;
+3. setup/migrations/seed quando aplicável;
+4. format check;
+5. lint;
+6. typecheck;
+7. testes unit/integration relevantes;
+8. build;
+9. auditoria de dependências proporcional ao risco;
+10. Playwright do fluxo crítico;
+11. desktop e viewport móvel;
+12. console sem erro relevante;
+13. motion coerente com o perfil e `prefers-reduced-motion`;
+14. quando `ambient-constellation` estiver ativo: efeito perceptível, partículas sem interação, dense content limpo, fallback estático e zero flashing/strobe;
+15. para API/fluxos data-driven/Independent Verification, executar gates proporcionais selecionados;
+16. Project Adoption Gate `delivery` verde antes de conclusão em projeto governado.
 
 ## Reprodutibilidade
 
@@ -221,4 +240,4 @@ Quando os scripts existirem:
 
 ## Evidência de origem
 
-Perfil derivado do piloto/hardening web-admin, `ui/MOTION_POLICY.md`, `ui/PROFESSIONAL_UI_PROFILE.md`, `ui/AMBIENT_CONSTELLATION_PROFILE.md`, pesquisa `research/AMBIENT_CONSTELLATION_RESEARCH.md` e auditoria final da linha V1.
+Perfil derivado do piloto/hardening web-admin, `core/PROJECT_ADOPTION_GATE.md`, `ui/MOTION_POLICY.md`, `ui/PROFESSIONAL_UI_PROFILE.md`, `ui/AMBIENT_CONSTELLATION_PROFILE.md`, pesquisa `research/AMBIENT_CONSTELLATION_RESEARCH.md` e auditoria final da linha V1.
