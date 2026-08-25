@@ -25,7 +25,8 @@ Antes de criar componente, tela ou padrão próprio em um projeto HeroUI, ler `u
 - `ui/heroui/HEROUI_NATIVE_CATALOG.md` — HeroUI Native OSS + Pro Native;
 - `ui/heroui/HEROUI_PRO_V2_VISUAL_ARCHIVE.md` — repertório visual legado do Pro v2;
 - `ui/heroui/OFFICIAL_SOURCES.md` — documentação, GitHub, Storybook, CLI, MCP, Skills e Figma oficiais;
-- `ui/heroui/CATALOG_AUDIT_2026-08-24.md` — diferenças entre catálogo documentado e exports públicos.
+- `ui/heroui/CATALOG_AUDIT_2026-08-24.md` — diferenças entre catálogo documentado e exports públicos;
+- `ui/heroui/OVERLAY_INTERACTION_HARDENING.md` — semântica de navegação/ação, estado único de overlays, QA com ponteiro real e runtime gates.
 
 Regras:
 
@@ -36,6 +37,23 @@ Regras:
 5. nunca armazenar token Pro, código Pro, assets, screenshots, Figma ou templates comerciais na Factory;
 6. sem licença Pro, usar nomes/padrões públicos como referência e implementar com HeroUI OSS ou componente local compatível;
 7. manter HeroUI em shell, formulários, dados, overlays, estados, motion, tokens e temas — não só em cards/botões.
+
+## Overlays e navegação HeroUI — regra forte
+
+Antes de construir ou revisar Drawer, Popover, Modal, busca/command ou navegação dentro de overlay, ler `ui/heroui/OVERLAY_INTERACTION_HARDENING.md`.
+
+Regras obrigatórias:
+
+- link é link; ação é `Button`/command apropriado; componente de seleção não substitui automaticamente navegação apenas por aparência;
+- `ListBox`, `Select`, `ComboBox` e equivalentes permanecem para seleção/collection behavior quando essa for a semântica real;
+- cada overlay controlado deve ter **uma única fonte de estado**; evitar trigger interno, `onPress`, `isOpen/onOpenChange` e listener global competindo pelo mesmo estado;
+- quando um clique dentro do overlay navega e deve fechá-lo, preferir fechar na **mesma interação** do usuário e deixar a navegação ocorrer normalmente;
+- não usar `hashchange`, `popstate` ou listener global como caminho primário de fechamento se isso puder competir com a renderização da nova rota;
+- QA deve usar ponteiro real/hit-testing quando possível e aguardar o alvo ficar efetivamente atingível durante animações; `element.click()` sozinho não prova usabilidade;
+- `Runtime.exceptionThrown`, `console.error`, overlay órfão, foco preso ou root recuperado inesperadamente são falhas de QA;
+- medir múltiplas amostras e usar mediana para latência sustentada, registrando também long tasks; não classificar jitter isolado do runner como regressão sem repetição;
+- antes de alterar a aplicação por uma falha automatizada, confirmar se o harness modela o elemento real, inclusive Buttons que navegam por handler e conteúdo renderizado em portal;
+- smoke no domínio oficial não pode criar sessão/cookie falso ou reduzir segurança.
 
 ## Ambient Constellation — regra forte
 
@@ -211,4 +229,9 @@ Também verificar quando aplicável:
 - ausência de strobe/flashing;
 - gráficos sem reanimação artificial;
 - ausência de jank, overflow ou conteúdo obstruído;
+- em overlays/navegação, ponteiro real consegue atingir o alvo após a animação;
+- overlay fecha sem dupla fonte de estado ou listener global concorrente;
+- zero `Runtime.exceptionThrown` e `console.error` no fluxo aprovado;
+- latência de interação avaliada por múltiplas amostras/mediana quando performance for parte do risco;
+- falha de harness descartada antes de alterar a aplicação;
 - screenshot regression somente com baseline estável e risco material.
