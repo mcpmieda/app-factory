@@ -29,6 +29,21 @@ Não considerar uma animação validada apenas porque existe `animation:` no CSS
 
 A regra existe para impedir falso-positivo em Living UI e Ambient Constellation: movimento tecnicamente declarado, mas não executado ou não perceptível, continua sendo falha de QA.
 
+## Integridade de overlays e navegação
+
+Para Drawer, Popover, Modal, busca/command e navegação dentro de overlays, ler também `OVERLAY_INTERACTION_HARDENING.md`.
+
+O contrato exige:
+
+- semântica real de link/ação/seleção antes da aparência da coleção;
+- uma única fonte de estado por overlay controlado;
+- fechamento na mesma interação que navega quando aplicável;
+- QA com ponteiro real e hit-testing após animações de entrada;
+- captura browser-neutral de erros/exceções não tratados e `console.error` relevante; CDP é apenas um adaptador possível;
+- protocolo/SLO ou baseline reproduzível antes de transformar latência em gate, seguido de múltiplas amostras/mediana;
+- diagnóstico do harness antes de alterar o produto por um falso positivo;
+- nenhum bypass de autenticação no domínio oficial.
+
 ## Regra nativa de atmosfera HeroUI
 
 Um **sistema novo baseado em HeroUI** deve ativar automaticamente:
@@ -94,6 +109,7 @@ A auditoria também corrigiu o HeroUI Pro Native: o snapshot anterior registrava
 - `CATALOG_AUDIT_2026-08-24.md` — comparação formal entre sites oficiais, repositórios oficiais e o catálogo da App Factory.
 - `HEROUI_NATIVE_REDESIGN_CONTRACT.md` — contrato de reconstrução limpa, Living UI e QA de redesign HeroUI.
 - `TEMPORAL_MOTION_QA.md` — integridade da evidência temporal para motion e reduced-motion.
+- `OVERLAY_INTERACTION_HARDENING.md` — contrato de semântica, estado, fechamento, hit-testing, runtime e performance para overlays/navegação.
 - `../AMBIENT_CONSTELLATION_PROFILE.md` — contrato da assinatura ambiental obrigatória por padrão em sistemas HeroUI novos.
 
 ## Regra de autoridade
@@ -137,6 +153,7 @@ Quando HeroUI for escolhido, construir o produto de forma coerente com:
 - `ui/AMBIENT_CONSTELLATION_PROFILE.md` com intensidade strong;
 - `HEROUI_NATIVE_REDESIGN_CONTRACT.md` em redesigns;
 - `TEMPORAL_MOTION_QA.md` quando motion perceptível fizer parte dos gates;
+- `OVERLAY_INTERACTION_HARDENING.md` quando navegação, busca ou ações ocorrerem em overlays;
 - acessibilidade, responsividade e browser QA.
 
 Não misturar shadcn/ReUI no mesmo produto apenas para preencher lacunas estéticas. Se uma capacidade não existir no HeroUI, primeiro compor com HeroUI; depois criar componente local compatível com seus tokens e padrões.
