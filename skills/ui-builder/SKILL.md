@@ -49,6 +49,7 @@ Se o usuário disser `ambient constellation`, `ambient constellarion`, `ambiente
 Motion Profile: ambient
 Ambient Surface Profile: ambient-constellation
 Constellation Intensity: strong
+Particle scale: micro, screen-space bounded
 ```
 
 Aplicar fortemente às superfícies existentes listadas no perfil: shell/background, page header, hero/welcome, dashboard overview, login/auth, empty/waiting/onboarding, painéis de destaque, modal/drawer importante, AI/assistant e cards/CTA especiais.
@@ -71,13 +72,17 @@ Mesmo em tela densa, não apagar toda a assinatura. Colocar tabelas/forms/grids 
 - pelo menos duas profundidades/camadas em superfícies fortes;
 - períodos lentos diferentes e não sincronizados;
 - glow grande e preferencialmente estático;
-- partículas com opacidades/tamanhos variados;
-- presença por composição e área, não por velocidade;
+- **micro-partículas**, normalmente em torno de `0.6–1.5 CSS px`, com raros glints maiores;
+- presença por composição, densidade e área, não por diâmetro ou velocidade;
+- campo maior que a área visível e recortado, aproximadamente `1.25–1.45×` em largura e `1.55–1.90×` em altura como referência;
+- baseline HeroUI Pro: drift visual aproximadamente `20px`, ciclos de `12s` e `15s` em direções opostas;
 - nenhuma partícula sobre conteúdo interativo ou texto denso;
 - `pointer-events: none`, decoração fora da árvore acessível;
 - CSS `transform`/`opacity` para loops simples;
 - evitar cursor/scroll parallax por padrão;
 - zero strobe/blinking.
+
+**Nunca** usar um campo SVG `0 0 100 100` em tela cheia com círculos de raio próximo a `1`, nem qualquer modelagem que faça os pontos crescerem proporcionalmente à viewport. Se os pontos parecem bolhas/círculos voadores em zoom 100%, a implementação falhou mesmo que a intensidade esteja configurada como `strong`.
 
 ## Professional UI Profile
 
@@ -142,7 +147,7 @@ Pesquisar primeiro no design system/registry atual. Não criar componente própr
 
 Referências comerciais como HeroUI Pro podem inspirar padrões públicos de composição e linguagem visual. Não copiar código, templates, assets ou screenshots proprietários para a Factory sem licença específica.
 
-A referência de `ambient-constellation` vem do site/repositório OSS HeroUI v3, licenciado sob Apache-2.0. A Factory prefere primitive própria; se código OSS for copiado diretamente para um projeto, cumprir licença/NOTICE.
+A referência de `ambient-constellation` vem do site/repositório OSS HeroUI v3. A Factory prefere primitive própria; se código OSS for copiado diretamente para um projeto, cumprir a licença aplicável e NOTICE quando exigido.
 
 ## Motion Profile
 
@@ -180,7 +185,7 @@ Evitar aparência genérica de app gerado por IA. Usar hierarquia clara, espaça
 
 Uma interface viva não significa movimento em tudo. Conteúdo principal deve permanecer legível e estável.
 
-Em HeroUI, a constelação deve ser uma assinatura visual recorrente e reconhecível; áreas densas ficam limpas por composição, não por abandono completo da assinatura.
+Em HeroUI, a constelação deve ser uma assinatura visual recorrente e reconhecível; áreas densas ficam limpas por composição, não por abandono completo da assinatura. A referência de escala é de **poeira luminosa**, não de círculos decorativos.
 
 ## Regra de sistema
 
@@ -196,6 +201,8 @@ Também verificar quando aplicável:
 - loading/empty/error e ação destrutiva;
 - coerência com Motion Profile;
 - `ambient-constellation` perceptível onde exigido;
+- **maior partícula típica ≤ 2 CSS px em desktop e ≤ 1.5 CSS px em mobile**, salvo exceção explícita;
+- nenhum ponto recorrente parece bolha/círculo voador;
 - partículas não bloqueiam interação;
 - dense content continua limpo;
 - `prefers-reduced-motion` gera fallback estático;
