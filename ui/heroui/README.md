@@ -39,8 +39,8 @@ O contrato exige:
 - uma única fonte de estado por overlay controlado;
 - fechamento na mesma interação que navega quando aplicável;
 - QA com ponteiro real e hit-testing após animações de entrada;
-- captura de `Runtime.exceptionThrown` e `console.error` como gate;
-- múltiplas amostras/mediana para latência de interação;
+- captura browser-neutral de erros/exceções não tratados e `console.error` relevante; CDP é apenas um adaptador possível;
+- protocolo/SLO ou baseline reproduzível antes de transformar latência em gate, seguido de múltiplas amostras/mediana;
 - diagnóstico do harness antes de alterar o produto por um falso positivo;
 - nenhum bypass de autenticação no domínio oficial.
 
