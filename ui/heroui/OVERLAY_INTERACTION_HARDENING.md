@@ -53,7 +53,7 @@ Para overlays animados, não assumir que `mounted === hittable`.
 O harness deve:
 
 - aguardar o alvo possuir área visível dentro da viewport;
-- confirmar `elementFromPoint()` no ponto de clique;
+- confirmar hit-testing no ponto de clique (`elementFromPoint()` ou equivalente do harness/browser);
 - tolerar somente o tempo normal da animação de entrada/saída;
 - disparar eventos de ponteiro/mouse reais pelo navegador quando possível;
 - reprovar se o alvo nunca se tornar atingível;
@@ -61,36 +61,47 @@ O harness deve:
 
 Essa checagem separa falhas reais de interação de falsos negativos produzidos enquanto Drawer/Popover ainda está entrando na viewport.
 
-## 5. Runtime errors fazem parte do gate visual
+## 5. Erros não tratados fazem parte do gate visual
 
 QA de UI deve observar também:
 
-- `Runtime.exceptionThrown`;
-- `console.error`;
+- erros/exceções não tratados da página ou runtime;
+- `console.error` relevante ao fluxo;
 - root desmontado/recriado inesperadamente;
 - overlay/backdrop persistente após navegação;
 - foco preso ou portal visualmente órfão.
 
-Uma tela que “parece pronta” depois de o React se recuperar de uma exceção não passa automaticamente. A causa deve ser isolada e a reprodução repetida após a correção.
+O mecanismo de captura deve ser compatível com o browser/harness escolhido. Exemplos:
 
-## 6. Performance de interação: mediana, não pico isolado
+- Playwright: evento `pageerror`/equivalente;
+- WebDriver/harness próprio: hook de erro não tratado suportado pelo ambiente;
+- Chromium + CDP: `Runtime.exceptionThrown` pode ser usado como adaptador adicional, não como requisito universal.
+
+Uma tela que “parece pronta” depois de o framework se recuperar de uma exceção não passa automaticamente. A causa deve ser isolada e a reprodução repetida após a correção.
+
+## 6. Performance de interação: protocolo antes do threshold
 
 Runners e browsers headless têm jitter. Para transições de rota/overlay:
 
+- definir antes da medição o ambiente, viewport, estado de cache, condição de rede quando relevante, rota inicial e marcas exatas de início/fim;
+- preferir SLO/contrato do projeto ou baseline observado no mesmo perfil de execução;
 - coletar múltiplas amostras do mesmo fluxo;
-- usar mediana como métrica principal de latência sustentada;
-- registrar também maior long task e erros de runtime;
+- usar mediana como métrica principal de latência sustentada e registrar distribuição suficiente para detectar regressão;
+- registrar também maior long task quando o browser fornecer essa métrica e erros não tratados;
 - investigar picos isolados somente quando se repetem ou aparecem junto de long task/jank;
-- não mascarar regressão real escolhendo apenas a melhor amostra.
+- não mascarar regressão real escolhendo apenas a melhor amostra;
+- não aplicar números de outro produto/hardware como gate global da Factory.
 
-Baseline inicial sugerido para shell administrativo já montado, salvo contrato mais rígido do produto:
+### Exemplo de perfil, não default universal
+
+Em um shell administrativo **já montado**, com dados locais estáveis, mesma máquina/runner, mesma viewport e clique físico medido de pointer-down até rota selecionada/overlay estabilizado, uma bateria anterior usou:
 
 - três amostras por rota/interação;
 - mediana de navegação desktop `<= 350 ms`;
 - interação mobile com Drawer/Popover `<= 500 ms`;
 - long task máxima `<= 200 ms`.
 
-Esses valores são gates operacionais de QA, não metas universais de Web Vitals.
+Esses números são apenas exemplo de um contrato local. Outro projeto deve derivar thresholds de seu SLO ou baseline reproduzível.
 
 ## 7. Harness deve modelar a aplicação real
 
@@ -99,14 +110,14 @@ Antes de declarar regressão:
 - verificar o tipo real do elemento (`Button` pode navegar via `onPress` sem existir `<a>`);
 - não usar classes genéricas compartilhadas entre login e shell autenticado como prova de autorização;
 - para portal/overlay, verificar visibilidade dos ancestrais e hit-testing, não apenas a existência do nó;
-- quando o teste falhar, capturar screenshot, DOM/estado relevante e exceções antes de alterar a aplicação.
+- quando o teste falhar, capturar screenshot, DOM/estado relevante e erros não tratados antes de alterar a aplicação.
 
 O harness é código de produção de evidência: seletor errado não deve virar “correção” desnecessária no produto.
 
 ## 8. Segurança no browser QA
 
-- não criar cookie falso, bypass de Entra, redução de capability ou sessão artificial no domínio oficial;
-- QA autenticado automatizado só pode usar fixture local/isolada, explicitamente fora da produção;
+- não criar cookie falso, bypass de identidade, redução de capability ou sessão artificial no domínio oficial;
+- QA autenticado automatizado só pode usar fixture local/isolada ou ambiente de teste autorizado e explicitamente separado da produção;
 - smoke do domínio oficial sem sessão deve confirmar que APIs protegidas continuam negando acesso e que rotas internas não expõem shell administrativo;
 - deployment para validação não equivale a autorização de produção.
 
@@ -118,8 +129,10 @@ O harness é código de produção de evidência: seletor errado não deve virar
 - [ ] navegação fecha overlay na mesma interação quando aplicável;
 - [ ] ponteiro real consegue atingir o alvo após a animação;
 - [ ] teclado/foco continuam funcionando;
-- [ ] `Runtime.exceptionThrown` e `console.error` são zero no fluxo aprovado;
-- [ ] múltiplas amostras de performance foram usadas;
+- [ ] zero erro/exceção não tratado no fluxo aprovado, usando o hook compatível com o browser/harness;
+- [ ] `console.error` relevante ao fluxo está zerado;
+- [ ] protocolo de performance e thresholds do projeto estão definidos antes de medir;
+- [ ] múltiplas amostras foram usadas quando latência é gate;
 - [ ] reduced-motion foi verificado;
 - [ ] smoke oficial não usa autenticação artificial;
 - [ ] falha de harness foi descartada antes de alterar a aplicação.
