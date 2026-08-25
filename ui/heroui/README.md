@@ -13,6 +13,14 @@ Este diretório deve ser consultado pelo `ui-builder` quando:
 - for necessário localizar componente, padrão, template ou referência visual antes de criar algo próprio;
 - um projeto HeroUI precisar de design system, tema, motion, Figma ou tooling para agentes.
 
+## Contrato de redesign nativo
+
+Antes de remodelar um sistema existente para HeroUI, ler `HEROUI_NATIVE_REDESIGN_CONTRACT.md`.
+
+Quando o usuário pedir que a interface pareça **inteiramente criada do zero em HeroUI**, a preservação deve ocorrer na camada funcional, não na anatomia visual antiga. É obrigatório reconstruir a árvore de apresentação usando diretamente componentes/compound components HeroUI e remover facades/adapters de shadcn/ReUI/Radix cuja única finalidade seja conservar APIs e imports do design system anterior.
+
+Componentes locais continuam permitidos para padrões reais de produto — por exemplo `AmbientConstellation` e `LivingSurface` — mas não para simular `CardHeader`, `Badge`, `Button asChild` ou outras APIs herdadas apenas para evitar a migração estrutural.
+
 ## Regra nativa de atmosfera HeroUI
 
 Um **sistema novo baseado em HeroUI** deve ativar automaticamente:
@@ -25,7 +33,16 @@ Dense content: clean islands; constellation remains in shell/header/perimeter
 Reduced motion: static constellation fallback
 ```
 
-Fonte canônica: `ui/AMBIENT_CONSTELLATION_PROFILE.md`.
+Se o usuário pedir explicitamente muitas transições, páginas vivas, estados de espera animados ou uma experiência “living”, elevar para:
+
+```text
+Motion Profile: expressive
+Ambient Surface Profile: ambient-constellation
+Constellation Intensity: strong
+Living states: required
+```
+
+Fontes canônicas: `ui/AMBIENT_CONSTELLATION_PROFILE.md`, `ui/MOTION_POLICY.md` e `HEROUI_NATIVE_REDESIGN_CONTRACT.md`.
 
 Não esperar que o usuário peça o efeito separadamente. HeroUI como linguagem principal implica constelação ambiental nativa, salvo opt-out explícito ou restrição real de produto, acessibilidade, plataforma ou desempenho.
 
@@ -34,6 +51,8 @@ A aplicação deve ser **forte e reconhecível** em shell/background, page heade
 Tabelas, Data Grids, formulários densos e leitura longa permanecem em superfícies limpas; a identidade constelar continua no shell, cabeçalho, perímetro ou zonas de respiro.
 
 A referência técnica pública é o próprio banner/modal Pro do repositório OSS HeroUI v3: gradiente frio, glow difuso e duas camadas de estrelas em drift lento, oposto e com períodos diferentes. A Factory usa esse padrão como DNA, adaptando cores aos tokens/temas do produto.
+
+**Importante:** a amplitude do movimento deve ser reproduzida por proporção percebida. No modal de referência, ~20 px é um deslocamento relevante porque a área visível tem cerca de 288×180 px. Em superfícies muito maiores, repetir 20 px de forma fixa pode tornar o movimento imperceptível. O tamanho das partículas continua fixo em screen-space; o deslocamento do **grupo** pode ser proporcional à superfície.
 
 ## Inventário auditado
 
@@ -65,6 +84,7 @@ A auditoria também corrigiu o HeroUI Pro Native: o snapshot anterior registrava
 - `HEROUI_PRO_V2_VISUAL_ARCHIVE.md` — catálogo visual legado do Pro v2, útil como repertório de composição.
 - `OFFICIAL_SOURCES.md` — sites, documentação, repositórios, Storybook, Figma, CLI, MCP e Skills oficiais.
 - `CATALOG_AUDIT_2026-08-24.md` — comparação formal entre sites oficiais, repositórios oficiais e o catálogo da App Factory.
+- `HEROUI_NATIVE_REDESIGN_CONTRACT.md` — contrato de reconstrução limpa, Living UI e QA de redesign HeroUI.
 - `../AMBIENT_CONSTELLATION_PROFILE.md` — contrato da assinatura ambiental obrigatória por padrão em sistemas HeroUI novos.
 
 ## Regra de autoridade
@@ -99,12 +119,14 @@ Quando HeroUI for escolhido, construir o produto de forma coerente com:
 
 - tokens e CSS variables HeroUI;
 - composição compound;
+- `Surface`, `Card`, `Alert`, `Table`, `Chip`, `Avatar`, `Drawer`, `ScrollShadow`, `Spinner`, `Skeleton` e outros primitives oficiais quando aplicáveis;
 - superfícies, tipografia, radius, sombras e estados do mesmo design system;
 - tema claro/escuro ou tema customizado coerente;
 - componentes Pro atuais quando autorizados e úteis;
 - `ui/PROFESSIONAL_UI_PROFILE.md`;
 - `ui/MOTION_POLICY.md`;
 - `ui/AMBIENT_CONSTELLATION_PROFILE.md` com intensidade strong;
+- `HEROUI_NATIVE_REDESIGN_CONTRACT.md` em redesigns;
 - acessibilidade, responsividade e browser QA.
 
 Não misturar shadcn/ReUI no mesmo produto apenas para preencher lacunas estéticas. Se uma capacidade não existir no HeroUI, primeiro compor com HeroUI; depois criar componente local compatível com seus tokens e padrões.
