@@ -21,6 +21,14 @@ Quando o usuário pedir que a interface pareça **inteiramente criada do zero em
 
 Componentes locais continuam permitidos para padrões reais de produto — por exemplo `AmbientConstellation` e `LivingSurface` — mas não para simular `CardHeader`, `Badge`, `Button asChild` ou outras APIs herdadas apenas para evitar a migração estrutural.
 
+## Integridade da prova temporal
+
+Quando motion perceptível for requisito, ler também `TEMPORAL_MOTION_QA.md`.
+
+Não considerar uma animação validada apenas porque existe `animation:` no CSS, porque duas screenshots foram geradas ou porque duas strings auxiliares são diferentes. Para motion material, o QA deve comparar o estado computado do **mesmo elemento** em instantes separados e, quando possível, confirmar avanço real de `animation.currentTime` com Web Animations API / Chrome DevTools Protocol.
+
+A regra existe para impedir falso-positivo em Living UI e Ambient Constellation: movimento tecnicamente declarado, mas não executado ou não perceptível, continua sendo falha de QA.
+
 ## Regra nativa de atmosfera HeroUI
 
 Um **sistema novo baseado em HeroUI** deve ativar automaticamente:
@@ -42,7 +50,7 @@ Constellation Intensity: strong
 Living states: required
 ```
 
-Fontes canônicas: `ui/AMBIENT_CONSTELLATION_PROFILE.md`, `ui/MOTION_POLICY.md` e `HEROUI_NATIVE_REDESIGN_CONTRACT.md`.
+Fontes canônicas: `ui/AMBIENT_CONSTELLATION_PROFILE.md`, `ui/MOTION_POLICY.md`, `HEROUI_NATIVE_REDESIGN_CONTRACT.md` e, para evidência de motion, `TEMPORAL_MOTION_QA.md`.
 
 Não esperar que o usuário peça o efeito separadamente. HeroUI como linguagem principal implica constelação ambiental nativa, salvo opt-out explícito ou restrição real de produto, acessibilidade, plataforma ou desempenho.
 
@@ -85,6 +93,7 @@ A auditoria também corrigiu o HeroUI Pro Native: o snapshot anterior registrava
 - `OFFICIAL_SOURCES.md` — sites, documentação, repositórios, Storybook, Figma, CLI, MCP e Skills oficiais.
 - `CATALOG_AUDIT_2026-08-24.md` — comparação formal entre sites oficiais, repositórios oficiais e o catálogo da App Factory.
 - `HEROUI_NATIVE_REDESIGN_CONTRACT.md` — contrato de reconstrução limpa, Living UI e QA de redesign HeroUI.
+- `TEMPORAL_MOTION_QA.md` — integridade da evidência temporal para motion e reduced-motion.
 - `../AMBIENT_CONSTELLATION_PROFILE.md` — contrato da assinatura ambiental obrigatória por padrão em sistemas HeroUI novos.
 
 ## Regra de autoridade
@@ -127,6 +136,7 @@ Quando HeroUI for escolhido, construir o produto de forma coerente com:
 - `ui/MOTION_POLICY.md`;
 - `ui/AMBIENT_CONSTELLATION_PROFILE.md` com intensidade strong;
 - `HEROUI_NATIVE_REDESIGN_CONTRACT.md` em redesigns;
+- `TEMPORAL_MOTION_QA.md` quando motion perceptível fizer parte dos gates;
 - acessibilidade, responsividade e browser QA.
 
 Não misturar shadcn/ReUI no mesmo produto apenas para preencher lacunas estéticas. Se uma capacidade não existir no HeroUI, primeiro compor com HeroUI; depois criar componente local compatível com seus tokens e padrões.
