@@ -19,32 +19,6 @@ Perfis disponíveis:
 
 Uma preferência explícita do usuário tem precedência. O agente não deve substituir `ambient` por outro perfil apenas por gosto próprio.
 
-## Ambient Surface Profile
-
-O Motion Profile define **quanto e por que a interface se move**. Um Ambient Surface Profile pode definir **como a atmosfera visual é composta**.
-
-Perfil oficial atual:
-
-- `ambient-constellation` — gradiente/glow + campo de partículas em profundidades diferentes, especificado em `ui/AMBIENT_CONSTELLATION_PROFILE.md`.
-
-### Ativação explícita
-
-Pedidos como `ambient constellation`, `ambient constellarion`, `ambiente de constelação`, `ambiente constelar` ou referência inequívoca ao efeito de estrelas flutuantes do HeroUI ativam:
-
-```text
-Motion Profile: ambient
-Ambient Surface Profile: ambient-constellation
-Constellation Intensity: strong
-```
-
-### Regra HeroUI
-
-Em **sistema novo com HeroUI como design system principal**, `ambient-constellation` é obrigatório por padrão e deve vir nativamente, sem exigir pedido separado.
-
-O efeito deve ser perceptível, mas não ocupar superfícies densas de leitura/dados. Em dashboards/tabelas/formulários, manter a constelação no shell, cabeçalho, perímetro ou zonas de respiro e isolar o conteúdo denso em superfícies limpas.
-
-Exceções: opt-out explícito, incompatibilidade real de marca/produto, limitação material de plataforma/desempenho ou necessidade de acessibilidade. `prefers-reduced-motion` reduz/para o movimento, mas deve preservar a composição constelar estática quando isso continuar legível.
-
 ## Princípio semântico
 
 Movimento deve comunicar pelo menos uma destas funções:
@@ -69,10 +43,9 @@ Exemplos:
 
 - gradiente/aurora muito lento;
 - luz/halo respirando suavemente;
-- partículas discretas;
+- partículas discretas quando justificadas pelo produto;
 - formas que derivam poucos pixels;
-- profundidade/parallax mínimo quando não prejudicar leitura;
-- `ambient-constellation` quando selecionado.
+- profundidade/parallax mínimo quando não prejudicar leitura.
 
 Regras:
 
@@ -81,7 +54,7 @@ Regras:
 - contraste controlado;
 - nunca passar por cima do conteúdo principal;
 - não usar atmosfera contínua apenas para preencher espaço em telas densas;
-- em `ambient-constellation strong`, aumentar presença por composição/profundidade, não por velocidade ou flashing.
+- nenhum padrão ambiental específico é obrigatório globalmente.
 
 ### 2. Interaction
 
@@ -145,7 +118,7 @@ Exemplos:
 
 Preferir halo, pulso suave, glow ou pequena mudança periódica. **A animação de atenção deve parar, reduzir ou entrar em cooldown quando a atenção já foi obtida**, por exemplo após abrir o aviso ou focar a ação.
 
-Nunca usar blinking agressivo como padrão. Attention motion não deve reutilizar as partículas ambientais como mecanismo de urgência.
+Nunca usar blinking agressivo como padrão. Efeitos ambientais não devem ser reutilizados como mecanismo de urgência.
 
 ### 6. Navigation
 
@@ -161,29 +134,11 @@ Mudanças de contexto devem preservar continuidade espacial:
 
 Entrada e saída devem ser curtas, previsíveis e coerentes com a direção da interface.
 
-## Padrão `ambient-constellation`
-
-Quando ativo, seguir `ui/AMBIENT_CONSTELLATION_PROFILE.md` como fonte canônica.
-
-Baseline de implementação:
-
-- 2 camadas de partículas como default;
-- períodos diferentes (tipicamente 12–24 s), sem sincronização;
-- drift diagonal/contrário de baixa amplitude;
-- glows grandes preferencialmente estáticos;
-- animação via `transform`/`opacity`;
-- SVG/pseudo-elementos agregados em vez de centenas de partículas DOM animadas individualmente;
-- `pointer-events: none` e decoração fora da árvore acessível;
-- aplicação forte em shell/header/hero/login/empty/AI/modal importante/painel de destaque;
-- superfícies de Data Grid/tabela/form denso permanecem limpas.
-
-Pointer/scroll parallax não é default. Só usar em experiência `expressive` específica e sempre desligar com reduced motion.
-
 ## Adaptação automática ao contexto
 
 `ambient` é o default, não uma obrigação cega de manter partículas ou auroras em toda tela.
 
-Sem `ambient-constellation`, o agente pode reduzir automaticamente a intensidade para `subtle` ou equivalente local quando houver:
+O agente pode reduzir automaticamente a intensidade para `subtle` ou equivalente local quando houver:
 
 - leitura longa;
 - tabela/dashboard muito denso;
@@ -192,8 +147,6 @@ Sem `ambient-constellation`, o agente pode reduzir automaticamente a intensidade
 - múltiplas animações competindo ao mesmo tempo;
 - tarefa em que movimento atrapalhe precisão/concentração;
 - preferência do sistema/usuário por movimento reduzido.
-
-Com `ambient-constellation` ativo, **atenuar a área e o movimento, não apagar a identidade**: colocar conteúdo denso em ilhas limpas e manter constelação no shell/perímetro/cabeçalho. Reduced motion usa fallback estático.
 
 A identidade Living UI continua presente por microinterações, estados e transições mesmo quando o ambiente contínuo for reduzido.
 
@@ -207,8 +160,7 @@ Quando movimento reduzido estiver ativo:
 - eliminar grandes deslocamentos/zoom;
 - reduzir transições a fades ou mudanças instantâneas quando necessário;
 - manter feedback funcional de estado sem depender somente da animação;
-- não esconder informação por causa da redução de motion;
-- em `ambient-constellation`, preferir estrelas/glow estáticos em vez de remover toda a identidade visual.
+- não esconder informação por causa da redução de motion.
 
 Quando `prefers-reduced-transparency` estiver disponível, usar como progressive enhancement para tornar superfícies de conteúdo mais opacas e reduzir dependência de glass/blur.
 
@@ -244,8 +196,6 @@ Ordem de preferência:
 
 HeroUI, shadcn, ReUI ou qualquer outro sistema devem conservar sua coerência visual enquanto esta política define **como a interface se move**.
 
-Em HeroUI, `ambient-constellation` é a camada ambiental default do sistema novo; ela deve usar tokens do tema em vez de hardcode indiscriminado da paleta do banner de referência.
-
 ## Registro no projeto
 
 Projetos com UI devem registrar pelo menos:
@@ -254,31 +204,19 @@ Projetos com UI devem registrar pelo menos:
 Motion Profile: ambient | subtle | expressive | none
 ```
 
-Quando `ambient-constellation` estiver ativo:
-
-```text
-Motion Profile: ambient
-Ambient Surface Profile: ambient-constellation
-Constellation Intensity: strong
-Dense content: clean islands; constellation remains in shell/header/perimeter
-Reduced motion: static constellation fallback
-```
-
-Para HeroUI novo, esse bloco é inferido automaticamente salvo exceção explícita.
+Efeitos ambientais específicos, quando existirem por decisão do produto, devem ser documentados no próprio projeto; a Factory não impõe um efeito visual global.
 
 ## Verificação
 
 Para concluir trabalho relevante de UI, verificar quando aplicável:
 
 - motion coerente com o perfil escolhido;
-- `ambient-constellation`, quando ativo, é perceptível sem competir com conteúdo;
 - ação principal responde ao usuário;
 - estados assíncronos têm feedback;
 - sinais de atenção não ficam pulsando indefinidamente;
 - gráficos/dados não reanimam sem mudança real;
 - desktop e mobile;
 - `prefers-reduced-motion`;
-- fallback constelar estático quando aplicável;
 - ausência de flashing/strobe;
 - ausência de jank, overflow ou conteúdo obstruído;
 - motion não impede leitura, foco ou interação.
