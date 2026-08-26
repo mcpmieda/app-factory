@@ -2,7 +2,7 @@
 
 ## Objetivo
 
-Impedir falso-positivo em validações de Living UI, Ambient Constellation e qualquer motion cuja presença perceptível seja requisito de produto.
+Impedir falso-positivo em validações de Living UI e qualquer motion cuja presença perceptível seja requisito de produto.
 
 ## Regra central
 
@@ -18,13 +18,13 @@ Para uma animação CSS contínua relevante:
 2. localizar o mesmo elemento animado nos dois instantes;
 3. ler `element.getAnimations()` e `animation.currentTime` quando disponível;
 4. ler a propriedade computada que deve mudar (`transform`, `opacity` ou equivalente);
-5. aguardar tempo real suficiente — normalmente 2–4 s para motion ambiental lento;
+5. aguardar tempo real suficiente — normalmente 2–4 s para motion lento;
 6. repetir as leituras;
 7. falhar se `currentTime` não avançar de forma material;
 8. falhar se o valor computado esperado permanecer idêntico;
 9. registrar os valores inicial/final como artifact ou log recuperável.
 
-Para `prefers-reduced-motion`, executar uma segunda prova e confirmar que o loop não continua ativo, preservando a composição estática exigida pelo perfil.
+Para `prefers-reduced-motion`, executar uma segunda prova e confirmar que o movimento não essencial foi reduzido/parado conforme a política do projeto e que a interface continua funcional e legível.
 
 ## Anti-padrões
 
@@ -63,13 +63,13 @@ PASS somente se:
 
 Quando `prefers-reduced-motion: reduce` estiver ativo:
 
-- animação ambiental deve ficar `none`, pausada ou removida conforme a implementação;
-- o estado computado deve permanecer estático entre as leituras;
-- a identidade visual pode permanecer em forma estática;
+- animação não essencial deve ficar ausente, pausada ou suficientemente reduzida conforme a implementação;
+- o estado computado deve refletir essa redução entre as leituras;
+- a composição deve permanecer legível e utilizável;
 - nenhum conteúdo funcional pode depender do loop.
 
 ## Aplicação no contrato HeroUI
 
-Esta regra complementa `HEROUI_NATIVE_REDESIGN_CONTRACT.md`, `../MOTION_POLICY.md` e `../AMBIENT_CONSTELLATION_PROFILE.md`.
+Esta regra complementa `HEROUI_NATIVE_REDESIGN_CONTRACT.md` e `../MOTION_POLICY.md`.
 
-Quando o contrato exigir "comparar dois frames separados por 2–4 s", a comparação deve validar valores reais, não apenas a existência de dois registros. Para motion ambiental considerado assinatura visual do produto, usar prova temporal real sempre que a infraestrutura de QA permitir.
+Quando o contrato exigir comparar dois frames separados por 2–4 s, a comparação deve validar valores reais, não apenas a existência de dois registros. Para motion considerado requisito visual do produto, usar prova temporal real sempre que a infraestrutura de QA permitir.
