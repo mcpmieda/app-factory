@@ -16,15 +16,11 @@
 - density: `compact` / `comfortable` / `spacious` quando relevante:
 - surface/emphasis quando relevante:
 - Motion Profile: `ambient` por padrão, salvo decisão explícita (`none`, `subtle`, `ambient`, `expressive`):
-- Ambient Surface Profile: [não aplicável / `ambient-constellation`]:
-- Constellation Intensity: [`strong` quando explicitamente solicitada ou quando HeroUI for linguagem principal / não aplicável]:
-- dense content strategy: [quando constelação ativa: superfícies limpas + assinatura no shell/header/perímetro]:
-- reduced motion: [quando constelação ativa: fallback constelar estático]:
 - exceções relevantes de leitura, densidade, acessibilidade ou desempenho:
 
-`professional-default` é um quality bar, não uma biblioteca. Para admin/dashboard/CRUD, shadcn continua base preferencial e ReUI continua complemento seletivo quando não houver escolha explícita de HeroUI. HeroUI continua alternativa principal e, quando escolhido como **linguagem principal do sistema**, herda `ambient-constellation` com intensidade `strong` por padrão. Seguir `ui/UI_POLICY.md`, `ui/PROFESSIONAL_UI_PROFILE.md`, `ui/MOTION_POLICY.md` e `ui/AMBIENT_CONSTELLATION_PROFILE.md` quando aplicável.
+`professional-default` é um quality bar, não uma biblioteca. Para admin/dashboard/CRUD, shadcn continua base preferencial e ReUI continua complemento seletivo quando não houver escolha explícita de HeroUI. HeroUI continua alternativa principal e, quando escolhido como **linguagem principal do sistema**, deve ser usado transversalmente. Seguir `ui/UI_POLICY.md`, `ui/PROFESSIONAL_UI_PROFILE.md` e `ui/MOTION_POLICY.md`.
 
-Pedidos como `ambient constellation`, `ambient constellarion`, `ambiente de constelação` ou equivalente ativam o perfil automaticamente. Não obrigar o usuário a escolher detalhes técnicos de radius, shadow, spacing, density, partículas ou animação.
+Nenhum efeito ambiental específico é imposto globalmente pela Factory. Atmosfera, fundos especiais e efeitos decorativos só entram quando fizerem sentido para o produto/projeto.
 
 ## Fluxos principais
 1. ...
@@ -46,6 +42,13 @@ Pedidos como `ambient constellation`, `ambient constellarion`, `ambiente de cons
 - ambiente:
 - compatibilidade:
 - privacidade/segurança:
+
+## Continuidade operacional, quando aplicável
+- quais operações críticas podem ser interrompidas por fechamento do navegador, queda de energia/rede ou troca de dispositivo:
+- quais dessas operações precisam continuar, retomar ou reconciliar depois da interrupção:
+- qual resultado observável o usuário espera ao voltar:
+
+O produto não precisa escolher tecnologia de fila/checkpoint. Essa decisão é arquitetural e segue `core/SYSTEM_ENGINEERING.md`.
 
 ## Critérios de sucesso
 Defina resultados observáveis, não apenas tarefas técnicas.
