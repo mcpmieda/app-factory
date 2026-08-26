@@ -80,11 +80,11 @@ class ProjectAdoptionGateTests(unittest.TestCase):
             issues = audit_project(project)
             self.assertTrue(any("ad-hoc/native CSS" in issue for issue in issues))
 
-    def test_heroui_has_no_forced_environmental_profile(self):
+    def test_heroui_keeps_regular_ui_contract(self):
         normalized = normalize_config(base_config(ui={"designSystem": "HeroUI"}))
         self.assertEqual(normalized["ui"]["designSystem"], "HeroUI")
-        self.assertNotIn("ambientSurfaceProfile", normalized["ui"])
-        self.assertNotIn("constellationIntensity", normalized["ui"])
+        self.assertEqual(normalized["ui"]["professionalUiProfile"], "professional-default")
+        self.assertEqual(normalized["ui"]["motionProfile"], "ambient")
 
     def test_domain_semantics_must_exist_before_code(self):
         with tempfile.TemporaryDirectory() as directory:
