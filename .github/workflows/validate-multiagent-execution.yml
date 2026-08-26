@@ -1,0 +1,44 @@
+name: Validate Multiagent Execution
+
+on:
+  pull_request:
+    paths:
+      - "engine/work_orchestrator.py"
+      - "scripts/factory_run.py"
+      - "scripts/validate_multiagent.py"
+      - "tests/multiagent/**"
+      - "core/MULTIAGENT_EXECUTION.md"
+      - ".github/workflows/validate-multiagent-execution.yml"
+  push:
+    branches: [main]
+    paths:
+      - "engine/work_orchestrator.py"
+      - "scripts/factory_run.py"
+      - "scripts/validate_multiagent.py"
+      - "tests/multiagent/**"
+      - "core/MULTIAGENT_EXECUTION.md"
+      - ".github/workflows/validate-multiagent-execution.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  multiagent-execution:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Compile multiagent engine and CLI
+        run: python -m py_compile engine/work_orchestrator.py scripts/factory_run.py scripts/validate_multiagent.py
+      - name: Structural Factory regression
+        run: python scripts/validate_factory.py
+      - name: Execution Fabric regression
+        run: python scripts/validate_v1_2.py
+      - name: Multiagent execution validation
+        run: python scripts/validate_multiagent.py
+      - name: Show provider-neutral registry
+        run: python scripts/factory_run.py providers
