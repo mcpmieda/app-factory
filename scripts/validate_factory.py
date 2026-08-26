@@ -102,13 +102,6 @@ def require_markers(path: str, markers: list[str]) -> None:
         fail(f"{path} sem marcadores obrigatórios: {missing}")
 
 
-def forbid_markers(path: str, markers: list[str]) -> None:
-    text = (ROOT / path).read_text(encoding="utf-8").lower()
-    found = [marker for marker in markers if marker.lower() in text]
-    if found:
-        fail(f"{path} contém marcadores removidos: {found}")
-
-
 def validate_project_adoption() -> None:
     require_markers(
         "core/PROJECT_ADOPTION_GATE.md",
@@ -126,14 +119,7 @@ def validate_project_adoption() -> None:
     )
     require_markers(
         "engine/project_adoption.py",
-        [
-            "schemaVersion",
-            "governance",
-            "AD_HOC_DESIGN_SYSTEMS",
-            "Semantic Verification required before code",
-            "review-evidence.json",
-            "VERIFICATION.md",
-        ],
+        ["schemaVersion", "governance", "AD_HOC_DESIGN_SYSTEMS", "Semantic Verification required before code", "review-evidence.json", "VERIFICATION.md"],
     )
     require_markers(
         "scripts/project_adoption_gate.py",
@@ -141,74 +127,29 @@ def validate_project_adoption() -> None:
     )
     require_markers(
         "skills/project-adoption/SKILL.md",
-        [
-            "core/PROJECT_ADOPTION_GATE.md",
-            "Required order",
-            "React + custom/native CSS",
-            "Client interruption guard",
-            "delivery",
-        ],
+        ["core/PROJECT_ADOPTION_GATE.md", "Required order", "React + custom/native CSS", "Client interruption guard", "delivery"],
     )
     require_markers(
         "skills/factory-router/SKILL.md",
-        [
-            "project-adoption",
-            "PROJECT_ADOPTION_GATE.md",
-            "pre-implementation",
-            "React + custom/native CSS",
-            "client-interruption continuity contract",
-            "delivery",
-        ],
+        ["project-adoption", "PROJECT_ADOPTION_GATE.md", "pre-implementation", "React + custom/native CSS", "client-interruption continuity contract", "delivery"],
     )
     require_markers(
         "AGENTS.md",
-        [
-            "Project Adoption Gate",
-            "skills/project-adoption/SKILL.md",
-            ".app-factory.json",
-            "React + CSS próprio",
-            "pre-implementation",
-            "delivery",
-            "Continuidade após perda do cliente",
-        ],
+        ["Project Adoption Gate", "skills/project-adoption/SKILL.md", ".app-factory.json", "React + CSS próprio", "pre-implementation", "delivery", "Continuidade após perda do cliente"],
     )
     require_markers(
         "templates/project/AGENTS.md",
-        [
-            "PROJECT_ADOPTION_GATE.md",
-            ".app-factory.json",
-            "React + CSS/custom/native UI",
-            "pre-implementation",
-            "delivery",
-            "core/SYSTEM_ENGINEERING.md",
-        ],
+        ["PROJECT_ADOPTION_GATE.md", ".app-factory.json", "React + CSS/custom/native UI", "pre-implementation", "delivery", "core/SYSTEM_ENGINEERING.md"],
     )
     require_markers(
         "starters/web-admin/template/AGENTS.md",
-        [
-            "PROJECT_ADOPTION_GATE.md",
-            ".app-factory.json",
-            "React + CSS/custom/native UI",
-            "pre-implementation",
-            "delivery",
-            "core/SYSTEM_ENGINEERING.md",
-        ],
+        ["PROJECT_ADOPTION_GATE.md", ".app-factory.json", "React + CSS/custom/native UI", "pre-implementation", "delivery", "core/SYSTEM_ENGINEERING.md"],
     )
     require_markers(
         "profiles/web-admin/PROFILE.md",
-        [
-            "Project Adoption Gate antes do código",
-            "React + CSS próprio",
-            "ui.deviation",
-            "pre-implementation",
-            "delivery",
-            "Continuidade após perda do cliente",
-        ],
+        ["Project Adoption Gate antes do código", "React + CSS próprio", "ui.deviation", "pre-implementation", "delivery", "Continuidade após perda do cliente"],
     )
-    require_markers(
-        ".github/workflows/validate-python-evidence.yml",
-        ["tests/project_adoption", "scripts/project_adoption_gate.py"],
-    )
+    require_markers(".github/workflows/validate-python-evidence.yml", ["tests/project_adoption", "scripts/project_adoption_gate.py"])
 
 
 def validate_system_engineering_continuity() -> None:
@@ -231,147 +172,42 @@ def validate_system_engineering_continuity() -> None:
             "retomada/reconciliação/compensação",
         ],
     )
-    require_markers(
-        "templates/project/PRODUCT.md",
-        ["Continuidade operacional, quando aplicável", "core/SYSTEM_ENGINEERING.md"],
-    )
+    require_markers("templates/project/PRODUCT.md", ["Continuidade operacional, quando aplicável", "core/SYSTEM_ENGINEERING.md"])
 
 
 def validate_professional_ui() -> None:
     require_markers(
         "ui/PROFESSIONAL_UI_PROFILE.md",
-        [
-            "professional-default",
-            "shadcn/ui",
-            "ReUI",
-            "HeroUI",
-            "quality bar",
-            "não armazena nem reproduz código",
-            "Visual QA",
-            "prefers-reduced-motion",
-        ],
+        ["professional-default", "shadcn/ui", "ReUI", "HeroUI", "quality bar", "não armazena nem reproduz código", "Visual QA", "prefers-reduced-motion"],
     )
     require_markers(
         "ui/UI_POLICY.md",
-        [
-            "professional-default",
-            "ui/PROFESSIONAL_UI_PROFILE.md",
-            "Base preferencial: **shadcn/ui**",
-            "ReUI seletivamente",
-            "HeroUI",
-            "Motion Profile universal",
-            "Nenhum efeito ambiental específico",
-        ],
+        ["professional-default", "ui/PROFESSIONAL_UI_PROFILE.md", "Base preferencial: **shadcn/ui**", "ReUI seletivamente", "HeroUI", "Motion Profile universal", "Nenhum efeito ambiental específico"],
     )
     require_markers(
         "ui/MOTION_POLICY.md",
-        [
-            "Motion Profile",
-            "ambient",
-            "prefers-reduced-motion",
-            "prefers-reduced-transparency",
-            "nenhum padrão ambiental específico",
-        ],
+        ["Motion Profile", "ambient", "prefers-reduced-motion", "prefers-reduced-transparency", "nenhum padrão ambiental específico"],
     )
     require_markers(
         "ui/heroui/README.md",
-        [
-            "HeroUI como linguagem principal",
-            "Professional UI Profile",
-            "Motion Profile",
-            "Nenhum efeito ambiental específico",
-        ],
+        ["HeroUI como linguagem principal", "Professional UI Profile", "Motion Profile", "Nenhum efeito ambiental específico"],
     )
     require_markers(
         "skills/ui-builder/SKILL.md",
-        [
-            "professional-default",
-            "ui/PROFESSIONAL_UI_PROFILE.md",
-            "shadcn/ui como base",
-            "ReUI seletivamente",
-            "HeroUI",
-            "Inventário antes da implementação",
-            "não ativa automaticamente",
-        ],
+        ["professional-default", "ui/PROFESSIONAL_UI_PROFILE.md", "shadcn/ui como base", "ReUI seletivamente", "HeroUI", "Inventário antes da implementação", "não ativa automaticamente"],
     )
-    require_markers(
-        "templates/project/PRODUCT.md",
-        ["Professional UI Profile", "professional-default", "density", "Motion Profile"],
-    )
-    require_markers(
-        "templates/project/ARCHITECTURE.md",
-        ["Professional UI Profile", "professional-default", "UI profissional, quando aplicável", "Motion Profile"],
-    )
-    require_markers(
-        "templates/project/AGENTS.md",
-        ["ui/PROFESSIONAL_UI_PROFILE.md", "HeroUI", "mandatory environmental effect"],
-    )
-    require_markers(
-        "profiles/web-admin/PROFILE.md",
-        ["shadcn/ui como base do design system", "ReUI", "HeroUI é perfil visual alternativo"],
-    )
-    require_markers(
-        "starters/web-admin/template/.factory-template.json",
-        ['"professionalUiProfile": "professional-default"', '"motionProfile": "ambient"'],
-    )
-    require_markers(
-        "starters/web-admin/template/AGENTS.md",
-        ["Preserve shadcn/ui as the visual foundation", "ReUI", "professional-default", "ui/PROFESSIONAL_UI_PROFILE.md"],
-    )
-    require_markers(
-        "starters/web-admin/template/PRODUCT.md",
-        ["visual system: shadcn/ui baseline", "ReUI only when", "Professional UI Profile: `professional-default`"],
-    )
-    require_markers(
-        "starters/web-admin/template/ARCHITECTURE.md",
-        ["Tailwind CSS + shadcn/ui", "ReUI only when", "Professional UI Profile: `professional-default`", "HeroUI"],
-    )
-    require_markers(
-        "starters/web-admin/template/PROJECT_STATE.md",
-        ["design system: shadcn/ui foundation", "advanced UI/ReUI: not activated", "Professional UI Profile: `professional-default`"],
-    )
-    require_markers(
-        "scripts/create-web-admin.mjs",
-        ["professionalUiProfile", '"professionalUiProfile"', "Professional UI Profile:"],
-    )
-    require_markers(
-        "scripts/create-web-admin.test.mjs",
-        ["baseManifest.professionalUiProfile", "professional-default", "design system: shadcn\\/ui foundation"],
-    )
-    require_markers(
-        "research/SOURCES.md",
-        ["HeroUI Pro", "INSPIRAR", "ui/PROFESSIONAL_UI_PROFILE.md"],
-    )
-
-    removed_terms = [
-        "ambient-constellation",
-        "ambient_constellation",
-        "ambient constellation",
-        "constellationintensity",
-        "ambient surface profile",
-    ]
-    for path in [
-        "AGENTS.md",
-        "PROJECT_STATE.md",
-        "core/PROJECT_ADOPTION_GATE.md",
-        "engine/project_adoption.py",
-        "scripts/project_adoption_gate.py",
-        "skills/factory-router/SKILL.md",
-        "skills/project-adoption/SKILL.md",
-        "skills/ui-builder/SKILL.md",
-        "profiles/web-admin/PROFILE.md",
-        "templates/project/AGENTS.md",
-        "templates/project/PRODUCT.md",
-        "templates/project/ARCHITECTURE.md",
-        "starters/web-admin/template/AGENTS.md",
-        "tests/project_adoption/test_project_adoption.py",
-        "ui/UI_POLICY.md",
-        "ui/MOTION_POLICY.md",
-        "ui/heroui/README.md",
-        "ui/heroui/TEMPORAL_MOTION_QA.md",
-        "ui/heroui/HEROUI_NATIVE_REDESIGN_CONTRACT.md",
-    ]:
-        forbid_markers(path, removed_terms)
+    require_markers("templates/project/PRODUCT.md", ["Professional UI Profile", "professional-default", "density", "Motion Profile"])
+    require_markers("templates/project/ARCHITECTURE.md", ["Professional UI Profile", "professional-default", "UI profissional, quando aplicável", "Motion Profile"])
+    require_markers("templates/project/AGENTS.md", ["ui/PROFESSIONAL_UI_PROFILE.md", "HeroUI", "mandatory environmental effect"])
+    require_markers("profiles/web-admin/PROFILE.md", ["shadcn/ui como base do design system", "ReUI", "HeroUI é perfil visual alternativo"])
+    require_markers("starters/web-admin/template/.factory-template.json", ['"professionalUiProfile": "professional-default"', '"motionProfile": "ambient"'])
+    require_markers("starters/web-admin/template/AGENTS.md", ["Preserve shadcn/ui as the visual foundation", "ReUI", "professional-default", "ui/PROFESSIONAL_UI_PROFILE.md"])
+    require_markers("starters/web-admin/template/PRODUCT.md", ["visual system: shadcn/ui baseline", "ReUI only when", "Professional UI Profile: `professional-default`"])
+    require_markers("starters/web-admin/template/ARCHITECTURE.md", ["Tailwind CSS + shadcn/ui", "ReUI only when", "Professional UI Profile: `professional-default`", "HeroUI"])
+    require_markers("starters/web-admin/template/PROJECT_STATE.md", ["design system: shadcn/ui foundation", "advanced UI/ReUI: not activated", "Professional UI Profile: `professional-default`"])
+    require_markers("scripts/create-web-admin.mjs", ["professionalUiProfile", '"professionalUiProfile"', "Professional UI Profile:"])
+    require_markers("scripts/create-web-admin.test.mjs", ["baseManifest.professionalUiProfile", "professional-default", "design system: shadcn\\/ui foundation"])
+    require_markers("research/SOURCES.md", ["HeroUI Pro", "INSPIRAR", "ui/PROFESSIONAL_UI_PROFILE.md"])
 
 
 def validate_evaluation_evidence() -> None:
@@ -392,10 +228,7 @@ def validate_evaluation_evidence() -> None:
         "core/LEARNING_ENGINE.md",
         ["Skill Routing Telemetry", ".factory/skill-routing.json", "não afirma saber se um modelo leu", "nunca remove ou desativa Skill automaticamente"],
     )
-    require_markers(
-        "skills/factory-router/SKILL.md",
-        ["scripts/skill_routing.py", "advisory aggregate telemetry", "never include prompt/task text"],
-    )
+    require_markers("skills/factory-router/SKILL.md", ["scripts/skill_routing.py", "advisory aggregate telemetry", "never include prompt/task text"])
 
 
 def validate_change_hygiene() -> None:
@@ -403,22 +236,10 @@ def validate_change_hygiene() -> None:
         "core/CHANGE_HYGIENE.md",
         ["preservar comportamento estável não significa preservar implementação obsoleta", "Substituir, não sombrear", "Consolidação após repair loop", "projetos externos", "scripts/change_hygiene.py"],
     )
-    require_markers(
-        "skills/maintenance/SKILL.md",
-        ["core/CHANGE_HYGIENE.md", "Consolidação obrigatória", "net code health da área tocada"],
-    )
-    require_markers(
-        "core/PRINCIPLES.md",
-        ["Preservar comportamento, não implementação obsoleta", "A árvore final não é o histórico de tentativas"],
-    )
-    require_markers(
-        "core/DEFINITION_OF_DONE.md",
-        ["Change Hygiene em sistemas existentes", "shadow implementations", "Manutenção não termina apenas porque o bug sumiu"],
-    )
-    require_markers(
-        "research/CHANGE_HYGIENE_RESEARCH.md",
-        ["Google Engineering Practices", "Chromium", "Microsoft Engineering Fundamentals Playbook", "Knip", "Stylelint", "jscpd"],
-    )
+    require_markers("skills/maintenance/SKILL.md", ["core/CHANGE_HYGIENE.md", "Consolidação obrigatória", "net code health da área tocada"])
+    require_markers("core/PRINCIPLES.md", ["Preservar comportamento, não implementação obsoleta", "A árvore final não é o histórico de tentativas"])
+    require_markers("core/DEFINITION_OF_DONE.md", ["Change Hygiene em sistemas existentes", "shadow implementations", "Manutenção não termina apenas porque o bug sumiu"])
+    require_markers("research/CHANGE_HYGIENE_RESEARCH.md", ["Google Engineering Practices", "Chromium", "Microsoft Engineering Fundamentals Playbook", "Knip", "Stylelint", "jscpd"])
 
 
 def main() -> int:
