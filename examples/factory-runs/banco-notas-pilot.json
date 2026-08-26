@@ -1,0 +1,57 @@
+{
+  "schema_version": 1,
+  "run_id": "banco-notas-pilot",
+  "goal": "Provar execução paralela em fatias funcionais independentes do Banco de Notas sem merge, deploy, sync ou mudança de privilégios automáticos.",
+  "tasks": [
+    {
+      "id": "ano-letivo",
+      "title": "Implementar uma fatia fechada de configuração do ano letivo",
+      "role": "implementation",
+      "depends_on": [],
+      "paths": ["src/banco-de-notas/ano-letivo"],
+      "required_capabilities": ["reasoning", "repo_read", "repo_write", "test"],
+      "preferred_providers": ["jules", "antigravity", "opencode_ollama"],
+      "human_gates": []
+    },
+    {
+      "id": "conselho",
+      "title": "Implementar uma fatia fechada do Conselho de Classe",
+      "role": "implementation",
+      "depends_on": [],
+      "paths": ["src/banco-de-notas/conselho"],
+      "required_capabilities": ["reasoning", "repo_read", "repo_write", "test"],
+      "preferred_providers": ["jules", "antigravity", "opencode_ollama"],
+      "human_gates": []
+    },
+    {
+      "id": "boletins",
+      "title": "Implementar uma fatia fechada de boletins e impressão",
+      "role": "implementation",
+      "depends_on": [],
+      "paths": ["src/banco-de-notas/boletins"],
+      "required_capabilities": ["reasoning", "repo_read", "repo_write", "test"],
+      "preferred_providers": ["jules", "antigravity", "opencode_ollama"],
+      "human_gates": []
+    },
+    {
+      "id": "integracao-final",
+      "title": "Revisar integração das fatias e executar regressões",
+      "role": "verification",
+      "depends_on": ["ano-letivo", "conselho", "boletins"],
+      "paths": ["tests/banco-de-notas/integration"],
+      "required_capabilities": ["reasoning", "repo_read", "repo_write", "test", "review"],
+      "preferred_providers": ["opencode_ollama", "jules", "antigravity"],
+      "human_gates": []
+    },
+    {
+      "id": "production-activation",
+      "title": "Ativar produção somente depois de homologação e decisão humana",
+      "role": "delivery",
+      "depends_on": ["integracao-final"],
+      "paths": ["infra/production"],
+      "required_capabilities": ["github_api", "repo_write"],
+      "preferred_providers": [],
+      "human_gates": ["production_activation"]
+    }
+  ]
+}
