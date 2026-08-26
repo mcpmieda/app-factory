@@ -24,15 +24,12 @@ Quando o usuário pedir um **sistema baseado em HeroUI/HeroUI Pro** ou quando He
 
 - HeroUI deve ser linguagem transversal do produto, não apenas fonte de alguns cards/botões;
 - consultar obrigatoriamente `ui/heroui/README.md` e seus catálogos;
-- ativar nativamente `ui/AMBIENT_CONSTELLATION_PROFILE.md`;
-- registrar `Ambient Surface Profile: ambient-constellation`;
-- usar `Constellation Intensity: strong` por padrão;
-- aplicar a constelação fortemente a shell/header/hero/login/dashboard overview/empty-waiting/AI/modal importante/painéis e cards especiais quando existirem;
-- manter Data Grid, tabelas, formulários e áreas longas de leitura em superfícies limpas, preservando a constelação no shell/perímetro/cabeçalho;
-- usar tokens/tema HeroUI para adaptar a paleta, sem hardcode universal do azul da referência;
-- reduced motion deve parar/reduzir drift, mantendo fallback constelar estático quando legível.
+- usar componentes, compound components, tokens, estados, overlays e padrões HeroUI nativos sempre que a capacidade existir;
+- manter Data Grid, tabelas, formulários e áreas longas de leitura em superfícies apropriadas à densidade da tarefa;
+- usar tokens/tema HeroUI para adaptar a paleta e preservar coerência do produto;
+- respeitar acessibilidade e `prefers-reduced-motion` em qualquer motion não essencial.
 
-Só remover esse default por preferência explícita do usuário ou restrição real de produto, acessibilidade, plataforma ou desempenho.
+HeroUI não implica um efeito ambiental obrigatório. A composição visual deve ser decidida pelo produto/projeto e pode ser criativa, desde que preserve coerência, desempenho, acessibilidade e a linguagem nativa do design system.
 
 ## Professional UI Profile
 
@@ -59,9 +56,7 @@ Quando a UI for relevante, registrar no projeto:
 - density: `compact`, `comfortable` ou `spacious` quando material;
 - surface: `flat`, `layered` ou `immersive` quando material;
 - emphasis: `quiet`, `balanced` ou `bold` quando material;
-- Motion Profile conforme `ui/MOTION_POLICY.md`;
-- Ambient Surface Profile quando ativo;
-- Constellation Intensity quando `ambient-constellation` estiver ativo.
+- Motion Profile conforme `ui/MOTION_POLICY.md`.
 
 Não obrigar o usuário a escolher detalhes técnicos quando a Factory puder inferi-los pelo tipo do produto e pela preferência já conhecida.
 
@@ -80,8 +75,6 @@ Perfis disponíveis:
 - `ambient`;
 - `expressive`.
 
-O perfil ambiental `ambient-constellation` é definido separadamente em `ui/AMBIENT_CONSTELLATION_PROFILE.md`. Pedidos como `ambient constellation`, `ambient constellarion` e `ambiente de constelação` o ativam com intensidade `strong`; HeroUI novo o herda automaticamente.
-
 Uma preferência explícita do usuário sobre design/motion tem precedência. O Motion Profile é independente do design system e do Professional UI Profile.
 
 ## Regras
@@ -99,8 +92,7 @@ Uma preferência explícita do usuário sobre design/motion tem precedência. O 
 11. Respeitar `prefers-reduced-motion`; `prefers-reduced-transparency` pode ser progressive enhancement.
 12. Para UI média/grande, fazer inventário dos arquétipos necessários antes de criar componentes próprios: shell, page header, stats, search/command, filters, data view, form, detail/inspector, feedback e somente então calendar/kanban/chart quando o produto exigir.
 13. Evitar padrões de aparência genérica de app gerado por IA: excesso de cards equivalentes, múltiplos CTAs primários, gradientes/glow sem função, hierarquia fraca e mistura de design systems.
-14. Quando `ambient-constellation` estiver ativo, seguir o mapa de superfícies e QA do perfil canônico; não improvisar partículas ad hoc em cada página.
-15. Intensidade `strong` significa presença por composição/profundidade, não velocidade, strobe, saturação extrema ou estrelas sobre conteúdo.
+14. Efeitos ambientais, partículas, glows ou fundos especiais são opcionais e devem existir apenas quando trouxerem valor ao produto; nunca por obrigação global da Factory.
 
 ## Padrões mínimos de tela
 
@@ -125,15 +117,13 @@ Verificar proporcionalmente:
 - console sem erro relevante;
 - `prefers-reduced-motion`;
 - acessibilidade básica;
-- `ambient-constellation` perceptível e não obstrutivo quando ativo;
-- fallback constelar estático sob reduced motion;
 - ausência de flashing/strobe;
 - screenshot regression somente quando houver baseline estável e risco material.
 
 ## Perfil web-admin validado
 
-Consultar `profiles/web-admin/PROFILE.md` para defaults e módulos opcionais comprovados. O perfil herda esta UI Policy, portanto mantém shadcn como base e ReUI seletivo **quando HeroUI não foi escolhido explicitamente**. Se o projeto administrativo for explicitamente HeroUI, a escolha HeroUI é transversal e herda `ambient-constellation` strong.
+Consultar `profiles/web-admin/PROFILE.md` para defaults e módulos opcionais comprovados. O perfil herda esta UI Policy, portanto mantém shadcn como base e ReUI seletivo **quando HeroUI não foi escolhido explicitamente**. Se o projeto administrativo for explicitamente HeroUI, a escolha HeroUI é transversal.
 
 ## Registry futuro
 
-A Factory deverá distribuir somente componentes, layouts, páginas, convenções, motion primitives, testes e configurações **aprovados e licenciados** por registry. `ambient-constellation` deve virar primitive reutilizável somente depois de implementação real validada; a política já define o contrato independente da implementação.
+A Factory deverá distribuir somente componentes, layouts, páginas, convenções, motion primitives, testes e configurações **aprovados e licenciados** por registry.
