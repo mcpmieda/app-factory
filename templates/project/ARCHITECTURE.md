@@ -15,11 +15,6 @@
 - surface: `flat` / `layered` / `immersive` quando relevante:
 - emphasis: `quiet` / `balanced` / `bold` quando relevante:
 - Motion Profile: `ambient` por padrão (`none`, `subtle`, `ambient`, `expressive`):
-- Ambient Surface Profile: [não aplicável / `ambient-constellation`]:
-- Constellation Intensity: [`strong` quando ativado]:
-- constellation implementation: [SVG/pseudo-elements + CSS transform/opacity; Motion só quando necessário]:
-- dense content strategy: [clean islands + constelação no shell/header/perímetro]:
-- reduced motion constellation fallback: [estático / não aplicável]:
 - motion implementation: recursos nativos do design system / CSS / biblioteca especializada somente se necessário:
 - testes:
 - semantic depth: [não aplicável / `scenario` / `domain` / `formal`]
@@ -28,16 +23,13 @@
 
 Para cada escolha importante, registrar motivo curto e evitar tecnologia sem necessidade.
 
-Interfaces devem seguir `ui/UI_POLICY.md`, `ui/PROFESSIONAL_UI_PROFILE.md`, `ui/MOTION_POLICY.md` e, quando ativo, `ui/AMBIENT_CONSTELLATION_PROFILE.md`:
+Interfaces devem seguir `ui/UI_POLICY.md`, `ui/PROFESSIONAL_UI_PROFILE.md` e `ui/MOTION_POLICY.md`:
 
 - `professional-default` define o quality bar, não instala biblioteca;
 - admin/dashboard/CRUD continua preferindo shadcn como base e ReUI seletivo quando não houver preferência explícita por HeroUI;
 - escolha explícita de HeroUI para o sistema inteiro prevalece sobre o default administrativo e deve permanecer transversal;
-- sistema novo HeroUI herda `ambient-constellation strong` automaticamente salvo exceção explícita/real;
-- pedidos `ambient constellation`, `ambient constellarion`, `ambiente de constelação` e equivalentes ativam o mesmo perfil;
-- constelação forte usa presença por composição/profundidade, não velocidade/strobe;
-- tabelas/grids/forms densos ficam em superfícies limpas enquanto shell/header/perímetro preservam a assinatura;
-- `prefers-reduced-motion` é obrigatório para movimento não essencial e a constelação deve ter fallback estático.
+- nenhum efeito ambiental específico é obrigatório por design system;
+- `prefers-reduced-motion` é obrigatório para movimento não essencial.
 
 ## Componentes
 
@@ -111,18 +103,6 @@ Separar valores variáveis da lógica. Nunca registrar segredos.
 
 Não copiar templates/ativos proprietários de referências comerciais para a Factory ou projeto sem licença explícita aplicável.
 
-## Ambient Constellation, quando ativo
-- superfícies fortes selecionadas: shell / page-header / hero / dashboard overview / auth / empty-waiting / highlight / modal-drawer / AI / special cards:
-- número de camadas animadas (default 2):
-- períodos/direções não sincronizados:
-- paleta/tokens usados:
-- conteúdo denso isolado em superfície limpa:
-- partículas decorativas `pointer-events: none` / fora da árvore acessível:
-- animações limitadas a `transform`/`opacity` quando possível:
-- blur/glow estático:
-- mobile attenuation:
-- offscreen/performance strategy quando material:
-
 ## Acessibilidade e movimento
 - reduced motion:
 - reduced transparency progressive enhancement:
@@ -132,11 +112,31 @@ Não copiar templates/ativos proprietários de referências comerciais para a Fa
 - ausência de flash/strobe:
 - axe-core/Playwright: [não aplicável / advisory / required conforme VERIFICATION.md]
 
+## Continuidade de operações críticas
+
+Preencher para `persistent-app` ou superior quando a interrupção do cliente puder causar efeito parcial, duplicidade, inconsistência ou perda de progresso.
+
+- operação crítica:
+- risco se navegador/cliente fechar, energia/rede cair ou usuário trocar de dispositivo:
+- ponto em que o comando passa a ser considerado aceito pelo servidor:
+- identificador estável da operação/job/lote quando necessário:
+- estado/checkpoint durável fora do navegador:
+- estratégia de idempotência:
+- estratégia para escrita de resultado ambíguo (reconciliar antes de repetir):
+- progresso por item/unidade para operações em massa:
+- retomada/reconciliação/compensação:
+- status consultável pelo cliente depois da interrupção:
+- regra para responder: **foi executada? até onde chegou? o que ainda falta?**
+- comportamento quando a interrupção ocorre antes do servidor aceitar o comando:
+- teste de interrupção/retomada executado:
+
+Não adote fila/job por reflexo. Se a operação for curta, atômica e segura para repetição, documente por que mecanismo mais simples é suficiente. O requisito é sobrevivência e determinismo conforme `core/SYSTEM_ENGINEERING.md`.
+
 ## Observabilidade
-Definir apenas o necessário para diagnosticar falhas e comportamento.
+Definir apenas o necessário para diagnosticar falhas e comportamento. Para operações duráveis, manter correlação suficiente para localizar uma operação sem registrar secrets/dados sensíveis desnecessários.
 
 ## Recuperação
-Em sistemas existentes ou mudanças de risco, registrar baseline, backup/migration e rollback adequados.
+Em sistemas existentes ou mudanças de risco, registrar baseline, backup/migration e rollback adequados. Quando operações críticas puderem sobreviver ao cliente, incluir retomada/reconciliação e estado server-side na estratégia de recovery.
 
 ## Decisões substituídas
 Não manter alternativas antigas como se ainda fossem vigentes. Referenciar decisão histórica quando necessário.
