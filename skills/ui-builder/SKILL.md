@@ -1,6 +1,6 @@
 ---
 name: ui-builder
-description: Escolhe e aplica padrões de interface modernos para páginas, dashboards e sistemas, priorizando reutilização, consistência visual, Professional UI, Living UI/Semantic Motion, Ambient Constellation e uso seletivo de shadcn, ReUI ou HeroUI conforme o tipo de aplicação.
+description: Escolhe e aplica padrões de interface modernos para páginas, dashboards e sistemas, priorizando reutilização, consistência visual, Professional UI, Living UI/Semantic Motion e uso seletivo de shadcn, ReUI ou HeroUI conforme o tipo de aplicação.
 ---
 
 # UI Builder
@@ -38,6 +38,8 @@ Regras:
 6. sem licença Pro, usar nomes/padrões públicos como referência e implementar com HeroUI OSS ou componente local compatível;
 7. manter HeroUI em shell, formulários, dados, overlays, estados, motion, tokens e temas — não só em cards/botões.
 
+HeroUI não ativa automaticamente partículas, estrelas, fundos especiais, glows ou outro efeito ambiental. Esses recursos podem existir em um projeto quando forem desejados ou fizerem sentido, mas não são uma obrigação da App Factory.
+
 ## Overlays e navegação HeroUI — regra forte
 
 Antes de construir ou revisar Drawer, Popover, Modal, busca/command ou navegação dentro de overlay, ler `ui/heroui/OVERLAY_INTERACTION_HARDENING.md`.
@@ -48,59 +50,12 @@ Regras obrigatórias:
 - `ListBox`, `Select`, `ComboBox` e equivalentes permanecem para seleção/collection behavior quando essa for a semântica real;
 - cada overlay controlado deve ter **uma única fonte de estado**; evitar trigger interno, `onPress`, `isOpen/onOpenChange` e listener global competindo pelo mesmo estado;
 - quando um clique dentro do overlay navega e deve fechá-lo, preferir fechar na **mesma interação** do usuário e deixar a navegação ocorrer normalmente;
-- não usar `hashchange`, `popstate` ou listener global como caminho primário de fechamento se isso puder competir com a renderização da nova rota;
-- QA deve usar ponteiro real/hit-testing quando possível e aguardar o alvo ficar efetivamente atingível durante animações; `element.click()` sozinho não prova usabilidade;
-- erro/exceção não tratado da página/runtime, `console.error` relevante, overlay órfão, foco preso ou root recuperado inesperadamente são falhas de QA; usar hook browser-neutral do harness e CDP apenas como adaptador quando aplicável;
+- não usar listener global como caminho primário de fechamento se isso puder competir com a renderização da nova rota;
+- QA deve usar ponteiro real/hit-testing quando possível e aguardar o alvo ficar efetivamente atingível durante animações;
+- erro/exceção não tratado da página/runtime, `console.error` relevante, overlay órfão, foco preso ou root recuperado inesperadamente são falhas de QA;
 - quando performance for gate, definir antes ambiente, cache/rede, viewport, início/fim da medição e threshold derivado do SLO/baseline do projeto; depois medir múltiplas amostras e usar mediana para latência sustentada;
-- antes de alterar a aplicação por uma falha automatizada, confirmar se o harness modela o elemento real, inclusive Buttons que navegam por handler e conteúdo renderizado em portal;
+- antes de alterar a aplicação por uma falha automatizada, confirmar se o harness modela o elemento real;
 - smoke no domínio oficial não pode criar sessão/cookie falso ou reduzir segurança.
-
-## Ambient Constellation — regra forte
-
-Antes de implementar atmosfera visual, ler `ui/AMBIENT_CONSTELLATION_PROFILE.md`.
-
-### Ativação por prompt
-
-Se o usuário disser `ambient constellation`, `ambient constellarion`, `ambiente de constelação`, `ambiente constelar` ou equivalente inequívoco:
-
-```text
-Motion Profile: ambient
-Ambient Surface Profile: ambient-constellation
-Constellation Intensity: strong
-Particle scale: micro, screen-space bounded
-```
-
-Aplicar fortemente às superfícies existentes listadas no perfil: shell/background, page header, hero/welcome, dashboard overview, login/auth, empty/waiting/onboarding, painéis de destaque, modal/drawer importante, AI/assistant e cards/CTA especiais.
-
-### HeroUI nativo
-
-Se **HeroUI for o design system principal de um sistema novo**, ativar `ambient-constellation strong` automaticamente. Não perguntar se o usuário quer o efeito e não exigir que ele o mencione em prompts futuros.
-
-Exceções somente por:
-
-- opt-out explícito;
-- identidade de marca incompatível;
-- restrição material de plataforma/desempenho;
-- acessibilidade.
-
-Mesmo em tela densa, não apagar toda a assinatura. Colocar tabelas/forms/grids em ilhas limpas e manter constelação no shell/header/perímetro. Com reduced motion, congelar o campo em composição estática em vez de simplesmente remover a identidade visual.
-
-### Como tornar perceptível sem atrapalhar
-
-- pelo menos duas profundidades/camadas em superfícies fortes;
-- períodos lentos diferentes e não sincronizados;
-- glow grande e preferencialmente estático;
-- **micro-partículas**, normalmente em torno de `0.6–1.5 CSS px`, com raros glints maiores;
-- presença por composição, densidade e área, não por diâmetro ou velocidade;
-- campo maior que a área visível e recortado, aproximadamente `1.25–1.45×` em largura e `1.55–1.90×` em altura como referência;
-- baseline HeroUI Pro: drift visual aproximadamente `20px`, ciclos de `12s` e `15s` em direções opostas;
-- nenhuma partícula sobre conteúdo interativo ou texto denso;
-- `pointer-events: none`, decoração fora da árvore acessível;
-- CSS `transform`/`opacity` para loops simples;
-- evitar cursor/scroll parallax por padrão;
-- zero strobe/blinking.
-
-**Nunca** usar um campo SVG `0 0 100 100` em tela cheia com círculos de raio próximo a `1`, nem qualquer modelagem que faça os pontos crescerem proporcionalmente à viewport. Se os pontos parecem bolhas/círculos voadores em zoom 100%, a implementação falhou mesmo que a intensidade esteja configurada como `strong`.
 
 ## Professional UI Profile
 
@@ -163,9 +118,7 @@ Pesquisar primeiro no design system/registry atual. Não criar componente própr
 
 ### Origem/licença
 
-Referências comerciais como HeroUI Pro podem inspirar padrões públicos de composição e linguagem visual. Não copiar código, templates, assets ou screenshots proprietários para a Factory sem licença específica.
-
-A referência de `ambient-constellation` vem do site/repositório OSS HeroUI v3. A Factory prefere primitive própria; se código OSS for copiado diretamente para um projeto, cumprir a licença aplicável e NOTICE quando exigido.
+Referências comerciais como HeroUI Pro podem inspirar padrões públicos de composição e linguagem visual. Não copiar código, templates, assets ou screenshots proprietários para a Factory sem licença específica aplicável.
 
 ## Motion Profile
 
@@ -177,7 +130,7 @@ Perfis disponíveis: `none`, `subtle`, `ambient`, `expressive`.
 
 Aplicar movimento semanticamente quando adequado:
 
-- **ambient**: atmosfera contextual, incluindo `ambient-constellation` quando ativo;
+- **ambient**: atmosfera contextual opcional e discreta;
 - **interaction**: hover, foco, clique, cards, campos, menus;
 - **data**: gráficos, indicadores, progresso e mudanças reais de valor;
 - **state**: loading, saving, upload, sync, sucesso e erro;
@@ -186,7 +139,7 @@ Aplicar movimento semanticamente quando adequado:
 
 Não manter animação de atenção depois que o usuário já percebeu/interagiu. Não reanimar dados sem mudança real.
 
-`prefers-reduced-motion` é obrigatório. Para constelação, usar fallback estático. `prefers-reduced-transparency` pode ser progressive enhancement.
+`prefers-reduced-motion` é obrigatório. `prefers-reduced-transparency` pode ser progressive enhancement.
 
 ## Antes de construir
 
@@ -195,7 +148,7 @@ Não manter animação de atenção depois que o usuário já percebeu/interagiu
 - preferir composição de componentes consolidados a recriação manual;
 - verificar licença e dependências antes de importar código externo;
 - verificar primeiro se o design system atual já oferece o padrão necessário;
-- registrar `professional-default`/exceção, Motion Profile e Ambient Surface Profile quando ativos.
+- registrar `professional-default`/exceção e Motion Profile.
 
 ## Qualidade visual
 
@@ -203,11 +156,9 @@ Evitar aparência genérica de app gerado por IA. Usar hierarquia clara, espaça
 
 Uma interface viva não significa movimento em tudo. Conteúdo principal deve permanecer legível e estável.
 
-Em HeroUI, a constelação deve ser uma assinatura visual recorrente e reconhecível; áreas densas ficam limpas por composição, não por abandono completo da assinatura. A referência de escala é de **poeira luminosa**, não de círculos decorativos.
-
 ## Regra de sistema
 
-Não redesenhar por impulso componentes estáveis já existentes. Em manutenção, preservar design system, Professional UI Profile, Motion Profile e Ambient Surface Profile vigentes salvo redesign explícito ou problema real.
+Não redesenhar por impulso componentes estáveis já existentes. Em manutenção, preservar design system, Professional UI Profile e Motion Profile vigentes salvo redesign explícito ou problema real.
 
 ## Verificação
 
@@ -218,12 +169,6 @@ Também verificar quando aplicável:
 - hierarquia e densidade do `professional-default`;
 - loading/empty/error e ação destrutiva;
 - coerência com Motion Profile;
-- `ambient-constellation` perceptível onde exigido;
-- **maior partícula típica ≤ 2 CSS px em desktop e ≤ 1.5 CSS px em mobile**, salvo exceção explícita;
-- nenhum ponto recorrente parece bolha/círculo voador;
-- partículas não bloqueiam interação;
-- dense content continua limpo;
-- `prefers-reduced-motion` gera fallback estático;
 - teclado/foco;
 - animações de atenção encerram/reduzem;
 - ausência de strobe/flashing;
@@ -231,7 +176,7 @@ Também verificar quando aplicável:
 - ausência de jank, overflow ou conteúdo obstruído;
 - em overlays/navegação, ponteiro real consegue atingir o alvo após a animação;
 - overlay fecha sem dupla fonte de estado ou listener global concorrente;
-- zero erro/exceção não tratado e zero `console.error` relevante no fluxo aprovado, por mecanismo compatível com o browser/harness;
+- zero erro/exceção não tratado e zero `console.error` relevante no fluxo aprovado;
 - se latência for gate, protocolo de medição e threshold do projeto são definidos antes da coleta e avaliados por múltiplas amostras/mediana;
 - falha de harness descartada antes de alterar a aplicação;
 - screenshot regression somente com baseline estável e risco material.
