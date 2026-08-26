@@ -37,8 +37,21 @@ def validate_files() -> None:
 
 
 def validate_unit_tests() -> None:
-    result = run(sys.executable, "-m", "unittest", "discover", "-s", "tests/multiagent", "-v")
-    if "FAILED" in result.stdout or "FAILED" in result.stderr:
+    result = run(
+        sys.executable,
+        "-m",
+        "unittest",
+        "discover",
+        "-s",
+        "tests/multiagent",
+        "-v",
+        check=False,
+    )
+    if result.returncode != 0:
+        if result.stdout:
+            print(result.stdout)
+        if result.stderr:
+            print(result.stderr, file=sys.stderr)
         stop("Multiagent unit tests failed")
 
 
