@@ -51,8 +51,6 @@ def _parser() -> argparse.ArgumentParser:
     init.add_argument("--design-system", default="")
     init.add_argument("--professional-ui-profile", default="")
     init.add_argument("--motion-profile", default="")
-    init.add_argument("--ambient-surface-profile", default="")
-    init.add_argument("--constellation-intensity", default="")
     init.add_argument("--deviation", default="")
 
     check = subparsers.add_parser("check", help="Read-only conformance check")
@@ -86,8 +84,6 @@ def _init(args: argparse.Namespace) -> int:
             "designSystem": args.design_system,
             "professionalUiProfile": args.professional_ui_profile,
             "motionProfile": args.motion_profile,
-            "ambientSurfaceProfile": args.ambient_surface_profile,
-            "constellationIntensity": args.constellation_intensity,
             "deviation": args.deviation,
         },
     }
