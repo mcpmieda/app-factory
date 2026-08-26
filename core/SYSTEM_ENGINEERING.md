@@ -42,6 +42,7 @@ Por padrão exige:
 - modelo de domínio e relacionamentos explícitos;
 - migrations/versionamento de schema quando houver banco próprio;
 - estratégia de concorrência/idempotência para operações suscetíveis a repetição ou conflito;
+- continuidade de operações críticas independente da permanência da sessão do navegador/cliente quando uma interrupção puder causar efeito parcial, duplicidade, inconsistência ou perda de progresso;
 - estratégia de aquisição de dados que evite N+1, round trips redundantes e cliente atuando como orquestrador de infraestrutura quando isso for material;
 - testes do fluxo crítico com persistência real ou ambiente equivalente.
 
@@ -131,6 +132,26 @@ Para sistemas com dados próprios:
 
 Validação de schema por registro não prova invariantes que atravessam a coleção. Unicidade, cardinalidade, ausência de conflito entre registros e regras agregadas precisam ser aplicadas/testadas na camada que possui visão do conjunto — coleção local, serviço/domínio e/ou banco, conforme a arquitetura.
 
+## Continuidade de operações após perda do cliente
+
+Para `persistent-app` ou superior, avalie toda operação que possa continuar produzindo efeito depois de uma requisição inicial ou que possa deixar estado parcial. A regra é proporcional ao risco: uma gravação curta e realmente atômica não precisa virar job/fila apenas por existir, mas uma operação cuja interrupção possa causar perda, duplicidade, divergência ou progresso parcial não pode depender da aba do navegador permanecer aberta.
+
+Quando aplicável:
+
+- após o servidor aceitar uma operação crítica, o estado necessário para concluí-la deve ser durável no servidor/infraestrutura confiável, não apenas em memória do frontend, `localStorage`, `sessionStorage` ou IndexedDB;
+- o cliente pode manter cache, preferências não críticas e estado visual descartável, mas não pode ser a única fonte de verdade para progresso institucional, numeração, lote, checkpoint, etapa concluída ou decisão necessária para recuperação;
+- toda operação crítica deve conseguir responder depois de uma interrupção: **foi executada? até onde chegou? o que ainda falta?**;
+- use, conforme o caso, idempotência, identificador estável de operação, checkpoint durável, job/fila, transação, lock/controle de concorrência, reconciliação com o provedor externo ou ação compensatória;
+- não repita cegamente uma escrita remota após timeout, queda de energia ou perda de conexão quando houver possibilidade de a escrita já ter sido aplicada; primeiro reconcilie o estado real;
+- operações em lote devem registrar progresso por item ou unidade recuperável quando uma execução parcial for material;
+- operações demoradas não devem exigir conexão HTTP/aba aberta indefinidamente; quando necessário, aceite o comando, persista a operação e exponha status/resultado posterior;
+- recuperação deve funcionar também quando o usuário volta em outro navegador/dispositivo, se o produto promete continuidade compartilhada;
+- a única janela em que não há nada a retomar é quando o cliente é interrompido **antes de o comando ser aceito/persistido pelo servidor**; isso deve ser distinguível de uma operação aceita cuja resposta se perdeu.
+
+Exemplos típicos: upload grande, importação, geração de documentos, processamento em massa, movimentação/renomeação de muitos registros, sincronização externa, migração, mesclagem de arquivos, emissão de sequência oficial e qualquer workflow multi-etapas com efeitos persistentes.
+
+Não force infraestrutura assíncrona pesada em operações pequenas. O requisito é **sobrevivência e determinismo**, não uma tecnologia específica.
+
 ## Capacidades condicionais
 
 A Factory deve avaliar, sem instalar tudo por padrão:
@@ -166,6 +187,7 @@ Para `persistent-app` ou superior, a arquitetura deve registrar pelo menos:
 - principais entidades e relações;
 - estratégia de validação;
 - riscos de perda/duplicidade/conflito;
+- estratégia de continuidade/retomada/reconciliação das operações críticas quando a interrupção do cliente for material;
 - ambiente de deploy e recuperação proporcional.
 
 Para `local-app` com dados persistentes relevantes, registre de forma leve a fonte local autoritativa e, quando houver evolução incompatível, o contrato/migração/recuperação. Não force a saída completa de `persistent-app` se o produto continua legitimamente local.
@@ -183,6 +205,7 @@ Um projeto classificado como `multi-user-system` ou superior não pode ser decla
 - mutações não tiverem validação server-side;
 - banco/schema tiver sido alterado sem migration/estratégia equivalente;
 - não houver teste do fluxo crítico com a camada real de persistência/autorização aplicável;
+- uma operação crítica suscetível a interrupção puder perder progresso, duplicar efeitos ou deixar estado inconsistente apenas porque navegador/cliente foi encerrado;
 - um fluxo data-driven material depender de N+1 evitável, coleção ilimitada ou round trips redundantes que ameacem custo/latência/quota sem decisão justificada;
 - recuperação/backup for requisito material e não houver estratégia definida.
 
