@@ -23,15 +23,17 @@ Do not permanently inject governance into an unrelated legacy repository merely 
 
 1. Recover the real repository state.
 2. Classify scale, risk and system level.
-3. Classify API mode.
-4. Classify Semantic Verification + semantic depth.
-5. Classify Independent Verification mode.
-6. Select validated profile when applicable.
-7. For UI, select the design system and Professional UI/Motion profiles **before code**.
-8. Initialize/update durable adoption metadata.
-9. Materialize semantic artifacts required before implementation.
-10. Run the read-only `pre-implementation` gate.
-11. Only after it passes, implement the functional slice.
+3. For `persistent-app` or above, identify authoritative data and evaluate critical operations that must survive loss of browser/client according to `core/SYSTEM_ENGINEERING.md`.
+4. For operations susceptible to partial effects, duplication or lost progress, define proportional server-side durability, idempotency/checkpoint/reconciliation/retomada before code.
+5. Classify API mode.
+6. Classify Semantic Verification + semantic depth.
+7. Classify Independent Verification mode.
+8. Select validated profile when applicable.
+9. For UI, select the design system and Professional UI/Motion profiles **before code**.
+10. Initialize/update durable adoption metadata.
+11. Materialize semantic artifacts required before implementation.
+12. Run the read-only `pre-implementation` gate.
+13. Only after it passes, implement the functional slice.
 
 ## Executable path
 
@@ -69,15 +71,18 @@ For `web-admin` UI:
 - HeroUI: explicit/transversal override;
 - React + custom/native CSS is **not** an implicit design-system choice and requires a documented `ui.deviation` when used as the visual foundation.
 
-For HeroUI primary systems, automatically record:
+For HeroUI primary systems, record the normal Professional UI and Motion Profile and follow `ui/heroui/README.md`. HeroUI does not imply any mandatory environmental effect; effects are project decisions.
 
-```text
-Motion Profile: ambient
-Ambient Surface Profile: ambient-constellation
-Constellation Intensity: strong
-```
+## Client interruption guard
 
-Then follow `ui/AMBIENT_CONSTELLATION_PROFILE.md`.
+For a critical operation, ask architecturally:
+
+- after the server accepts the command, does closing the browser destroy the only progress record?
+- can an ambiguous timeout cause the same write to be repeated blindly?
+- can the system determine whether the operation ran, where it stopped and what remains?
+- can a batch resume only pending items instead of starting over?
+
+If the answer exposes material loss, duplication or inconsistency risk, the architecture is not ready. Use durable server-side state and the smallest suitable combination of operation ID, idempotency, checkpoint, job, transaction, lock, reconciliation or compensation.
 
 ## Recovery of already-started projects
 
@@ -98,4 +103,4 @@ Before completion, run:
 python scripts/project_adoption_gate.py check --project <repo> --phase delivery
 ```
 
-This adds delivery-level checks such as review evidence for medium/high semantic risk and recoverable Independent Verification state above baseline.
+This adds delivery-level checks such as review evidence for medium/high semantic risk and recoverable Independent Verification state above baseline. Critical operations affected by client interruption also need recovery/reconciliation evidence proportional to their risk.
