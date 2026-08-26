@@ -19,7 +19,7 @@ Antes de remodelar um sistema existente para HeroUI, ler `HEROUI_NATIVE_REDESIGN
 
 Quando o usuário pedir que a interface pareça **inteiramente criada do zero em HeroUI**, a preservação deve ocorrer na camada funcional, não na anatomia visual antiga. É obrigatório reconstruir a árvore de apresentação usando diretamente componentes/compound components HeroUI e remover facades/adapters de shadcn/ReUI/Radix cuja única finalidade seja conservar APIs e imports do design system anterior.
 
-Componentes locais continuam permitidos para padrões reais de produto — por exemplo `AmbientConstellation` e `LivingSurface` — mas não para simular `CardHeader`, `Badge`, `Button asChild` ou outras APIs herdadas apenas para evitar a migração estrutural.
+Componentes locais continuam permitidos para padrões reais de produto, mas não para simular `CardHeader`, `Badge`, `Button asChild` ou outras APIs herdadas apenas para evitar a migração estrutural.
 
 ## Integridade da prova temporal
 
@@ -27,7 +27,7 @@ Quando motion perceptível for requisito, ler também `TEMPORAL_MOTION_QA.md`.
 
 Não considerar uma animação validada apenas porque existe `animation:` no CSS, porque duas screenshots foram geradas ou porque duas strings auxiliares são diferentes. Para motion material, o QA deve comparar o estado computado do **mesmo elemento** em instantes separados e, quando possível, confirmar avanço real de `animation.currentTime` com Web Animations API / Chrome DevTools Protocol.
 
-A regra existe para impedir falso-positivo em Living UI e Ambient Constellation: movimento tecnicamente declarado, mas não executado ou não perceptível, continua sendo falha de QA.
+A regra existe para impedir falso-positivo em Living UI e qualquer motion requerido pelo produto: movimento tecnicamente declarado, mas não executado ou não perceptível, continua sendo falha de QA.
 
 ## Integridade de overlays e navegação
 
@@ -44,38 +44,19 @@ O contrato exige:
 - diagnóstico do harness antes de alterar o produto por um falso positivo;
 - nenhum bypass de autenticação no domínio oficial.
 
-## Regra nativa de atmosfera HeroUI
+## HeroUI como linguagem principal
 
-Um **sistema novo baseado em HeroUI** deve ativar automaticamente:
-
-```text
-Motion Profile: ambient
-Ambient Surface Profile: ambient-constellation
-Constellation Intensity: strong
-Dense content: clean islands; constellation remains in shell/header/perimeter
-Reduced motion: static constellation fallback
-```
-
-Se o usuário pedir explicitamente muitas transições, páginas vivas, estados de espera animados ou uma experiência “living”, elevar para:
+Quando HeroUI for selecionado, registrar normalmente:
 
 ```text
-Motion Profile: expressive
-Ambient Surface Profile: ambient-constellation
-Constellation Intensity: strong
-Living states: required
+Design System: HeroUI
+Professional UI Profile: professional-default
+Motion Profile: ambient | subtle | expressive | none
 ```
 
-Fontes canônicas: `ui/AMBIENT_CONSTELLATION_PROFILE.md`, `ui/MOTION_POLICY.md`, `HEROUI_NATIVE_REDESIGN_CONTRACT.md` e, para evidência de motion, `TEMPORAL_MOTION_QA.md`.
+HeroUI deve aparecer de forma transversal em shell, formulários, dados, overlays, estados, tokens, temas e motion quando aplicável. Não misturar shadcn/ReUI apenas para preencher lacunas estéticas.
 
-Não esperar que o usuário peça o efeito separadamente. HeroUI como linguagem principal implica constelação ambiental nativa, salvo opt-out explícito ou restrição real de produto, acessibilidade, plataforma ou desempenho.
-
-A aplicação deve ser **forte e reconhecível** em shell/background, page headers, hero/welcome, dashboard overview, login/auth, empty/waiting/onboarding, painéis de destaque, modais/drawers importantes, AI/assistant e cards/CTAs especiais quando essas superfícies existirem.
-
-Tabelas, Data Grids, formulários densos e leitura longa permanecem em superfícies limpas; a identidade constelar continua no shell, cabeçalho, perímetro ou zonas de respiro.
-
-A referência técnica pública é o próprio banner/modal Pro do repositório OSS HeroUI v3: gradiente frio, glow difuso e duas camadas de estrelas em drift lento, oposto e com períodos diferentes. A Factory usa esse padrão como DNA, adaptando cores aos tokens/temas do produto.
-
-**Importante:** a amplitude do movimento deve ser reproduzida por proporção percebida. No modal de referência, ~20 px é um deslocamento relevante porque a área visível tem cerca de 288×180 px. Em superfícies muito maiores, repetir 20 px de forma fixa pode tornar o movimento imperceptível. O tamanho das partículas continua fixo em screen-space; o deslocamento do **grupo** pode ser proporcional à superfície.
+**Nenhum efeito ambiental específico é obrigatório.** Fundo, partículas, glows, gradientes ou outras atmosferas entram somente por decisão explícita do produto/projeto ou por uma composição que a App Factory julgue adequada naquele sistema, sempre sujeita a desempenho, acessibilidade e coerência. O simples fato de HeroUI ter sido escolhido não ativa automaticamente um efeito visual adicional.
 
 ## Inventário auditado
 
@@ -110,7 +91,6 @@ A auditoria também corrigiu o HeroUI Pro Native: o snapshot anterior registrava
 - `HEROUI_NATIVE_REDESIGN_CONTRACT.md` — contrato de reconstrução limpa, Living UI e QA de redesign HeroUI.
 - `TEMPORAL_MOTION_QA.md` — integridade da evidência temporal para motion e reduced-motion.
 - `OVERLAY_INTERACTION_HARDENING.md` — contrato de semântica, estado, fechamento, hit-testing, runtime e performance para overlays/navegação.
-- `../AMBIENT_CONSTELLATION_PROFILE.md` — contrato da assinatura ambiental obrigatória por padrão em sistemas HeroUI novos.
 
 ## Regra de autoridade
 
@@ -150,7 +130,6 @@ Quando HeroUI for escolhido, construir o produto de forma coerente com:
 - componentes Pro atuais quando autorizados e úteis;
 - `ui/PROFESSIONAL_UI_PROFILE.md`;
 - `ui/MOTION_POLICY.md`;
-- `ui/AMBIENT_CONSTELLATION_PROFILE.md` com intensidade strong;
 - `HEROUI_NATIVE_REDESIGN_CONTRACT.md` em redesigns;
 - `TEMPORAL_MOTION_QA.md` quando motion perceptível fizer parte dos gates;
 - `OVERLAY_INTERACTION_HARDENING.md` quando navegação, busca ou ações ocorrerem em overlays;
