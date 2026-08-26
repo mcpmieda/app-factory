@@ -60,8 +60,6 @@ Campos de governança esperados:
     "designSystem": "shadcn/ui",
     "professionalUiProfile": "professional-default",
     "motionProfile": "ambient",
-    "ambientSurfaceProfile": null,
-    "constellationIntensity": null,
     "deviation": null
   }
 }
@@ -79,14 +77,14 @@ Antes de código funcional/visual novo, verificar:
 4. escala, risco e `systemLevel` foram classificados;
 5. `persistent-app` ou superior possui fonte autoritativa explícita;
 6. `multi-user-system` ou superior registra identidade, autorização e recovery proporcionais;
-7. API mode foi classificado;
-8. Semantic Verification foi classificada antes do código;
-9. se Semantic Verification for `required`, `specs/semantic-contract.json` e `specs/verification-plan.json` existem antes da implementação;
-10. para `domain`/`formal`, `specs/semantic-assurance.json` existe e está pronto/coerente antes da implementação;
-11. Independent Verification mode foi classificado;
-12. se houver UI material, design system, Professional UI Profile e Motion Profile estão explicitamente escolhidos;
-13. se o perfil for `web-admin`, o default é shadcn/ui; ReUI é seletivo; CSS/HTML ad hoc como base visual exige desvio explícito e justificativa real;
-14. se HeroUI for o design system principal, `ambient-constellation strong` é obrigatório por padrão conforme `ui/AMBIENT_CONSTELLATION_PROFILE.md`;
+7. arquitetura avalia continuidade das operações críticas conforme `core/SYSTEM_ENGINEERING.md`, incluindo perda do navegador/cliente quando material;
+8. API mode foi classificado;
+9. Semantic Verification foi classificada antes do código;
+10. se Semantic Verification for `required`, `specs/semantic-contract.json` e `specs/verification-plan.json` existem antes da implementação;
+11. para `domain`/`formal`, `specs/semantic-assurance.json` existe e está pronto/coerente antes da implementação;
+12. Independent Verification mode foi classificado;
+13. se houver UI material, design system, Professional UI Profile e Motion Profile estão explicitamente escolhidos;
+14. se o perfil for `web-admin`, o default é shadcn/ui; ReUI é seletivo; CSS/HTML ad hoc como base visual exige desvio explícito e justificativa real;
 15. antes de criar UI própria, o agente inventaria os arquétipos necessários e pesquisaria o design system/registry/catálogo correspondente.
 
 ## Gate de UI — evitar o caso “React + CSS próprio”
@@ -106,16 +104,19 @@ O gate deve falhar se o projeto registrar `web-admin` + UI habilitada + design s
 
 ## HeroUI
 
-Quando `ui.designSystem` contiver HeroUI:
+Quando HeroUI for o design system principal:
 
-```text
-Professional UI Profile: professional-default
-Motion Profile: ambient
-Ambient Surface Profile: ambient-constellation
-Constellation Intensity: strong
-```
+- registrar `Professional UI Profile` e `Motion Profile` normalmente;
+- usar HeroUI como linguagem transversal, não apenas em alguns componentes;
+- consultar `ui/heroui/README.md` e os contratos/catálogos aplicáveis;
+- não misturar shadcn/ReUI apenas para preencher estética;
+- não inferir nenhum efeito ambiental obrigatório. Atmosfera, fundos especiais e efeitos decorativos são decisões de produto/projeto, não requisito universal da Factory.
 
-São aceitas exceções somente com justificativa explícita de produto, marca, acessibilidade ou plataforma. Reduced motion altera o movimento, não apaga automaticamente a identidade constelar.
+## Continuidade operacional
+
+O gate não força fila/job para toda mutação, mas deve impedir que uma arquitetura de sistema persistente ou multiusuário ignore interrupções materialmente perigosas.
+
+Quando uma operação puder deixar efeito parcial, duplicar escrita, perder progresso ou divergir de um provedor externo se o navegador fechar, a arquitetura deve aplicar a regra de `core/SYSTEM_ENGINEERING.md`: estado crítico durável fora do cliente e estratégia proporcional de idempotência, checkpoint, retomada, reconciliação, transação, lock ou compensação.
 
 ## Semantic-before-code
 
@@ -147,6 +148,7 @@ Além do pre-implementation, antes de entregar/concluir:
 - risco `medium`/`high`/`critical` com Semantic Verification exige `specs/review-evidence.json` atual;
 - Independent Verification acima de `baseline` exige `VERIFICATION.md` ou equivalente recuperável;
 - UI material exige browser/visual QA proporcional quando a capacidade existir;
+- operações críticas suscetíveis à perda do cliente devem possuir evidência de continuidade/reconciliação proporcional ao risco;
 - Change Hygiene precisa estar consolidado em código existente;
 - documentação arquitetural/estado não pode contradizer o stack/design system atual.
 
