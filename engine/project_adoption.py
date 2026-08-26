@@ -119,10 +119,6 @@ def _state_block(config: dict[str, Any]) -> str:
                 f"- Motion Profile: `{ui['motionProfile']}`;",
             ]
         )
-        if ui.get("ambientSurfaceProfile"):
-            lines.append(f"- Ambient Surface Profile: `{ui['ambientSurfaceProfile']}`;")
-        if ui.get("constellationIntensity"):
-            lines.append(f"- Constellation Intensity: `{ui['constellationIntensity']}`;")
         if ui.get("deviation"):
             lines.append(f"- UI deviation: {ui['deviation']};")
     lines.extend(
@@ -143,7 +139,6 @@ def normalize_config(config: dict[str, Any]) -> dict[str, Any]:
     profile = str(routing.get("profile") or "none")
     ui_enabled = bool(ui.get("enabled", profile == "web-admin"))
     design_system = str(ui.get("designSystem") or ("shadcn/ui" if profile == "web-admin" else "none"))
-    hero = "heroui" in design_system.lower()
 
     normalized = {
         "schemaVersion": 2,
@@ -173,8 +168,6 @@ def normalize_config(config: dict[str, Any]) -> dict[str, Any]:
             "designSystem": design_system,
             "professionalUiProfile": str(ui.get("professionalUiProfile") or ("professional-default" if ui_enabled else "none")),
             "motionProfile": str(ui.get("motionProfile") or ("ambient" if ui_enabled else "none")),
-            "ambientSurfaceProfile": str(ui.get("ambientSurfaceProfile") or ("ambient-constellation" if hero else "")) or None,
-            "constellationIntensity": str(ui.get("constellationIntensity") or ("strong" if hero else "")) or None,
             "deviation": str(ui.get("deviation") or "") or None,
         },
     }
@@ -306,11 +299,6 @@ def audit_project(project: Path, phase: str = "pre-implementation") -> list[str]
             issues.append("UI-enabled project requires ui.motionProfile")
         if profile == "web-admin" and design_lower in AD_HOC_DESIGN_SYSTEMS and not _nonempty(ui.get("deviation")):
             issues.append("web-admin cannot use ad-hoc/native CSS as its visual foundation without an explicit ui.deviation; default is shadcn/ui or an explicit HeroUI override")
-        if "heroui" in design_lower:
-            if ui.get("ambientSurfaceProfile") != "ambient-constellation":
-                issues.append("HeroUI primary design system requires ui.ambientSurfaceProfile=ambient-constellation by default")
-            if ui.get("constellationIntensity") != "strong":
-                issues.append("HeroUI primary design system requires ui.constellationIntensity=strong by default")
 
     agents_path = project / "AGENTS.md"
     if not agents_path.is_file():
