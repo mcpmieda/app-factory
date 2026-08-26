@@ -147,7 +147,12 @@ class WorkOrchestratorTests(unittest.TestCase):
         self.assertEqual(plan.waves[0].assignments[0].provider_id, "opencode_ollama")
 
     def test_provider_filter_rejects_unknown_metered_and_incapable_options(self) -> None:
-        item = WorkItem(task_id="x", title="X", required_capabilities=frozenset({"headless_browser"}))
+        item = WorkItem(
+            task_id="x",
+            title="X",
+            role="verification",
+            required_capabilities=frozenset({"headless_browser"}),
+        )
         metered = ProviderSpec(
             provider_id="metered-auto",
             cost_class="metered",
