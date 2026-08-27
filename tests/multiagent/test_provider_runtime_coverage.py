@@ -318,7 +318,7 @@ class ProviderRuntimeCoverageTests(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, "parse provider worktree status"):
             _status_paths("x\0")
         with self.assertRaisesRegex(ValueError, "rename/copy"):
-            _status_paths("R  docs/new.md\0")
+            _status_paths("R  docs/new.md")
         assert_only_worker_ref_changed({"refs/heads/worker": SHA_A}, {"refs/heads/worker": SHA_B}, "worker")
         with self.assertRaisesRegex(ValueError, "outside the worker branch"):
             assert_only_worker_ref_changed({"refs/heads/main": SHA_A}, {"refs/heads/main": SHA_B}, "worker")
