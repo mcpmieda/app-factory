@@ -111,14 +111,54 @@ class ProviderAdapterTests(unittest.TestCase):
         self.assertEqual(permissions["edit"][".github/**"], "deny")
         self.assertEqual(permissions["external_directory"], "deny")
         self.assertEqual(permissions["webfetch"], "deny")
+        self.assertEqual(permissions["lsp"], "deny")
         self.assertEqual(permissions["bash"]["git push*"], "deny")
         self.assertEqual(permissions["bash"]["git commit*"], "deny")
         self.assertEqual(permissions["bash"]["python -m unittest*"], "allow")
         self.assertEqual(config["enabled_providers"], ["ollama"])
         self.assertEqual(config["mcp"], {})
         self.assertEqual(config["plugin"], [])
+        self.assertTrue(config["tools"]["bash"])
+        self.assertTrue(config["tools"]["read"])
+        self.assertTrue(config["tools"]["edit"])
+        self.assertTrue(config["tools"]["write"])
+        self.assertFalse(config["tools"]["lsp"])
+        self.assertFalse(config["tools"]["webfetch"])
+        self.assertFalse(config["tools"]["websearch"])
+        self.assertFalse(config["tools"]["task"])
+        self.assertFalse(config["tools"]["skill"])
+        self.assertFalse(config["tools"]["question"])
         self.assertEqual(invocation.env["HOME"], str(profile.resolve()))
         self.assertIn("<task-instruction>", invocation.display_argv())
+
+    def test_opencode_hides_bash_when_task_has_no_control_plane_commands(self) -> None:
+        with tempfile.TemporaryDirectory() as raw:
+            root = Path(raw)
+            worktree = root / "worktree"
+            profile = root / "profile"
+            worktree.mkdir()
+            profile.mkdir()
+            request = ProviderTaskRequest.from_mapping({
+                "run_id": "adapter-test",
+                "task_id": "write-only",
+                "repository": "owner/repo",
+                "worktree": str(worktree),
+                "integration_branch": "factory/adapter-test",
+                "target_branch": "main",
+                "working_branch": "factory/adapter-test/write-only",
+                "paths": ["docs/result.md"],
+                "instruction": "Create exactly the requested file.",
+                "allowed_commands": [],
+            })
+            config = OpenCodeOllamaAdapter(
+                model="qwen3-coder", profile_home=profile
+            ).opencode_config(request)
+        self.assertFalse(config["tools"]["bash"])
+        self.assertTrue(config["tools"]["write"])
+        self.assertTrue(config["tools"]["edit"])
+        self.assertTrue(config["tools"]["read"])
+        self.assertFalse(config["tools"]["todowrite"])
+        self.assertFalse(config["tools"]["lsp"])
 
     def test_opencode_rejects_repository_runtime_configuration(self) -> None:
         with tempfile.TemporaryDirectory() as raw:
