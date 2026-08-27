@@ -19,6 +19,9 @@ if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
 from engine.ollama_tool_proxy import (  # noqa: E402
+    TOOL_GENERATION_MAX_TOKENS,
+    TOOL_GENERATION_SEED,
+    TOOL_GENERATION_TEMPERATURE,
     canonical_single_tool_sse,
     canonical_stop_sse,
     rewrite_single_tool_request,
@@ -36,6 +39,37 @@ TOOL_CONTRACT_REASON_BY_MESSAGE = {
     "required-tool proxy requires exactly one expected function tool": "tool_name",
     "required-tool proxy rejects conflicting tool_choice": "tool_choice",
 }
+RESPONSE_CONTRACT_STAGE_BY_MESSAGE = {
+    "completion response must be a JSON object": "payload",
+    "completion response requires an id": "completion_id",
+    "completion response requires a model": "model",
+    "completion response requires exactly one choice": "choice_count",
+    "completion response must finish with tool_calls": "finish_reason",
+    "completion response requires an assistant message": "assistant_message",
+    "completion response requires exactly one tool call": "tool_call_count",
+    "completion response tool call must be a function": "tool_type",
+    "completion response tool call requires an id": "tool_call_id",
+    "completion response returned an unexpected function tool": "tool_name",
+    "completion response tool arguments must be valid JSON": "arguments",
+    "completion response tool arguments must be a JSON object": "arguments",
+    "completion response tool arguments must be an object or JSON string": "arguments",
+}
+RESPONSE_CONTRACT_STAGES = frozenset({
+    "encoding",
+    "json",
+    "payload",
+    "completion_id",
+    "model",
+    "choice_count",
+    "finish_reason",
+    "assistant_message",
+    "tool_call_count",
+    "tool_type",
+    "tool_call_id",
+    "tool_name",
+    "arguments",
+    "unknown",
+})
 REJECT_REASONS = frozenset({
     "method",
     "path",
@@ -50,6 +84,11 @@ REJECT_REASONS = frozenset({
     *TOOL_CONTRACT_REASON_BY_MESSAGE.values(),
     "tool_contract",
 })
+
+
+def safe_response_contract_stage(error: ValueError) -> str:
+    """Return a bounded diagnostic code without exposing upstream response content."""
+    return RESPONSE_CONTRACT_STAGE_BY_MESSAGE.get(str(error), "unknown")
 
 
 @dataclass
@@ -68,12 +107,13 @@ class ProxyAudit:
     post_tool_completions: int = 0
     last_status: int | None = None
     last_reject_reason: str | None = None
+    last_response_contract_stage: str | None = None
     _lock: threading.Lock = field(default_factory=threading.Lock, repr=False)
 
     def snapshot(self) -> dict[str, Any]:
         with self._lock:
             return {
-                "schema_version": 1,
+                "schema_version": 2,
                 "expected_tool": self.expected_tool,
                 "accepted": self.accepted,
                 "rejected": self.rejected,
@@ -88,12 +128,20 @@ class ProxyAudit:
                 "post_tool_completions": self.post_tool_completions,
                 "last_status": self.last_status,
                 "last_reject_reason": self.last_reject_reason,
+                "last_response_contract_stage": self.last_response_contract_stage,
+                "generation_temperature": TOOL_GENERATION_TEMPERATURE,
+                "generation_seed": TOOL_GENERATION_SEED,
+                "generation_max_tokens": TOOL_GENERATION_MAX_TOKENS,
             }
 
     def mutate(self, **updates: Any) -> None:
         with self._lock:
             for name, value in updates.items():
-                if name in {"last_status", "last_reject_reason"}:
+                if name in {
+                    "last_status",
+                    "last_reject_reason",
+                    "last_response_contract_stage",
+                }:
                     setattr(self, name, value)
                 else:
                     setattr(self, name, getattr(self, name) + value)
@@ -150,6 +198,7 @@ class RequiredToolProxyHandler(BaseHTTPRequestHandler):
             rejected=1,
             last_status=status,
             last_reject_reason=reason,
+            last_response_contract_stage=None,
         )
         write_audit(self.server.audit_file, self.server.audit)
         body = b'{"error":"required-tool proxy rejected request"}\n'
@@ -225,12 +274,12 @@ class RequiredToolProxyHandler(BaseHTTPRequestHandler):
                 post_tool_completions=1,
                 last_status=200,
                 last_reject_reason=None,
+                last_response_contract_stage=None,
             )
             write_audit(self.server.audit_file, self.server.audit)
             self._send_sse(event_stream)
             return
 
-        original_choice = payload.get("tool_choice", "auto")
         tools = payload.get("tools")
         received_tool_count = len(tools) if isinstance(tools, list) else 0
         try:
@@ -253,6 +302,7 @@ class RequiredToolProxyHandler(BaseHTTPRequestHandler):
             tools_received=received_tool_count,
             tools_discarded=max(received_tool_count - retained_tool_count, 0),
             last_reject_reason=None,
+            last_response_contract_stage=None,
         )
         write_audit(self.server.audit_file, self.server.audit)
         request = urllib.request.Request(
@@ -264,12 +314,20 @@ class RequiredToolProxyHandler(BaseHTTPRequestHandler):
         try:
             response = urllib.request.urlopen(request, timeout=900)
         except urllib.error.HTTPError as error:
-            self.server.audit.mutate(upstream_errors=1, last_status=error.code)
+            self.server.audit.mutate(
+                upstream_errors=1,
+                last_status=error.code,
+                last_response_contract_stage=None,
+            )
             write_audit(self.server.audit_file, self.server.audit)
             self._send_upstream_error(error.code)
             return
         except (urllib.error.URLError, TimeoutError, OSError):
-            self.server.audit.mutate(upstream_errors=1, last_status=502)
+            self.server.audit.mutate(
+                upstream_errors=1,
+                last_status=502,
+                last_response_contract_stage=None,
+            )
             write_audit(self.server.audit_file, self.server.audit)
             self._send_upstream_error(502)
             return
@@ -283,20 +341,33 @@ class RequiredToolProxyHandler(BaseHTTPRequestHandler):
                 upstream_errors=1,
                 last_status=502,
                 last_reject_reason="response_size",
+                last_response_contract_stage=None,
             )
             write_audit(self.server.audit_file, self.server.audit)
             self._send_upstream_error(502)
             return
         try:
             completion = json.loads(raw_response)
-            event_stream = canonical_single_tool_sse(
-                completion, expected_tool=self.server.expected_tool
-            )
-        except (UnicodeDecodeError, json.JSONDecodeError, ValueError):
+        except UnicodeDecodeError:
+            response_stage = "encoding"
+        except json.JSONDecodeError:
+            response_stage = "json"
+        else:
+            try:
+                event_stream = canonical_single_tool_sse(
+                    completion, expected_tool=self.server.expected_tool
+                )
+            except ValueError as error:
+                response_stage = safe_response_contract_stage(error)
+            else:
+                response_stage = None
+
+        if response_stage is not None:
             self.server.audit.mutate(
                 upstream_errors=1,
                 last_status=502,
                 last_reject_reason="response_contract",
+                last_response_contract_stage=response_stage,
             )
             write_audit(self.server.audit_file, self.server.audit)
             self._send_upstream_error(502)
@@ -307,6 +378,7 @@ class RequiredToolProxyHandler(BaseHTTPRequestHandler):
             responses_normalized=1,
             last_status=200,
             last_reject_reason=None,
+            last_response_contract_stage=None,
         )
         write_audit(self.server.audit_file, self.server.audit)
         self._send_sse(event_stream)
@@ -347,7 +419,8 @@ def main() -> int:
         )
         print(
             f"required-tool proxy listening on {args.listen_host}:{server.server_port}; "
-            "upstream=loopback; response=canonical-sse; post-tool=single-stop; payload logging=disabled",
+            "upstream=loopback; response=canonical-sse; post-tool=single-stop; "
+            f"generation=deterministic/{TOOL_GENERATION_MAX_TOKENS}; payload logging=disabled",
             flush=True,
         )
         server.serve_forever(poll_interval=0.25)

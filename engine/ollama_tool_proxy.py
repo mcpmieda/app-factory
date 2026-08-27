@@ -4,6 +4,10 @@ import json
 import urllib.parse
 from typing import Any, Mapping
 
+TOOL_GENERATION_TEMPERATURE = 0
+TOOL_GENERATION_SEED = 0
+TOOL_GENERATION_MAX_TOKENS = 512
+
 
 def validate_loopback_base_url(value: str) -> str:
     raw = str(value or "").strip().rstrip("/")
@@ -55,7 +59,17 @@ def rewrite_single_tool_request(
 
     rewritten = dict(payload)
     rewritten["tools"] = [dict(expected_matches[0])]
+    # Ollama's OpenAI-compatible endpoint does not guarantee enforcement of
+    # tool_choice. Keep it as a compatibility hint, but completion is accepted only
+    # after a real structured tool call passes canonical_single_tool_sse().
     rewritten["tool_choice"] = "required"
+    # FunctionGemma can otherwise wander for thousands of tokens on a malformed
+    # tool turn. Make local inference reproducible and tightly bounded without ever
+    # fabricating a tool call or its arguments.
+    rewritten["temperature"] = TOOL_GENERATION_TEMPERATURE
+    rewritten["seed"] = TOOL_GENERATION_SEED
+    rewritten["max_tokens"] = TOOL_GENERATION_MAX_TOKENS
+    rewritten.pop("max_completion_tokens", None)
     return rewritten
 
 
