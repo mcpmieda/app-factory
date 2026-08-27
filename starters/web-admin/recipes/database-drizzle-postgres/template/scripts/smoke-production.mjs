@@ -31,7 +31,9 @@ function requestLoopback() {
       },
     );
     request.on("error", rejectRequest);
-    request.setTimeout(5_000, () => request.destroy(new Error("loopback smoke request timed out")));
+    request.setTimeout(5_000, () =>
+      request.destroy(new Error("loopback smoke request timed out")),
+    );
   });
 }
 
@@ -48,7 +50,9 @@ try {
     } catch {}
     await new Promise((resolveDelay) => setTimeout(resolveDelay, 500));
   }
-  if (!response?.ok) throw new Error(`Production smoke timed out.\n${output}`);
+  if (!response?.ok) {
+    throw new Error(`Production smoke timed out.\n${output}`);
+  }
   if (!response.text.includes("<main")) {
     throw new Error("Production response did not contain application content");
   }
