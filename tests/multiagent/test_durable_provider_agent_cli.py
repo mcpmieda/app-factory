@@ -70,6 +70,7 @@ class DurableProviderAgentCliTests(unittest.TestCase):
         }
 
     def write_contract(self, root: Path, *, actor: str = TRUSTED_CONTROL_ACTOR):
+        root.mkdir(parents=True, exist_ok=True)
         worktree = root / "worktree"
         profile = root / "profile"
         worktree.mkdir()
