@@ -33,6 +33,7 @@ class OllamaToolProxyAuditTests(unittest.TestCase):
                 "tool_type",
                 "tool_name",
                 "tool_choice",
+                "tool_model",
                 "tool_contract",
             },
         )
@@ -45,13 +46,15 @@ class OllamaToolProxyAuditTests(unittest.TestCase):
                 "tool_type",
                 "tool_name",
                 "tool_choice",
+                "tool_model",
             },
         )
         audit = ProxyAudit(expected_tool="write")
         audit.mutate(rejected=1, last_status=400, last_reject_reason="tool_count")
         snapshot = audit.snapshot()
 
-        self.assertEqual(snapshot["schema_version"], 2)
+        self.assertEqual(snapshot["schema_version"], 3)
+        self.assertEqual(snapshot["upstream_protocol"], "ollama_native_chat")
         self.assertEqual(snapshot["last_reject_reason"], "tool_count")
         self.assertIsNone(snapshot["last_response_contract_stage"])
         self.assertEqual(snapshot["generation_temperature"], 0)
@@ -67,18 +70,17 @@ class OllamaToolProxyAuditTests(unittest.TestCase):
         self.assertNotIn("arguments", snapshot)
         self.assertNotIn("response", snapshot)
         self.assertNotIn("tool_result", snapshot)
+        self.assertNotIn("messages", snapshot)
 
     def test_response_contract_stage_is_bounded_and_sanitized(self) -> None:
         expected = {
             "payload",
-            "completion_id",
             "model",
-            "choice_count",
-            "finish_reason",
+            "done",
             "assistant_message",
+            "assistant_role",
             "tool_call_count",
             "tool_type",
-            "tool_call_id",
             "tool_name",
             "arguments",
         }
@@ -92,20 +94,20 @@ class OllamaToolProxyAuditTests(unittest.TestCase):
             with self.subTest(stage=stage):
                 self.assertEqual(safe_response_contract_stage(ValueError(message)), stage)
 
-        secretish = "completion leaked content SECRET-123"
+        secretish = "native response leaked content SECRET-123"
         self.assertEqual(safe_response_contract_stage(ValueError(secretish)), "unknown")
         audit = ProxyAudit(expected_tool="write")
         audit.mutate(
             upstream_errors=1,
             last_status=502,
             last_reject_reason="response_contract",
-            last_response_contract_stage="finish_reason",
+            last_response_contract_stage="tool_call_count",
         )
         snapshot = audit.snapshot()
-        self.assertEqual(snapshot["last_response_contract_stage"], "finish_reason")
+        self.assertEqual(snapshot["last_response_contract_stage"], "tool_call_count")
         self.assertNotIn(secretish, str(snapshot))
 
-    def test_acceptance_tracks_one_tool_then_one_terminal_post_tool_turn(self) -> None:
+    def test_acceptance_tracks_one_native_tool_then_one_terminal_post_tool_turn(self) -> None:
         audit = ProxyAudit(expected_tool="write")
         audit.mutate(
             accepted=1,
@@ -128,6 +130,8 @@ class OllamaToolProxyAuditTests(unittest.TestCase):
         )
         snapshot = audit.snapshot()
 
+        self.assertEqual(snapshot["schema_version"], 3)
+        self.assertEqual(snapshot["upstream_protocol"], "ollama_native_chat")
         self.assertEqual(snapshot["accepted"], 1)
         self.assertEqual(snapshot["rewritten"], 1)
         self.assertEqual(snapshot["rejected"], 0)
