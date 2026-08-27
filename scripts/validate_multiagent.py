@@ -6,31 +6,44 @@ import json
 import subprocess
 import sys
 import tempfile
+from datetime import datetime, timedelta, timezone
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
+from engine.durable_provider_agent import (  # noqa: E402
+    TRUSTED_CONTROL_ACTOR,
+    DurableProviderResult,
+    FactoryLease,
+    evaluate_result,
+    manifest_fingerprint,
+    request_fingerprint,
+)
 from engine.merge_train import (  # noqa: E402
     FinalPullRequestCandidate,
     WorkerMergeCandidate,
     evaluate_final_gate,
     evaluate_worker_merge,
 )
+from engine.provider_runtime import ProviderTaskRequest  # noqa: E402
 from engine.work_orchestrator import MAX_AUTOMATIC_PARALLEL  # noqa: E402
 
 REQUIRED = [
     "engine/work_orchestrator.py",
     "engine/provider_runtime.py",
+    "engine/durable_provider_agent.py",
     "engine/providers/__init__.py",
     "engine/providers/antigravity.py",
     "engine/providers/opencode_ollama.py",
     "engine/merge_train.py",
     "scripts/factory_run.py",
     "scripts/provider_worker.py",
+    "scripts/durable_provider_agent.py",
     "core/MULTIAGENT_EXECUTION.md",
     "core/PROVIDER_RUNTIME.md",
+    "core/DURABLE_PROVIDER_AGENT.md",
     "core/MERGE_TRAIN.md",
     "docs/MULTIAGENT_IMPLEMENTATION_STATUS.md",
     "docs/JULES_API_FIRST_PILOT_EVIDENCE.md",
@@ -40,6 +53,8 @@ REQUIRED = [
     "tests/multiagent/test_provider_runtime.py",
     "tests/multiagent/test_provider_adapters.py",
     "tests/multiagent/test_provider_worker_cli.py",
+    "tests/multiagent/test_durable_provider_agent.py",
+    "tests/multiagent/test_durable_provider_agent_cli.py",
     "tests/multiagent/test_merge_train.py",
 ]
 
@@ -222,6 +237,74 @@ def validate_codex_manual_only() -> None:
         stop("Codex must remain a metered manual-only escalation provider")
 
 
+def validate_durable_agent_contract() -> None:
+    with tempfile.TemporaryDirectory(prefix="app-factory-durable-agent-") as raw:
+        root = Path(raw).resolve()
+        request = ProviderTaskRequest.from_mapping({
+            "run_id": "durable-gate",
+            "task_id": "worker-a",
+            "repository": "owner/repo",
+            "worktree": str(root),
+            "integration_branch": "factory/durable-gate",
+            "target_branch": "main",
+            "working_branch": "factory/durable-gate/worker-a",
+            "paths": ["docs/worker-a"],
+            "instruction": "Create durable evidence.",
+        })
+        manifest = {
+            "schema_version": 1,
+            "run_id": "durable-gate",
+            "max_parallel": 1,
+            "tasks": [{"id": "worker-a", "paths": ["docs/worker-a"]}],
+        }
+        now = datetime.now(timezone.utc).replace(microsecond=0)
+        lease = FactoryLease(
+            lease_id="durable-gate-lease",
+            run_id=request.run_id,
+            task_id=request.task_id,
+            issue_number=1,
+            provider_id="antigravity",
+            worker_id="executor-gate",
+            repository=request.repository,
+            working_branch=request.working_branch,
+            integration_branch=request.integration_branch,
+            target_branch=request.target_branch,
+            request_sha256=request_fingerprint(request),
+            manifest_sha256=manifest_fingerprint(manifest),
+            issued_at=(now - timedelta(minutes=1)).isoformat(),
+            expires_at=(now + timedelta(minutes=10)).isoformat(),
+            actor=TRUSTED_CONTROL_ACTOR,
+        )
+        result = DurableProviderResult(
+            lease_id=lease.lease_id,
+            run_id=lease.run_id,
+            task_id=lease.task_id,
+            issue_number=lease.issue_number,
+            provider_id=lease.provider_id,
+            worker_id=lease.worker_id,
+            status="success",
+            branch=lease.working_branch,
+            commit_sha="a" * 40,
+            remote_sha="a" * 40,
+            changed_paths=("docs/worker-a/result.md",),
+            pushed=True,
+            request_sha256=lease.request_sha256,
+            manifest_sha256=lease.manifest_sha256,
+            observed_at=now.isoformat(),
+        )
+        decision = evaluate_result(lease, result, request, manifest)
+        if not decision.accepted or not decision.completed:
+            stop("exact durable provider evidence was not accepted")
+        if request_fingerprint(request) == request_fingerprint(
+            ProviderTaskRequest.from_mapping({
+                **request.to_dict(include_instruction=True),
+                "worktree": str(root),
+                "instruction": "different instruction",
+            })
+        ):
+            stop("durable request fingerprint does not bind the task instruction")
+
+
 def validate_merge_train_contract() -> None:
     sha = "a" * 40
     worker = evaluate_worker_merge(
@@ -278,10 +361,12 @@ def main() -> int:
     validate_zero_first_and_remote_fallback()
     validate_provider_command_is_redacted_and_bounded()
     validate_codex_manual_only()
+    validate_durable_agent_contract()
     validate_merge_train_contract()
     print(
         "OK: multiagent graph, 1-3 parallelism, provider runtime isolation, "
-        "durable branch evidence, merge train, and premium escalation guard validated."
+        "GitHub-backed durable leases/results, exact-SHA merge train, and "
+        "premium escalation guard validated."
     )
     return 0
 
