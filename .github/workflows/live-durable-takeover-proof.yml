@@ -35,7 +35,8 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          python scripts/durable_takeover_proof.py phase-a --output "${RUNNER_TEMP}/takeover-proof"
+          PYTHONPATH="${GITHUB_WORKSPACE}" python scripts/durable_takeover_proof.py \
+            phase-a --output "${RUNNER_TEMP}/takeover-proof"
 
       - name: Persist trusted Lease A and heartbeat
         shell: bash
@@ -82,7 +83,8 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          python scripts/durable_takeover_proof.py phase-b \
+          PYTHONPATH="${GITHUB_WORKSPACE}" python scripts/durable_takeover_proof.py \
+            phase-b \
             --comments "${RUNNER_TEMP}/takeover-comments.json" \
             --output "${RUNNER_TEMP}/takeover-proof"
 
