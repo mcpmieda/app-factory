@@ -5,6 +5,7 @@ import unittest
 
 from engine.ollama_tool_proxy import (
     canonical_single_tool_sse,
+    canonical_stop_sse,
     rewrite_single_tool_request,
     validate_loopback_base_url,
 )
@@ -139,7 +140,11 @@ class OllamaToolProxyTests(unittest.TestCase):
         wire = canonical_single_tool_sse(
             self.completion_payload(arguments=original_arguments), expected_tool="write"
         ).decode("utf-8")
-        events = [line.removeprefix("data: ") for line in wire.splitlines() if line.startswith("data: ")]
+        events = [
+            line.removeprefix("data: ")
+            for line in wire.splitlines()
+            if line.startswith("data: ")
+        ]
 
         self.assertEqual(events[-1], "[DONE]")
         chunk = json.loads(events[0])
@@ -162,7 +167,9 @@ class OllamaToolProxyTests(unittest.TestCase):
             self.completion_payload(arguments=arguments), expected_tool="write"
         ).decode("utf-8")
         first_event = next(
-            line.removeprefix("data: ") for line in wire.splitlines() if line.startswith("data: ")
+            line.removeprefix("data: ")
+            for line in wire.splitlines()
+            if line.startswith("data: ")
         )
         call = json.loads(first_event)["choices"][0]["delta"]["tool_calls"][0]
         self.assertEqual(json.loads(call["function"]["arguments"]), arguments)
@@ -207,6 +214,28 @@ class OllamaToolProxyTests(unittest.TestCase):
         for payload in cases:
             with self.subTest(payload=payload), self.assertRaises(ValueError):
                 canonical_single_tool_sse(payload, expected_tool="write")
+
+    def test_post_tool_stop_sse_is_content_free_and_terminal(self) -> None:
+        wire = canonical_stop_sse("functiongemma:270m").decode("utf-8")
+        events = [
+            line.removeprefix("data: ")
+            for line in wire.splitlines()
+            if line.startswith("data: ")
+        ]
+
+        self.assertEqual(events[-1], "[DONE]")
+        chunk = json.loads(events[0])
+        self.assertEqual(chunk["id"], "chatcmpl-factory-tool-complete")
+        self.assertEqual(chunk["model"], "functiongemma:270m")
+        choice = chunk["choices"][0]
+        self.assertEqual(choice["finish_reason"], "stop")
+        self.assertEqual(choice["delta"], {"role": "assistant", "content": ""})
+        self.assertNotIn("tool_calls", choice["delta"])
+
+    def test_post_tool_stop_requires_model(self) -> None:
+        for value in ("", "   ", None):
+            with self.subTest(value=value), self.assertRaises(ValueError):
+                canonical_stop_sse(value)  # type: ignore[arg-type]
 
     def test_upstream_is_strictly_credential_free_loopback_http(self) -> None:
         self.assertEqual(
