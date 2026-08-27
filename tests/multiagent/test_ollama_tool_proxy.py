@@ -45,7 +45,7 @@ class OllamaToolProxyTests(unittest.TestCase):
         )
 
     def test_rejects_zero_multiple_wrong_or_conflicting_tools(self) -> None:
-        cases = []
+        cases = [[]]
         zero = self.base_payload()
         zero["tools"] = []
         cases.append(zero)
@@ -55,6 +55,9 @@ class OllamaToolProxyTests(unittest.TestCase):
         wrong_type = self.base_payload()
         wrong_type["tools"] = [{"type": "web_search"}]
         cases.append(wrong_type)
+        missing_function = self.base_payload()
+        missing_function["tools"] = [{"type": "function", "function": None}]
+        cases.append(missing_function)
         wrong_name = self.base_payload()
         wrong_name["tools"][0]["function"]["name"] = "bash"
         cases.append(wrong_name)
@@ -79,6 +82,7 @@ class OllamaToolProxyTests(unittest.TestCase):
             "http://localhost:11434",
         )
         for value in (
+            "",
             "https://127.0.0.1:11434/v1",
             "http://ollama.example.com:11434/v1",
             "http://user:pass@127.0.0.1:11434/v1",
