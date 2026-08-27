@@ -54,6 +54,11 @@ jobs:
 
       - name: Start loopback Ollama and pull the fixed small model
         shell: bash
+        env:
+          # OpenCode's guarded tool schema plus the task prompt exceeds Ollama's
+          # 4K default. Keep enough local context so the task instruction is not
+          # truncated before the model can act on it.
+          OLLAMA_CONTEXT_LENGTH: "16384"
         run: |
           set -euo pipefail
           nohup ollama serve > "${RUNNER_TEMP}/ollama.log" 2>&1 &
