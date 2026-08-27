@@ -21,6 +21,7 @@ class OllamaToolProxyAuditTests(unittest.TestCase):
                 "content_length",
                 "json_payload",
                 "stream_mode",
+                "tool_sequence",
                 "response_size",
                 "response_contract",
                 "tool_payload",
@@ -51,21 +52,30 @@ class OllamaToolProxyAuditTests(unittest.TestCase):
         self.assertEqual(snapshot["rejected"], 1)
         self.assertEqual(snapshot["upstream_tool_calls"], 0)
         self.assertEqual(snapshot["responses_normalized"], 0)
+        self.assertEqual(snapshot["post_tool_requests"], 0)
+        self.assertEqual(snapshot["post_tool_completions"], 0)
         self.assertNotIn("prompt", snapshot)
         self.assertNotIn("headers", snapshot)
         self.assertNotIn("arguments", snapshot)
         self.assertNotIn("response", snapshot)
+        self.assertNotIn("tool_result", snapshot)
 
-    def test_acceptance_tracks_only_counts_and_response_normalization(self) -> None:
-        audit = ProxyAudit(expected_tool="write", rejected=1, last_reject_reason="path")
+    def test_acceptance_tracks_one_tool_then_one_terminal_post_tool_turn(self) -> None:
+        audit = ProxyAudit(expected_tool="write")
         audit.mutate(
             accepted=1,
             rewritten=1,
-            tools_received=7,
-            tools_discarded=6,
+            tools_received=2,
+            tools_discarded=1,
             forwarded=1,
             upstream_tool_calls=1,
             responses_normalized=1,
+            last_status=200,
+            last_reject_reason=None,
+        )
+        audit.mutate(
+            post_tool_requests=1,
+            post_tool_completions=1,
             last_status=200,
             last_reject_reason=None,
         )
@@ -73,12 +83,14 @@ class OllamaToolProxyAuditTests(unittest.TestCase):
 
         self.assertEqual(snapshot["accepted"], 1)
         self.assertEqual(snapshot["rewritten"], 1)
-        self.assertEqual(snapshot["rejected"], 1)
-        self.assertEqual(snapshot["tools_received"], 7)
-        self.assertEqual(snapshot["tools_discarded"], 6)
+        self.assertEqual(snapshot["rejected"], 0)
+        self.assertEqual(snapshot["tools_received"], 2)
+        self.assertEqual(snapshot["tools_discarded"], 1)
         self.assertEqual(snapshot["forwarded"], 1)
         self.assertEqual(snapshot["upstream_tool_calls"], 1)
         self.assertEqual(snapshot["responses_normalized"], 1)
+        self.assertEqual(snapshot["post_tool_requests"], 1)
+        self.assertEqual(snapshot["post_tool_completions"], 1)
         self.assertEqual(snapshot["last_status"], 200)
         self.assertIsNone(snapshot["last_reject_reason"])
         self.assertNotIn("tool_names", snapshot)
