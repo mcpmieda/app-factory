@@ -4,6 +4,9 @@ import json
 import unittest
 
 from engine.ollama_tool_proxy import (
+    TOOL_GENERATION_MAX_TOKENS,
+    TOOL_GENERATION_SEED,
+    TOOL_GENERATION_TEMPERATURE,
     canonical_single_tool_sse,
     canonical_stop_sse,
     rewrite_single_tool_request,
@@ -89,8 +92,14 @@ class OllamaToolProxyTests(unittest.TestCase):
         self.assertEqual(rewritten["tool_choice"], "required")
         self.assertEqual(len(rewritten["tools"]), 1)
         self.assertEqual(rewritten["tools"][0]["function"]["name"], "write")
+        self.assertEqual(rewritten["temperature"], TOOL_GENERATION_TEMPERATURE)
+        self.assertEqual(rewritten["seed"], TOOL_GENERATION_SEED)
+        self.assertEqual(rewritten["max_tokens"], TOOL_GENERATION_MAX_TOKENS)
         self.assertEqual(len(payload["tools"]), 3)
         self.assertEqual(payload["tool_choice"], "auto")
+        self.assertNotIn("temperature", payload)
+        self.assertNotIn("seed", payload)
+        self.assertNotIn("max_tokens", payload)
 
     def test_rewrites_missing_or_required_choice_without_expanding_authority(self) -> None:
         missing = self.base_payload()
@@ -106,6 +115,26 @@ class OllamaToolProxyTests(unittest.TestCase):
             rewrite_single_tool_request(already, expected_tool="write")["tool_choice"],
             "required",
         )
+
+    def test_overrides_stochastic_or_oversized_generation_controls(self) -> None:
+        payload = self.base_payload()
+        payload.update(
+            {
+                "temperature": 1.7,
+                "seed": 999,
+                "max_tokens": 9000,
+                "max_completion_tokens": 12000,
+            }
+        )
+
+        rewritten = rewrite_single_tool_request(payload, expected_tool="write")
+
+        self.assertEqual(rewritten["temperature"], 0)
+        self.assertEqual(rewritten["seed"], 0)
+        self.assertEqual(rewritten["max_tokens"], 512)
+        self.assertNotIn("max_completion_tokens", rewritten)
+        self.assertEqual(payload["temperature"], 1.7)
+        self.assertEqual(payload["max_completion_tokens"], 12000)
 
     def test_rejects_missing_duplicate_non_function_or_conflicting_expected_tool(self) -> None:
         cases = []
