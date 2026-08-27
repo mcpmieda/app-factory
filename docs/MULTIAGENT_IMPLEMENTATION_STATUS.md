@@ -160,11 +160,11 @@ execução bem-sucedida até um run real concluir com commit, push, SHA remoto e
 
 Tentativas reais em 27 de agosto de 2026:
 
-| Run | Modelo/contexto | Resultado |
-| --- | --- | --- |
-| `33096971414` | `qwen2.5-coder:3b`, default 4K | probe saudável; prompt de 8.240 tokens truncado para 2.050; nenhuma mudança |
-| `33097519630` | `qwen2.5-coder:3b`, 16K | prompt integral; modelo encerrou sem ferramenta de escrita; nenhuma mudança |
-| `33098075323` | `qwen2.5-coder:7b`, 16K | prompt integral; 14m36s de inferência; modelo encerrou sem ferramenta de escrita; nenhuma mudança |
+| Run           | Modelo/contexto                | Resultado                                                                                         |
+| ------------- | ------------------------------ | ------------------------------------------------------------------------------------------------- |
+| `33096971414` | `qwen2.5-coder:3b`, default 4K | probe saudável; prompt de 8.240 tokens truncado para 2.050; nenhuma mudança                       |
+| `33097519630` | `qwen2.5-coder:3b`, 16K        | prompt integral; modelo encerrou sem ferramenta de escrita; nenhuma mudança                       |
+| `33098075323` | `qwen2.5-coder:7b`, 16K        | prompt integral; 14m36s de inferência; modelo encerrou sem ferramenta de escrita; nenhuma mudança |
 
 Todos falharam de modo fechado antes de commit, push e CI. Nenhuma branch de evidência foi
 publicada e isso não conta como homologação. O próximo piloto deve primeiro demonstrar chamada de
