@@ -2,6 +2,8 @@ name: Live OpenCode Ollama provider pilot
 
 on:
   workflow_dispatch:
+  issue_comment:
+    types: [created]
 
 permissions:
   actions: write
@@ -13,7 +15,10 @@ concurrency:
 
 jobs:
   live-pilot:
-    if: github.actor == github.repository_owner && github.ref == 'refs/heads/main'
+    if: >-
+      github.actor == github.repository_owner &&
+      ((github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/main') ||
+       (github.event_name == 'issue_comment' && github.event.issue.number == 71 && github.event.comment.body == '/run-opencode-v2'))
     runs-on: ubuntu-24.04
     timeout-minutes: 45
     env:
