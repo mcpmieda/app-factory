@@ -8,6 +8,7 @@ from typing import Any, Iterable, Mapping
 from engine.execution_engine import CAPABILITIES, validate_capabilities
 
 FACTORY_RUN_SCHEMA_VERSION = 1
+MAX_AUTOMATIC_PARALLEL = 3
 COST_ORDER = {"zero": 0, "free_quota": 1, "included": 2, "metered": 3}
 HUMAN_GATES = {
     "product_decision",
@@ -115,7 +116,7 @@ def default_worker_providers() -> dict[str, ProviderSpec]:
             cost_class="free_quota",
             execution_mode="headless_agent",
             capabilities=common | frozenset({"deterministic_commands", "headless_browser"}),
-            max_parallel=4,
+            max_parallel=3,
             description="Headless agent worker. Requires a pre-authenticated or explicitly configured environment.",
         ),
         "codex": ProviderSpec(
@@ -313,14 +314,16 @@ def build_execution_plan(
     source: Path | str | Mapping[str, Any],
     *,
     available_provider_ids: Iterable[str],
-    max_parallel: int = 4,
+    max_parallel: int = MAX_AUTOMATIC_PARALLEL,
     allow_metered: bool = False,
     providers: Mapping[str, ProviderSpec] | None = None,
 ) -> FactoryRunPlan:
     run_id, goal, items = load_factory_run(source)
     registry = dict(providers or default_worker_providers())
     available = tuple(dict.fromkeys(str(value).strip() for value in available_provider_ids if str(value).strip()))
-    max_parallel = max(1, int(max_parallel))
+    max_parallel = int(max_parallel)
+    if not 1 <= max_parallel <= MAX_AUTOMATIC_PARALLEL:
+        raise ValueError(f"max_parallel must be between 1 and {MAX_AUTOMATIC_PARALLEL}")
     remaining = {item.task_id: item for item in items}
     completed: set[str] = set()
     blocked: list[TaskAssignment] = []
@@ -341,11 +344,7 @@ def build_execution_plan(
                 reason="Human gate required: " + ", ".join(sorted(item.human_gates)),
             ))
 
-        ready = [
-            item
-            for item in remaining.values()
-            if set(item.depends_on).issubset(completed)
-        ]
+        ready = [item for item in remaining.values() if set(item.depends_on).issubset(completed)]
         if not ready:
             for item in remaining.values():
                 blocked.append(TaskAssignment(
@@ -359,13 +358,11 @@ def build_execution_plan(
         provider_usage: dict[str, int] = {}
         selected_items: list[WorkItem] = []
         assignments: list[TaskAssignment] = []
-        deferred_for_conflict: list[WorkItem] = []
 
         for item in ready:
             if len(assignments) >= max_parallel:
                 break
             if any(path_scopes_conflict(item.paths, selected.paths) for selected in selected_items):
-                deferred_for_conflict.append(item)
                 continue
             provider = _select_provider(
                 item,
@@ -396,8 +393,7 @@ def build_execution_plan(
             ))
             continue
 
-        wave = ExecutionWave(index=len(waves) + 1, assignments=tuple(assignments))
-        waves.append(wave)
+        waves.append(ExecutionWave(index=len(waves) + 1, assignments=tuple(assignments)))
         for item in selected_items:
             remaining.pop(item.task_id, None)
             completed.add(item.task_id)

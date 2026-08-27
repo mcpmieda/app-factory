@@ -11,6 +11,7 @@ if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
 from engine.work_orchestrator import (  # noqa: E402
+    MAX_AUTOMATIC_PARALLEL,
     build_execution_plan,
     default_worker_providers,
     factory_run_template,
@@ -42,7 +43,7 @@ def parser() -> argparse.ArgumentParser:
         default="jules,antigravity",
         help="Comma-separated providers currently available to this machine/control plane",
     )
-    plan.add_argument("--max-parallel", type=int, default=4)
+    plan.add_argument("--max-parallel", type=int, default=MAX_AUTOMATIC_PARALLEL)
     plan.add_argument(
         "--allow-metered",
         action="store_true",

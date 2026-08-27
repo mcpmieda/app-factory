@@ -4,19 +4,35 @@ on:
   pull_request:
     paths:
       - "engine/work_orchestrator.py"
+      - "engine/provider_runtime.py"
+      - "engine/providers/**"
+      - "engine/merge_train.py"
       - "scripts/factory_run.py"
+      - "scripts/provider_worker.py"
       - "scripts/validate_multiagent.py"
       - "tests/multiagent/**"
       - "core/MULTIAGENT_EXECUTION.md"
+      - "core/PROVIDER_RUNTIME.md"
+      - "core/MERGE_TRAIN.md"
+      - "docs/MULTIAGENT_IMPLEMENTATION_STATUS.md"
+      - "docs/JULES_API_FIRST_PILOT_EVIDENCE.md"
       - ".github/workflows/validate-multiagent-execution.yml"
   push:
     branches: [main]
     paths:
       - "engine/work_orchestrator.py"
+      - "engine/provider_runtime.py"
+      - "engine/providers/**"
+      - "engine/merge_train.py"
       - "scripts/factory_run.py"
+      - "scripts/provider_worker.py"
       - "scripts/validate_multiagent.py"
       - "tests/multiagent/**"
       - "core/MULTIAGENT_EXECUTION.md"
+      - "core/PROVIDER_RUNTIME.md"
+      - "core/MERGE_TRAIN.md"
+      - "docs/MULTIAGENT_IMPLEMENTATION_STATUS.md"
+      - "docs/JULES_API_FIRST_PILOT_EVIDENCE.md"
       - ".github/workflows/validate-multiagent-execution.yml"
   workflow_dispatch:
 
@@ -32,8 +48,17 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: "3.12"
-      - name: Compile multiagent engine and CLI
-        run: python -m py_compile engine/work_orchestrator.py scripts/factory_run.py scripts/validate_multiagent.py
+      - name: Compile multiagent engine and CLIs
+        run: >-
+          python -m py_compile
+          engine/work_orchestrator.py
+          engine/provider_runtime.py
+          engine/providers/antigravity.py
+          engine/providers/opencode_ollama.py
+          engine/merge_train.py
+          scripts/factory_run.py
+          scripts/provider_worker.py
+          scripts/validate_multiagent.py
       - name: Structural Factory regression
         run: python scripts/validate_factory.py
       - name: Execution Fabric regression

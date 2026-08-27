@@ -79,6 +79,27 @@ class FactoryRunCliTests(unittest.TestCase):
         self.assertEqual(result.returncode, 2)
         self.assertEqual(payload["blocked"][0]["status"], "human-required")
 
+    def test_cli_rejects_parallelism_above_control_plane_ceiling(self) -> None:
+        with tempfile.TemporaryDirectory(prefix="factory-run-parallel-") as raw:
+            path = Path(raw) / "run.json"
+            path.write_text(json.dumps({
+                "schema_version": 1,
+                "run_id": "parallel",
+                "goal": "guard",
+                "tasks": [{
+                    "id": "a",
+                    "title": "A",
+                    "paths": ["src/a"],
+                    "required_capabilities": ["reasoning"],
+                }],
+            }), encoding="utf-8")
+            result = self.run_cli(
+                "plan", str(path), "--providers", "jules", "--max-parallel", "4", check=False
+            )
+            payload = json.loads(result.stdout)
+        self.assertEqual(result.returncode, 1)
+        self.assertIn("between 1 and 3", payload["error"])
+
 
 if __name__ == "__main__":
     unittest.main()

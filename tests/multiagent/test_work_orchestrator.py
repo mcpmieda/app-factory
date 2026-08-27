@@ -45,7 +45,7 @@ class WorkOrchestratorTests(unittest.TestCase):
         plan = build_execution_plan(
             self.spec(self.task("a"), self.task("b")),
             available_provider_ids=["jules"],
-            max_parallel=4,
+            max_parallel=3,
         )
         self.assertEqual(len(plan.waves), 1)
         self.assertEqual({item.task_id for item in plan.waves[0].assignments}, {"a", "b"})
@@ -74,7 +74,7 @@ class WorkOrchestratorTests(unittest.TestCase):
                 self.task("b", paths=["src/banco/conselho"]),
             ),
             available_provider_ids=["jules"],
-            max_parallel=4,
+            max_parallel=3,
         )
         self.assertEqual(len(plan.waves), 2)
 
@@ -100,7 +100,7 @@ class WorkOrchestratorTests(unittest.TestCase):
             self.spec(self.task("a"), self.task("b")),
             available_provider_ids=["tiny"],
             providers=providers,
-            max_parallel=4,
+            max_parallel=3,
         )
         self.assertEqual(len(plan.waves), 2)
         self.assertTrue(all(wave.assignments[0].provider_id == "tiny" for wave in plan.waves))
@@ -112,7 +112,7 @@ class WorkOrchestratorTests(unittest.TestCase):
                 self.task("verify", depends_on=["implement"], paths=["tests/feature"]),
             ),
             available_provider_ids=["jules"],
-            max_parallel=4,
+            max_parallel=3,
         )
         self.assertEqual([wave.assignments[0].task_id for wave in plan.waves], ["implement", "verify"])
 
