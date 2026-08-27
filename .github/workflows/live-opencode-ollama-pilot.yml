@@ -10,8 +10,8 @@ permissions:
   contents: write
 
 concurrency:
-  group: live-opencode-ollama-provider-pilot
-  cancel-in-progress: false
+  group: ${{ (github.event_name == 'workflow_dispatch' || (github.event_name == 'issue_comment' && github.event.issue.number == 71 && github.event.comment.body == '/run-opencode-v2')) && 'live-opencode-ollama-provider-pilot' || format('live-opencode-ollama-noop-{0}', github.run_id) }}
+  cancel-in-progress: ${{ github.event_name == 'workflow_dispatch' || (github.event_name == 'issue_comment' && github.event.issue.number == 71 && github.event.comment.body == '/run-opencode-v2') }}
 
 jobs:
   live-pilot:
