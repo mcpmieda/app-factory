@@ -141,14 +141,18 @@ O workflow `Validate Multiagent Execution` executa compile, regressões estrutur
 
 ## Ainda não homologado live
 
-1. Gateway do Durable Provider Agent integrado ao Control Plane do `ecossistema-escola`.
-2. Antigravity executando uma task real em profile/host isolado.
-3. OpenCode/Ollama executando uma task real com modelo local.
-4. Recovery real em outro executor depois de expiração de lease.
-5. Health/fallback persistido automaticamente no GitHub.
-6. CodeRabbit, Semgrep e Sonar conectados como checks reais do Merge Train.
-7. Piloto live de integração multi-provider.
-8. Escalonamento excepcional Codex auditado, sempre manual.
+1. Antigravity executando uma task real em profile/host isolado.
+2. OpenCode/Ollama executando uma task real com modelo local.
+3. Recovery real em outro executor depois de expiração de lease.
+4. CodeRabbit, Semgrep e Sonar conectados como checks reais do Merge Train.
+5. Piloto live de integração multi-provider.
+6. Escalonamento excepcional Codex auditado, sempre manual.
+
+O gateway durável, incluindo health/fallback sanitizado, foi integrado ao Control Plane do
+`ecossistema-escola` pelo PR `#94`. O workflow manual
+`Live OpenCode Ollama provider pilot` prepara um runner efêmero, profile isolado e modelo local
+fixado para produzir a primeira evidência live sem credenciais; sua existência não conta como
+execução bem-sucedida até um run real concluir com commit, push, SHA remoto e CI exato verdes.
 
 ## Dependências externas conhecidas
 
@@ -158,14 +162,12 @@ CodeRabbit também informou que a revisão automática está desabilitada no rep
 
 ## Próxima ordem de trabalho
 
-1. integrar o gateway de leases/heartbeat/resultados no Control Plane;
+1. executar o piloto OpenCode/Ollama efêmero;
 2. homologar Antigravity;
-3. homologar OpenCode/Ollama;
-4. comprovar takeover entre executores;
-5. persistir provider health/telemetria;
-6. conectar CodeRabbit/Semgrep/Sonar reais;
-7. executar piloto multi-provider;
-8. manter Codex somente para exceção premium/manual.
+3. comprovar takeover entre executores;
+4. conectar CodeRabbit/Semgrep/Sonar reais;
+5. executar piloto multi-provider;
+6. manter Codex somente para exceção premium/manual.
 
 ## Regra de declaração
 
