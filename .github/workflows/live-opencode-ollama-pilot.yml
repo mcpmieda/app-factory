@@ -10,15 +10,15 @@ permissions:
   contents: write
 
 concurrency:
-  group: ${{ (github.event_name == 'workflow_dispatch' || (github.event_name == 'issue_comment' && github.event.issue.number == 81 && github.event.comment.body == '/run-opencode-v5')) && 'live-opencode-ollama-provider-pilot' || format('live-opencode-ollama-noop-{0}', github.run_id) }}
-  cancel-in-progress: ${{ github.event_name == 'workflow_dispatch' || (github.event_name == 'issue_comment' && github.event.issue.number == 81 && github.event.comment.body == '/run-opencode-v5') }}
+  group: ${{ (github.event_name == 'workflow_dispatch' || (github.event_name == 'issue_comment' && github.event.issue.number == 84 && github.event.comment.body == '/run-opencode-v6')) && 'live-opencode-ollama-provider-pilot' || format('live-opencode-ollama-noop-{0}', github.run_id) }}
+  cancel-in-progress: ${{ github.event_name == 'workflow_dispatch' || (github.event_name == 'issue_comment' && github.event.issue.number == 84 && github.event.comment.body == '/run-opencode-v6') }}
 
 jobs:
   live-pilot:
     if: >-
       github.actor == github.repository_owner &&
       ((github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/main') ||
-       (github.event_name == 'issue_comment' && github.event.issue.number == 81 && github.event.comment.body == '/run-opencode-v5'))
+       (github.event_name == 'issue_comment' && github.event.issue.number == 84 && github.event.comment.body == '/run-opencode-v6'))
     runs-on: ubuntu-24.04
     timeout-minutes: 30
     env:
@@ -40,43 +40,51 @@ jobs:
           set -euo pipefail
           tools_dir="${RUNNER_TEMP}/factory-tools"
           mkdir -p "${tools_dir}/ollama" "${tools_dir}/opencode"
-
           curl --fail --location --retry 3 \
             "https://github.com/ollama/ollama/releases/download/${OLLAMA_VERSION}/ollama-linux-amd64.tar.zst" \
             --output "${RUNNER_TEMP}/ollama-linux-amd64.tar.zst"
           echo "${OLLAMA_ARCHIVE_SHA256}  ${RUNNER_TEMP}/ollama-linux-amd64.tar.zst" | sha256sum --check --strict
           tar --use-compress-program=unzstd -xf "${RUNNER_TEMP}/ollama-linux-amd64.tar.zst" -C "${tools_dir}/ollama"
-
           curl --fail --location --retry 3 \
             "https://github.com/anomalyco/opencode/releases/download/${OPENCODE_VERSION}/opencode-linux-x64.tar.gz" \
             --output "${RUNNER_TEMP}/opencode-linux-x64.tar.gz"
           echo "${OPENCODE_ARCHIVE_SHA256}  ${RUNNER_TEMP}/opencode-linux-x64.tar.gz" | sha256sum --check --strict
           tar -xzf "${RUNNER_TEMP}/opencode-linux-x64.tar.gz" -C "${tools_dir}/opencode"
-
           echo "${tools_dir}/ollama/bin" >> "${GITHUB_PATH}"
           echo "${tools_dir}/opencode" >> "${GITHUB_PATH}"
           echo "LD_LIBRARY_PATH=${tools_dir}/ollama/lib" >> "${GITHUB_ENV}"
 
-      - name: Start loopback Ollama and pull the fixed tool-use model
+      - name: Start loopback Ollama and required-tool proxy
         shell: bash
         env:
-          # FunctionGemma is a 270M single-turn function-calling model with a
-          # 32K window. Keep the live Factory request bounded to 8K.
           OLLAMA_CONTEXT_LENGTH: "8192"
         run: |
           set -euo pipefail
           nohup ollama serve > "${RUNNER_TEMP}/ollama.log" 2>&1 &
           for attempt in $(seq 1 30); do
-            if ollama list >/dev/null 2>&1; then
-              break
-            fi
-            if [ "${attempt}" -eq 30 ]; then
-              echo "Ollama did not become ready on loopback." >&2
-              exit 1
-            fi
+            if ollama list >/dev/null 2>&1; then break; fi
+            if [ "${attempt}" -eq 30 ]; then exit 1; fi
             sleep 2
           done
           ollama pull "${OPENCODE_OLLAMA_MODEL}"
+          nohup python scripts/ollama_tool_proxy.py \
+            --listen-host 127.0.0.1 \
+            --listen-port 11435 \
+            --upstream http://127.0.0.1:11434/v1 \
+            --expected-tool write \
+            --audit-file "${RUNNER_TEMP}/tool-proxy-audit.json" \
+            > "${RUNNER_TEMP}/tool-proxy.log" 2>&1 &
+          python - <<'PY'
+          import socket, time
+          for _ in range(30):
+              try:
+                  with socket.create_connection(("127.0.0.1", 11435), timeout=1):
+                      break
+              except OSError:
+                  time.sleep(1)
+          else:
+              raise SystemExit("required-tool proxy did not bind to loopback")
+          PY
           ollama list
           opencode --version
 
@@ -88,22 +96,15 @@ jobs:
           PILOT_FILE: pilots/live/opencode-ollama/run-${{ github.run_id }}-${{ github.run_attempt }}.md
         run: |
           set -euo pipefail
-          if git ls-remote --exit-code origin "refs/heads/${PILOT_BRANCH}" >/dev/null 2>&1; then
-            echo "Worker branch already exists: ${PILOT_BRANCH}" >&2
-            exit 1
-          fi
+          if git ls-remote --exit-code origin "refs/heads/${PILOT_BRANCH}" >/dev/null 2>&1; then exit 1; fi
           git switch -c "${PILOT_BRANCH}"
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          mkdir -p "${RUNNER_TEMP}/opencode-profile"
-          mkdir -p "$(dirname "${PILOT_FILE}")"
-
+          mkdir -p "${RUNNER_TEMP}/opencode-profile" "$(dirname "${PILOT_FILE}")"
           export PILOT_BRANCH PILOT_FILE
           python - <<'PY'
-          import json
-          import os
+          import json, os
           from pathlib import Path
-
           target = os.environ["PILOT_FILE"]
           expected = (
               "# OpenCode Ollama live provider evidence\n"
@@ -130,40 +131,27 @@ jobs:
               "timeout_seconds": 600,
               "remote": "origin",
           }
-          Path(os.environ["RUNNER_TEMP"], "provider-task.json").write_text(
-              json.dumps(request, ensure_ascii=False, indent=2) + "\n",
-              encoding="utf-8",
-          )
-          Path(os.environ["RUNNER_TEMP"], "expected-content.txt").write_text(
-              expected,
-              encoding="utf-8",
-          )
+          Path(os.environ["RUNNER_TEMP"], "provider-task.json").write_text(json.dumps(request, indent=2) + "\n", encoding="utf-8")
+          Path(os.environ["RUNNER_TEMP"], "expected-content.txt").write_text(expected, encoding="utf-8")
           PY
-
           echo "branch=${PILOT_BRANCH}" >> "${GITHUB_OUTPUT}"
           echo "file=${PILOT_FILE}" >> "${GITHUB_OUTPUT}"
           echo "profile=${RUNNER_TEMP}/opencode-profile" >> "${GITHUB_OUTPUT}"
 
-      - name: Execute and publish through the real provider runtime
-        id: provider
+      - name: Execute and publish through real OpenCode and trusted runtime
         shell: bash
         env:
           OPENCODE_PROFILE_HOME: ${{ steps.request.outputs.profile }}
-          OLLAMA_BASE_URL: http://127.0.0.1:11434/v1
+          OLLAMA_BASE_URL: http://127.0.0.1:11435/v1
         run: |
           set -euo pipefail
           python scripts/provider_worker.py probe \
-            --provider opencode_ollama \
-            --model "${OPENCODE_OLLAMA_MODEL}" \
-            --profile-home "${OPENCODE_PROFILE_HOME}" \
-            > "${RUNNER_TEMP}/provider-health.json"
+            --provider opencode_ollama --model "${OPENCODE_OLLAMA_MODEL}" \
+            --profile-home "${OPENCODE_PROFILE_HOME}" > "${RUNNER_TEMP}/provider-health.json"
           python scripts/provider_worker.py run \
-            --provider opencode_ollama \
-            --model "${OPENCODE_OLLAMA_MODEL}" \
-            --profile-home "${OPENCODE_PROFILE_HOME}" \
-            --publish \
-            "${RUNNER_TEMP}/provider-task.json" \
-            > "${RUNNER_TEMP}/provider-result.json"
+            --provider opencode_ollama --model "${OPENCODE_OLLAMA_MODEL}" \
+            --profile-home "${OPENCODE_PROFILE_HOME}" --publish \
+            "${RUNNER_TEMP}/provider-task.json" > "${RUNNER_TEMP}/provider-result.json"
           cat "${RUNNER_TEMP}/provider-health.json"
           cat "${RUNNER_TEMP}/provider-result.json"
 
@@ -174,13 +162,14 @@ jobs:
         run: |
           set -euo pipefail
           python - <<'PY'
-          import os
+          import json, os
           from pathlib import Path
-
           actual = Path(os.environ["PILOT_FILE"]).read_text(encoding="utf-8")
           expected = Path(os.environ["RUNNER_TEMP"], "expected-content.txt").read_text(encoding="utf-8")
-          if actual != expected:
-              raise SystemExit("Provider evidence content did not match the immutable pilot contract.")
+          if actual != expected: raise SystemExit("provider evidence content mismatch")
+          audit = json.loads(Path(os.environ["RUNNER_TEMP"], "tool-proxy-audit.json").read_text())
+          if audit["accepted"] < 1 or audit["rewritten"] < 1 or audit["forwarded"] < 1 or audit["rejected"] != 0:
+              raise SystemExit(f"unexpected tool proxy audit counters: {audit}")
           PY
 
       - name: Confirm remote SHA and run exact-SHA Factory CI
@@ -190,32 +179,19 @@ jobs:
           PILOT_BRANCH: ${{ steps.request.outputs.branch }}
         run: |
           set -euo pipefail
-          result_sha=$(python -c 'import json, os; print(json.load(open(os.path.join(os.environ["RUNNER_TEMP"], "provider-result.json"), encoding="utf-8"))["evidence"]["commit_sha"])')
+          result_sha=$(python -c 'import json, os; print(json.load(open(os.path.join(os.environ["RUNNER_TEMP"], "provider-result.json")))["evidence"]["commit_sha"])')
           remote_sha=$(git ls-remote origin "refs/heads/${PILOT_BRANCH}" | awk '{print $1}')
-          test -n "${remote_sha}"
-          test "${remote_sha}" = "${result_sha}"
-
+          test -n "${remote_sha}" && test "${remote_sha}" = "${result_sha}"
           gh workflow run validate-multiagent-execution.yml --ref "${PILOT_BRANCH}"
           run_id=""
           for attempt in $(seq 1 30); do
-            run_id=$(gh run list \
-              --workflow validate-multiagent-execution.yml \
-              --branch "${PILOT_BRANCH}" \
-              --event workflow_dispatch \
-              --limit 10 \
-              --json databaseId,headSha \
-              --jq ".[] | select(.headSha == \"${remote_sha}\") | .databaseId" \
-              | head -n 1)
-            if [ -n "${run_id}" ]; then
-              break
-            fi
+            run_id=$(gh run list --workflow validate-multiagent-execution.yml --branch "${PILOT_BRANCH}" --event workflow_dispatch --limit 10 --json databaseId,headSha --jq ".[] | select(.headSha == \"${remote_sha}\") | .databaseId" | head -n 1)
+            if [ -n "${run_id}" ]; then break; fi
             sleep 2
           done
           test -n "${run_id}"
           gh run watch "${run_id}" --exit-status
-          printf '{"branch":"%s","remote_sha":"%s","ci_run_id":"%s","ci_url":"https://github.com/%s/actions/runs/%s"}\n' \
-            "${PILOT_BRANCH}" "${remote_sha}" "${run_id}" "${GITHUB_REPOSITORY}" "${run_id}" \
-            > "${RUNNER_TEMP}/durable-evidence.json"
+          printf '{"branch":"%s","remote_sha":"%s","ci_run_id":"%s"}\n' "${PILOT_BRANCH}" "${remote_sha}" "${run_id}" > "${RUNNER_TEMP}/durable-evidence.json"
 
       - name: Publish sanitized pilot evidence
         if: always()
@@ -226,6 +202,8 @@ jobs:
             ${{ runner.temp }}/provider-health.json
             ${{ runner.temp }}/provider-result.json
             ${{ runner.temp }}/durable-evidence.json
+            ${{ runner.temp }}/tool-proxy-audit.json
+            ${{ runner.temp }}/tool-proxy.log
             ${{ runner.temp }}/ollama.log
           if-no-files-found: warn
           retention-days: 30
