@@ -1,0 +1,195 @@
+name: Live OpenCode Ollama provider pilot
+
+on:
+  workflow_dispatch:
+
+permissions:
+  actions: write
+  contents: write
+
+concurrency:
+  group: live-opencode-ollama-provider-pilot
+  cancel-in-progress: false
+
+jobs:
+  live-pilot:
+    if: github.actor == github.repository_owner && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 45
+    env:
+      OLLAMA_VERSION: v0.33.1
+      OLLAMA_ARCHIVE_SHA256: 88e0d36bd90121595e5516c84f6ab61b546368fbd2d825b4aae70999c949649d
+      OPENCODE_VERSION: v1.18.23
+      OPENCODE_ARCHIVE_SHA256: ab7015cd8113e011a461f30a0c2b77d8299a144ff688cb62e93e8802835d7288
+      OPENCODE_OLLAMA_MODEL: qwen2.5-coder:3b
+    steps:
+      - name: Checkout trusted Factory main
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: main
+          fetch-depth: 0
+
+      - name: Install pinned Ollama and OpenCode archives
+        shell: bash
+        run: |
+          set -euo pipefail
+          tools_dir="${RUNNER_TEMP}/factory-tools"
+          mkdir -p "${tools_dir}/ollama" "${tools_dir}/opencode"
+
+          curl --fail --location --retry 3 \
+            "https://github.com/ollama/ollama/releases/download/${OLLAMA_VERSION}/ollama-linux-amd64.tar.zst" \
+            --output "${RUNNER_TEMP}/ollama-linux-amd64.tar.zst"
+          echo "${OLLAMA_ARCHIVE_SHA256}  ${RUNNER_TEMP}/ollama-linux-amd64.tar.zst" | sha256sum --check --strict
+          tar --use-compress-program=unzstd -xf "${RUNNER_TEMP}/ollama-linux-amd64.tar.zst" -C "${tools_dir}/ollama"
+
+          curl --fail --location --retry 3 \
+            "https://github.com/anomalyco/opencode/releases/download/${OPENCODE_VERSION}/opencode-linux-x64.tar.gz" \
+            --output "${RUNNER_TEMP}/opencode-linux-x64.tar.gz"
+          echo "${OPENCODE_ARCHIVE_SHA256}  ${RUNNER_TEMP}/opencode-linux-x64.tar.gz" | sha256sum --check --strict
+          tar -xzf "${RUNNER_TEMP}/opencode-linux-x64.tar.gz" -C "${tools_dir}/opencode"
+
+          echo "${tools_dir}/ollama/bin" >> "${GITHUB_PATH}"
+          echo "${tools_dir}/opencode" >> "${GITHUB_PATH}"
+          echo "LD_LIBRARY_PATH=${tools_dir}/ollama/lib" >> "${GITHUB_ENV}"
+
+      - name: Start loopback Ollama and pull the fixed small model
+        shell: bash
+        run: |
+          set -euo pipefail
+          nohup ollama serve > "${RUNNER_TEMP}/ollama.log" 2>&1 &
+          for attempt in $(seq 1 30); do
+            if ollama list >/dev/null 2>&1; then
+              break
+            fi
+            if [ "${attempt}" -eq 30 ]; then
+              echo "Ollama did not become ready on loopback." >&2
+              exit 1
+            fi
+            sleep 2
+          done
+          ollama pull "${OPENCODE_OLLAMA_MODEL}"
+          ollama list
+          opencode --version
+
+      - name: Prepare isolated worker branch and request
+        id: request
+        shell: bash
+        env:
+          PILOT_BRANCH: factory/opencode-ollama-live-${{ github.run_id }}-${{ github.run_attempt }}
+          PILOT_FILE: pilots/live/opencode-ollama/run-${{ github.run_id }}-${{ github.run_attempt }}.md
+        run: |
+          set -euo pipefail
+          if git ls-remote --exit-code origin "refs/heads/${PILOT_BRANCH}" >/dev/null 2>&1; then
+            echo "Worker branch already exists: ${PILOT_BRANCH}" >&2
+            exit 1
+          fi
+          git switch -c "${PILOT_BRANCH}"
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          mkdir -p "${RUNNER_TEMP}/opencode-profile"
+
+          export PILOT_BRANCH PILOT_FILE
+          python - <<'PY'
+          import json
+          import os
+          from pathlib import Path
+
+          target = os.environ["PILOT_FILE"]
+          request = {
+              "run_id": f"opencode-ollama-live-{os.environ['GITHUB_RUN_ID']}",
+              "task_id": "document-live-provider-evidence",
+              "repository": os.environ["GITHUB_REPOSITORY"],
+              "worktree": os.environ["GITHUB_WORKSPACE"],
+              "integration_branch": "factory/opencode-ollama-live-integration",
+              "target_branch": "main",
+              "working_branch": os.environ["PILOT_BRANCH"],
+              "paths": [target],
+              "instruction": (
+                  f"Create exactly the Markdown file {target}. "
+                  "Its heading must be '# OpenCode Ollama live provider evidence'. "
+                  "State that the file was authored by the real OpenCode/Ollama provider in an isolated ephemeral profile. "
+                  "Do not edit any other file and do not run shell commands."
+              ),
+              "allowed_commands": [],
+              "timeout_seconds": 1200,
+              "remote": "origin",
+          }
+          Path(os.environ["RUNNER_TEMP"], "provider-task.json").write_text(
+              json.dumps(request, ensure_ascii=False, indent=2) + "\n",
+              encoding="utf-8",
+          )
+          PY
+
+          echo "branch=${PILOT_BRANCH}" >> "${GITHUB_OUTPUT}"
+          echo "file=${PILOT_FILE}" >> "${GITHUB_OUTPUT}"
+          echo "profile=${RUNNER_TEMP}/opencode-profile" >> "${GITHUB_OUTPUT}"
+
+      - name: Execute and publish through the real provider runtime
+        id: provider
+        shell: bash
+        env:
+          OPENCODE_PROFILE_HOME: ${{ steps.request.outputs.profile }}
+          OLLAMA_BASE_URL: http://127.0.0.1:11434/v1
+        run: |
+          set -euo pipefail
+          python scripts/provider_worker.py probe \
+            --provider opencode_ollama \
+            --model "${OPENCODE_OLLAMA_MODEL}" \
+            --profile-home "${OPENCODE_PROFILE_HOME}" \
+            > "${RUNNER_TEMP}/provider-health.json"
+          python scripts/provider_worker.py run \
+            --provider opencode_ollama \
+            --model "${OPENCODE_OLLAMA_MODEL}" \
+            --profile-home "${OPENCODE_PROFILE_HOME}" \
+            --publish \
+            "${RUNNER_TEMP}/provider-task.json" \
+            > "${RUNNER_TEMP}/provider-result.json"
+          cat "${RUNNER_TEMP}/provider-health.json"
+          cat "${RUNNER_TEMP}/provider-result.json"
+
+      - name: Confirm remote SHA and run exact-SHA Factory CI
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+          PILOT_BRANCH: ${{ steps.request.outputs.branch }}
+        run: |
+          set -euo pipefail
+          result_sha=$(python -c 'import json, os; print(json.load(open(os.path.join(os.environ["RUNNER_TEMP"], "provider-result.json"), encoding="utf-8"))["evidence"]["commit_sha"])')
+          remote_sha=$(git ls-remote origin "refs/heads/${PILOT_BRANCH}" | awk '{print $1}')
+          test -n "${remote_sha}"
+          test "${remote_sha}" = "${result_sha}"
+
+          gh workflow run validate-multiagent-execution.yml --ref "${PILOT_BRANCH}"
+          run_id=""
+          for attempt in $(seq 1 30); do
+            run_id=$(gh run list \
+              --workflow validate-multiagent-execution.yml \
+              --branch "${PILOT_BRANCH}" \
+              --event workflow_dispatch \
+              --limit 10 \
+              --json databaseId,headSha \
+              --jq ".[] | select(.headSha == \"${remote_sha}\") | .databaseId" \
+              | head -n 1)
+            if [ -n "${run_id}" ]; then
+              break
+            fi
+            sleep 2
+          done
+          test -n "${run_id}"
+          gh run watch "${run_id}" --exit-status
+          printf '{"branch":"%s","remote_sha":"%s","ci_run_id":"%s","ci_url":"https://github.com/%s/actions/runs/%s"}\n' \
+            "${PILOT_BRANCH}" "${remote_sha}" "${run_id}" "${GITHUB_REPOSITORY}" "${run_id}" \
+            > "${RUNNER_TEMP}/durable-evidence.json"
+
+      - name: Publish sanitized pilot evidence
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: opencode-ollama-live-pilot-${{ github.run_id }}-${{ github.run_attempt }}
+          path: |
+            ${{ runner.temp }}/provider-health.json
+            ${{ runner.temp }}/provider-result.json
+            ${{ runner.temp }}/durable-evidence.json
+            ${{ runner.temp }}/ollama.log
+          if-no-files-found: warn
+          retention-days: 30

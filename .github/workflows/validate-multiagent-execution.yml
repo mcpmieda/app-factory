@@ -19,6 +19,7 @@ on:
       - "core/MERGE_TRAIN.md"
       - "docs/MULTIAGENT_IMPLEMENTATION_STATUS.md"
       - "docs/JULES_API_FIRST_PILOT_EVIDENCE.md"
+      - ".github/workflows/live-opencode-ollama-pilot.yml"
       - ".github/workflows/validate-multiagent-execution.yml"
   push:
     branches: [main]
@@ -39,6 +40,7 @@ on:
       - "core/MERGE_TRAIN.md"
       - "docs/MULTIAGENT_IMPLEMENTATION_STATUS.md"
       - "docs/JULES_API_FIRST_PILOT_EVIDENCE.md"
+      - ".github/workflows/live-opencode-ollama-pilot.yml"
       - ".github/workflows/validate-multiagent-execution.yml"
   workflow_dispatch:
 
