@@ -20,6 +20,7 @@ if str(ROOT) not in sys.path:
 
 from engine.ollama_tool_proxy import (  # noqa: E402
     canonical_single_tool_sse,
+    canonical_stop_sse,
     rewrite_single_tool_request,
     validate_loopback_base_url,
 )
@@ -43,6 +44,7 @@ REJECT_REASONS = frozenset({
     "content_length",
     "json_payload",
     "stream_mode",
+    "tool_sequence",
     "response_size",
     "response_contract",
     *TOOL_CONTRACT_REASON_BY_MESSAGE.values(),
@@ -62,6 +64,8 @@ class ProxyAudit:
     tools_discarded: int = 0
     upstream_tool_calls: int = 0
     responses_normalized: int = 0
+    post_tool_requests: int = 0
+    post_tool_completions: int = 0
     last_status: int | None = None
     last_reject_reason: str | None = None
     _lock: threading.Lock = field(default_factory=threading.Lock, repr=False)
@@ -80,6 +84,8 @@ class ProxyAudit:
                 "tools_discarded": self.tools_discarded,
                 "upstream_tool_calls": self.upstream_tool_calls,
                 "responses_normalized": self.responses_normalized,
+                "post_tool_requests": self.post_tool_requests,
+                "post_tool_completions": self.post_tool_completions,
                 "last_status": self.last_status,
                 "last_reject_reason": self.last_reject_reason,
             }
@@ -155,6 +161,17 @@ class RequiredToolProxyHandler(BaseHTTPRequestHandler):
         self.wfile.write(body)
         self.close_connection = True
 
+    def _send_sse(self, event_stream: bytes) -> None:
+        self.send_response(200)
+        self.send_header("Content-Type", "text/event-stream; charset=utf-8")
+        self.send_header("Cache-Control", "no-store")
+        self.send_header("Content-Length", str(len(event_stream)))
+        self.send_header("Connection", "close")
+        self.end_headers()
+        self.wfile.write(event_stream)
+        self.wfile.flush()
+        self.close_connection = True
+
     def do_GET(self) -> None:  # noqa: N802
         self._reject(405, "method")
 
@@ -184,6 +201,33 @@ class RequiredToolProxyHandler(BaseHTTPRequestHandler):
             return
         if not isinstance(payload, dict) or payload.get("stream") is not True:
             self._reject(400, "stream_mode")
+            return
+
+        messages = payload.get("messages")
+        last_message = messages[-1] if isinstance(messages, list) and messages else None
+        if isinstance(last_message, dict) and last_message.get("role") == "tool":
+            before = self.server.audit.snapshot()
+            self.server.audit.mutate(post_tool_requests=1)
+            if (
+                before["responses_normalized"] != 1
+                or before["upstream_tool_calls"] != 1
+                or before["post_tool_completions"] != 0
+                or before["rejected"] != 0
+            ):
+                self._reject(409, "tool_sequence")
+                return
+            try:
+                event_stream = canonical_stop_sse(payload.get("model"))
+            except ValueError:
+                self._reject(400, "tool_sequence")
+                return
+            self.server.audit.mutate(
+                post_tool_completions=1,
+                last_status=200,
+                last_reject_reason=None,
+            )
+            write_audit(self.server.audit_file, self.server.audit)
+            self._send_sse(event_stream)
             return
 
         original_choice = payload.get("tool_choice", "auto")
@@ -265,15 +309,7 @@ class RequiredToolProxyHandler(BaseHTTPRequestHandler):
             last_reject_reason=None,
         )
         write_audit(self.server.audit_file, self.server.audit)
-        self.send_response(200)
-        self.send_header("Content-Type", "text/event-stream; charset=utf-8")
-        self.send_header("Cache-Control", "no-store")
-        self.send_header("Content-Length", str(len(event_stream)))
-        self.send_header("Connection", "close")
-        self.end_headers()
-        self.wfile.write(event_stream)
-        self.wfile.flush()
-        self.close_connection = True
+        self._send_sse(event_stream)
 
     def _send_upstream_error(self, status: int) -> None:
         body = b'{"error":"local Ollama upstream failed"}\n'
@@ -288,7 +324,7 @@ class RequiredToolProxyHandler(BaseHTTPRequestHandler):
 
 def parser() -> argparse.ArgumentParser:
     item = argparse.ArgumentParser(
-        description="Fail-closed loopback proxy for one canonical required tool call"
+        description="Fail-closed loopback proxy for one required tool call and terminal tool result"
     )
     item.add_argument("--listen-host", default="127.0.0.1")
     item.add_argument("--listen-port", type=int, default=11435)
@@ -311,7 +347,7 @@ def main() -> int:
         )
         print(
             f"required-tool proxy listening on {args.listen_host}:{server.server_port}; "
-            "upstream=loopback; response=canonical-sse; payload logging=disabled",
+            "upstream=loopback; response=canonical-sse; post-tool=single-stop; payload logging=disabled",
             flush=True,
         )
         server.serve_forever(poll_interval=0.25)
