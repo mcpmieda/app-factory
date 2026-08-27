@@ -22,9 +22,10 @@ from engine.ollama_tool_proxy import (  # noqa: E402
     TOOL_GENERATION_MAX_TOKENS,
     TOOL_GENERATION_SEED,
     TOOL_GENERATION_TEMPERATURE,
-    canonical_single_tool_sse,
+    canonical_native_tool_sse,
     canonical_stop_sse,
-    rewrite_single_tool_request,
+    native_chat_url,
+    native_single_tool_request,
     validate_loopback_base_url,
 )
 
@@ -38,34 +39,33 @@ TOOL_CONTRACT_REASON_BY_MESSAGE = {
     "required-tool proxy accepts only function tools": "tool_type",
     "required-tool proxy requires exactly one expected function tool": "tool_name",
     "required-tool proxy rejects conflicting tool_choice": "tool_choice",
+    "native chat request requires a model": "tool_model",
+    "native chat request requires messages": "tool_messages",
+    "native chat request messages must be objects": "tool_messages",
+    "native chat request contains an unsupported message role": "tool_messages",
+    "native chat request message content must be text": "tool_messages",
 }
 RESPONSE_CONTRACT_STAGE_BY_MESSAGE = {
-    "completion response must be a JSON object": "payload",
-    "completion response requires an id": "completion_id",
-    "completion response requires a model": "model",
-    "completion response requires exactly one choice": "choice_count",
-    "completion response must finish with tool_calls": "finish_reason",
-    "completion response requires an assistant message": "assistant_message",
-    "completion response requires exactly one tool call": "tool_call_count",
-    "completion response tool call must be a function": "tool_type",
-    "completion response tool call requires an id": "tool_call_id",
-    "completion response returned an unexpected function tool": "tool_name",
-    "completion response tool arguments must be valid JSON": "arguments",
-    "completion response tool arguments must be a JSON object": "arguments",
-    "completion response tool arguments must be an object or JSON string": "arguments",
+    "native response must be a JSON object": "payload",
+    "native response requires a model": "model",
+    "native response must be complete": "done",
+    "native response requires an assistant message": "assistant_message",
+    "native response message role must be assistant": "assistant_role",
+    "native response requires exactly one tool call": "tool_call_count",
+    "native response tool call must be an object": "tool_type",
+    "native response returned an unexpected function tool": "tool_name",
+    "native response tool arguments must be an object": "arguments",
 }
 RESPONSE_CONTRACT_STAGES = frozenset({
     "encoding",
     "json",
     "payload",
-    "completion_id",
     "model",
-    "choice_count",
-    "finish_reason",
+    "done",
     "assistant_message",
+    "assistant_role",
     "tool_call_count",
     "tool_type",
-    "tool_call_id",
     "tool_name",
     "arguments",
     "unknown",
@@ -113,8 +113,9 @@ class ProxyAudit:
     def snapshot(self) -> dict[str, Any]:
         with self._lock:
             return {
-                "schema_version": 2,
+                "schema_version": 3,
                 "expected_tool": self.expected_tool,
+                "upstream_protocol": "ollama_native_chat",
                 "accepted": self.accepted,
                 "rejected": self.rejected,
                 "rewritten": self.rewritten,
@@ -175,6 +176,7 @@ class RequiredToolProxyServer(ThreadingHTTPServer):
         if host not in {"127.0.0.1", "localhost", "::1"}:
             raise ValueError("tool proxy must bind to loopback")
         self.upstream_base_url = validate_loopback_base_url(upstream_base_url)
+        self.upstream_native_chat_url = native_chat_url(self.upstream_base_url)
         self.expected_tool = expected_tool
         if not expected_tool or any(char.isspace() for char in expected_tool):
             raise ValueError("expected tool name is invalid")
@@ -283,7 +285,7 @@ class RequiredToolProxyHandler(BaseHTTPRequestHandler):
         tools = payload.get("tools")
         received_tool_count = len(tools) if isinstance(tools, list) else 0
         try:
-            rewritten = rewrite_single_tool_request(
+            native_request = native_single_tool_request(
                 payload, expected_tool=self.server.expected_tool
             )
         except ValueError as error:
@@ -293,9 +295,7 @@ class RequiredToolProxyHandler(BaseHTTPRequestHandler):
             )
             return
 
-        retained_tool_count = len(rewritten.get("tools", []))
-        rewritten["stream"] = False
-        rewritten.pop("stream_options", None)
+        retained_tool_count = len(native_request.get("tools", []))
         self.server.audit.mutate(
             accepted=1,
             rewritten=1,
@@ -306,8 +306,8 @@ class RequiredToolProxyHandler(BaseHTTPRequestHandler):
         )
         write_audit(self.server.audit_file, self.server.audit)
         request = urllib.request.Request(
-            f"{self.server.upstream_base_url}/chat/completions",
-            data=json.dumps(rewritten, separators=(",", ":")).encode("utf-8"),
+            self.server.upstream_native_chat_url,
+            data=json.dumps(native_request, separators=(",", ":")).encode("utf-8"),
             method="POST",
             headers={"Content-Type": "application/json", "Accept": "application/json"},
         )
@@ -354,7 +354,7 @@ class RequiredToolProxyHandler(BaseHTTPRequestHandler):
             response_stage = "json"
         else:
             try:
-                event_stream = canonical_single_tool_sse(
+                event_stream = canonical_native_tool_sse(
                     completion, expected_tool=self.server.expected_tool
                 )
             except ValueError as error:
@@ -396,11 +396,11 @@ class RequiredToolProxyHandler(BaseHTTPRequestHandler):
 
 def parser() -> argparse.ArgumentParser:
     item = argparse.ArgumentParser(
-        description="Fail-closed loopback proxy for one required tool call and terminal tool result"
+        description="Fail-closed loopback bridge for one native Ollama tool call and terminal result"
     )
     item.add_argument("--listen-host", default="127.0.0.1")
     item.add_argument("--listen-port", type=int, default=11435)
-    item.add_argument("--upstream", default="http://127.0.0.1:11434/v1")
+    item.add_argument("--upstream", default="http://127.0.0.1:11434")
     item.add_argument("--expected-tool", required=True)
     item.add_argument("--audit-file", type=Path)
     return item
@@ -419,7 +419,7 @@ def main() -> int:
         )
         print(
             f"required-tool proxy listening on {args.listen_host}:{server.server_port}; "
-            "upstream=loopback; response=canonical-sse; post-tool=single-stop; "
+            "upstream=ollama-native-chat/loopback; response=canonical-sse; post-tool=single-stop; "
             f"generation=deterministic/{TOOL_GENERATION_MAX_TOKENS}; payload logging=disabled",
             flush=True,
         )
