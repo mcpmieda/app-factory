@@ -271,11 +271,38 @@ class OpenCodeOllamaAdapter:
         }
 
     def tool_config(self, request: ProviderTaskRequest) -> dict[str, bool]:
-        """Hide unavailable tools so local models do not pay for denied schemas.
+        """Expose only capabilities the bounded task can actually need.
 
-        Permission remains the authoritative security boundary. This visibility layer is
-        deliberately stricter and removes tools that automatic workers can never use.
+        Permission remains the authoritative security boundary. For a task with no
+        control-plane commands whose declared paths do not yet exist, the worker is
+        creation-only: advertising a single write schema reduces local-model prompt
+        cost and removes ambiguous tool choices without granting any new authority.
         """
+        create_only = (
+            not request.normalized_commands
+            and bool(request.normalized_paths)
+            and all(
+                "*" not in scope and not (request.worktree / scope).exists()
+                for scope in request.normalized_paths
+            )
+        )
+        if create_only:
+            return {
+                "bash": False,
+                "edit": False,
+                "write": True,
+                "read": False,
+                "grep": False,
+                "glob": False,
+                "patch": False,
+                "lsp": False,
+                "skill": False,
+                "todowrite": False,
+                "webfetch": False,
+                "websearch": False,
+                "question": False,
+                "task": False,
+            }
         return {
             "bash": bool(request.normalized_commands),
             "edit": True,
