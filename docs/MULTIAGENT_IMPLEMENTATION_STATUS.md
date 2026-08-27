@@ -4,9 +4,15 @@ Atualizado em 27 de agosto de 2026.
 
 ## Classificação atual
 
-A App Factory possui fundação provider-neutral, Control Plane Jules API-first comprovado em execução real e uma primeira implementação segura dos runtimes Antigravity/OpenCode-Ollama e do Merge Train.
+A App Factory possui:
 
-A Factory multi-provider ainda não deve ser declarada 100% pronta.
+- fundação provider-neutral;
+- Jules API-first comprovado em execução real;
+- runtimes Antigravity e OpenCode/Ollama implementados e testados;
+- protocolo de executor durável baseado em GitHub;
+- contrato de Merge Train por SHA exato.
+
+A Factory multi-provider ainda não deve ser declarada 100% pronta. Os componentes locais/headless precisam ser conectados ao Control Plane operacional e homologados em hosts reais.
 
 ## Comprovado em execução real
 
@@ -57,6 +63,23 @@ Evidência: `docs/JULES_API_FIRST_PILOT_EVIDENCE.md`.
 - confirmação remota do SHA;
 - telemetria sanitizada.
 
+### Durable Provider Agent
+
+- fingerprint portátil do request, independente do diretório local;
+- fingerprint do manifesto imutável;
+- lease vinculada a run/task/issue/provider/executor/branches/hashes;
+- confiança somente em lease cuja autoria real é verificada como `github-actions[bot]`;
+- expiração e takeover fail-closed;
+- heartbeat sanitizado sem renovação implícita;
+- resultado terminal vinculado à lease;
+- sucesso somente após commit, push e confirmação do SHA remoto;
+- validação de escopo novamente no resultado;
+- seleção de exatamente uma lease ativa compatível;
+- CLI para fingerprint, validação, heartbeat e execução publicada;
+- resultados locais tratados somente como candidatos até validação pelo Control Plane.
+
+Detalhes: `core/DURABLE_PROVIDER_AGENT.md`.
+
 ### Antigravity adapter
 
 - CLI headless real com JSON;
@@ -89,7 +112,7 @@ Evidência: `docs/JULES_API_FIRST_PILOT_EVIDENCE.md`.
 
 ## Validação automatizada
 
-A suíte multiagent cobre 50 regressões, incluindo:
+A suíte multiagent cobre, entre outros:
 
 - limite 1–3;
 - zero-first e fallback remoto;
@@ -105,6 +128,12 @@ A suíte multiagent cobre 50 regressões, incluindo:
 - confirmação do SHA remoto;
 - recusa de arquivo fora do escopo;
 - recusa de modificação em Git config, hooks, remote e refs;
+- fingerprints canônicos;
+- leases confiáveis, expiradas e conflitantes;
+- takeover depois da expiração;
+- heartbeat e resultado sanitizados;
+- recusa de identidade/hash/SHA divergente;
+- CLI durável machine-readable;
 - Merge Train por SHA/reviews;
 - final gate draft/humano.
 
@@ -112,28 +141,31 @@ O workflow `Validate Multiagent Execution` executa compile, regressões estrutur
 
 ## Ainda não homologado live
 
-1. Antigravity executando uma task real em profile/host isolado.
-2. OpenCode/Ollama executando uma task real com modelo local.
-3. Worker local durável/efêmero que continue sem o computador inicial.
-4. Health/fallback conectado ao Control Plane do `ecossistema-escola`.
-5. Telemetria persistida automaticamente em GitHub.
+1. Gateway do Durable Provider Agent integrado ao Control Plane do `ecossistema-escola`.
+2. Antigravity executando uma task real em profile/host isolado.
+3. OpenCode/Ollama executando uma task real com modelo local.
+4. Recovery real em outro executor depois de expiração de lease.
+5. Health/fallback persistido automaticamente no GitHub.
 6. CodeRabbit, Semgrep e Sonar conectados como checks reais do Merge Train.
 7. Piloto live de integração multi-provider.
 8. Escalonamento excepcional Codex auditado, sempre manual.
 
-## Dependência administrativa conhecida
+## Dependências externas conhecidas
 
-No `ecossistema-escola`, GitHub Actions ainda não pode criar/aprovar PRs. A permissão administrativa precisa ser habilitada para que o runner crie sozinho o PR final draft. O merge final continuará humano mesmo depois disso.
+No `ecossistema-escola`, GitHub Actions ainda não pode criar/aprovar PRs. A permissão administrativa precisa ser habilitada para que o runner crie sozinho futuros PRs finais draft. O merge final continuará humano mesmo depois disso.
+
+CodeRabbit também informou que a revisão automática está desabilitada no repositório enquanto ele tiver menos de dez estrelas. Essa limitação externa não reduz os gates do Core; o Merge Train deve permanecer fail-closed até haver evidência real dos revisores exigidos ou uma política formal aprovada para o repositório.
 
 ## Próxima ordem de trabalho
 
-1. piloto Antigravity;
-2. piloto OpenCode/Ollama;
-3. persistência de provider health/telemetria;
-4. wiring real CodeRabbit/Semgrep/Sonar;
-5. Merge Train multi-provider;
-6. fallback operacional entre providers;
-7. Codex apenas para exceção premium/manual.
+1. integrar o gateway de leases/heartbeat/resultados no Control Plane;
+2. homologar Antigravity;
+3. homologar OpenCode/Ollama;
+4. comprovar takeover entre executores;
+5. persistir provider health/telemetria;
+6. conectar CodeRabbit/Semgrep/Sonar reais;
+7. executar piloto multi-provider;
+8. manter Codex somente para exceção premium/manual.
 
 ## Regra de declaração
 
@@ -142,4 +174,4 @@ No `ecossistema-escola`, GitHub Actions ainda não pode criar/aprovar PRs. A per
 - **Homologado**: passou repetidamente com CI, segurança e recovery.
 - **Pronto**: todos os providers/gates necessários estão homologados e as dependências administrativas foram resolvidas.
 
-Hoje, Jules API-first está comprovado; os novos adapters estão implementados/testados; a Factory inteira ainda não está pronta.
+Hoje, Jules API-first está comprovado; o runtime multi-provider e o protocolo durável estão implementados/testados; a Factory inteira ainda não está pronta.
