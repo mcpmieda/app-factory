@@ -10,15 +10,15 @@ permissions:
   contents: write
 
 concurrency:
-  group: ${{ (github.event_name == 'workflow_dispatch' || (github.event_name == 'issue_comment' && github.event.issue.number == 100 && github.event.comment.body == '/run-opencode-v12')) && 'live-opencode-ollama-provider-pilot' || format('live-opencode-ollama-noop-{0}', github.run_id) }}
-  cancel-in-progress: ${{ github.event_name == 'workflow_dispatch' || (github.event_name == 'issue_comment' && github.event.issue.number == 100 && github.event.comment.body == '/run-opencode-v12') }}
+  group: ${{ (github.event_name == 'workflow_dispatch' || (github.event_name == 'issue_comment' && github.event.issue.number == 102 && github.event.comment.body == '/run-opencode-v13')) && 'live-opencode-ollama-provider-pilot' || format('live-opencode-ollama-noop-{0}', github.run_id) }}
+  cancel-in-progress: ${{ github.event_name == 'workflow_dispatch' || (github.event_name == 'issue_comment' && github.event.issue.number == 102 && github.event.comment.body == '/run-opencode-v13') }}
 
 jobs:
   live-pilot:
     if: >-
       github.actor == github.repository_owner &&
       ((github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/main') ||
-       (github.event_name == 'issue_comment' && github.event.issue.number == 100 && github.event.comment.body == '/run-opencode-v12'))
+       (github.event_name == 'issue_comment' && github.event.issue.number == 102 && github.event.comment.body == '/run-opencode-v13'))
     runs-on: ubuntu-24.04
     timeout-minutes: 30
     env:
@@ -112,6 +112,11 @@ jobs:
               "Result: durable worker write succeeded\n"
               "Production activation: not performed\n"
           )
+          exact_arguments = json.dumps(
+              {"filePath": target, "content": expected},
+              ensure_ascii=False,
+              separators=(",", ":"),
+          )
           request = {
               "run_id": f"opencode-ollama-live-{os.environ['GITHUB_RUN_ID']}",
               "task_id": "document-live-provider-evidence",
@@ -122,10 +127,11 @@ jobs:
               "working_branch": os.environ["PILOT_BRANCH"],
               "paths": [target],
               "instruction": (
-                  f"Call the write tool now. Create exactly {target}.\n"
-                  "Write this exact content, including the line breaks and final newline:\n"
-                  f"{expected}"
-                  "Do not edit any other file. Do not run shell commands. Return after the write tool succeeds."
+                  "Use the write tool exactly once and do not explain before or after it. "
+                  "The write tool arguments must equal this JSON object exactly: "
+                  f"{exact_arguments} "
+                  "Do not add, remove, normalize, paraphrase or append any character to the content argument. "
+                  "Do not edit any other file and do not run shell commands."
               ),
               "allowed_commands": [],
               "timeout_seconds": 600,
