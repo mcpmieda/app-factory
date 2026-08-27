@@ -10,23 +10,23 @@ permissions:
   contents: write
 
 concurrency:
-  group: ${{ (github.event_name == 'workflow_dispatch' || (github.event_name == 'issue_comment' && github.event.issue.number == 78 && github.event.comment.body == '/run-opencode-v4')) && 'live-opencode-ollama-provider-pilot' || format('live-opencode-ollama-noop-{0}', github.run_id) }}
-  cancel-in-progress: ${{ github.event_name == 'workflow_dispatch' || (github.event_name == 'issue_comment' && github.event.issue.number == 78 && github.event.comment.body == '/run-opencode-v4') }}
+  group: ${{ (github.event_name == 'workflow_dispatch' || (github.event_name == 'issue_comment' && github.event.issue.number == 81 && github.event.comment.body == '/run-opencode-v5')) && 'live-opencode-ollama-provider-pilot' || format('live-opencode-ollama-noop-{0}', github.run_id) }}
+  cancel-in-progress: ${{ github.event_name == 'workflow_dispatch' || (github.event_name == 'issue_comment' && github.event.issue.number == 81 && github.event.comment.body == '/run-opencode-v5') }}
 
 jobs:
   live-pilot:
     if: >-
       github.actor == github.repository_owner &&
       ((github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/main') ||
-       (github.event_name == 'issue_comment' && github.event.issue.number == 78 && github.event.comment.body == '/run-opencode-v4'))
+       (github.event_name == 'issue_comment' && github.event.issue.number == 81 && github.event.comment.body == '/run-opencode-v5'))
     runs-on: ubuntu-24.04
-    timeout-minutes: 45
+    timeout-minutes: 30
     env:
       OLLAMA_VERSION: v0.33.1
       OLLAMA_ARCHIVE_SHA256: 88e0d36bd90121595e5516c84f6ab61b546368fbd2d825b4aae70999c949649d
       OPENCODE_VERSION: v1.18.23
       OPENCODE_ARCHIVE_SHA256: ab7015cd8113e011a461f30a0c2b77d8299a144ff688cb62e93e8802835d7288
-      OPENCODE_OLLAMA_MODEL: qwen3:4b-instruct
+      OPENCODE_OLLAMA_MODEL: functiongemma:270m
     steps:
       - name: Checkout trusted Factory main
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -60,9 +60,9 @@ jobs:
       - name: Start loopback Ollama and pull the fixed tool-use model
         shell: bash
         env:
-          # Keep a bounded 16K window for the guarded OpenCode request. The
-          # Qwen3 4B Instruct Ollama template explicitly supports tool calls.
-          OLLAMA_CONTEXT_LENGTH: "16384"
+          # FunctionGemma is a 270M single-turn function-calling model with a
+          # 32K window. Keep the live Factory request bounded to 8K.
+          OLLAMA_CONTEXT_LENGTH: "8192"
         run: |
           set -euo pipefail
           nohup ollama serve > "${RUNNER_TEMP}/ollama.log" 2>&1 &
@@ -96,6 +96,7 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           mkdir -p "${RUNNER_TEMP}/opencode-profile"
+          mkdir -p "$(dirname "${PILOT_FILE}")"
 
           export PILOT_BRANCH PILOT_FILE
           python - <<'PY'
@@ -120,13 +121,13 @@ jobs:
               "working_branch": os.environ["PILOT_BRANCH"],
               "paths": [target],
               "instruction": (
-                  f"Use the file edit/write tool now. Create exactly {target}.\n"
+                  f"Call the write tool now. Create exactly {target}.\n"
                   "Write this exact content, including the line breaks and final newline:\n"
                   f"{expected}"
-                  "Do not edit any other file. Do not run shell commands. Do not only explain what you would do."
+                  "Do not edit any other file. Do not run shell commands. Return after the write tool succeeds."
               ),
               "allowed_commands": [],
-              "timeout_seconds": 1500,
+              "timeout_seconds": 600,
               "remote": "origin",
           }
           Path(os.environ["RUNNER_TEMP"], "provider-task.json").write_text(
