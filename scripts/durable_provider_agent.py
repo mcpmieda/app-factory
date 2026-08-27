@@ -217,7 +217,7 @@ def run_command(args: argparse.Namespace) -> int:
     )
 
     args.provider = lease.provider_id
-    adapter = build_adapter(args)
+    adapter = build_adapter(args, request)
     if adapter.provider_id != lease.provider_id:
         raise ValueError("configured adapter does not match the trusted lease provider")
 
