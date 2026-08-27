@@ -398,7 +398,7 @@ class RequiredToolProxyHandler(BaseHTTPRequestHandler):
 
     def _send_upstream_error(self, status: int) -> None:
         body = b'{"error":"local Ollama upstream failed"}\n'
-        self.send_response(502)
+        self.send_response(status)
         self.send_header("Content-Type", "application/json")
         self.send_header("Content-Length", str(len(body)))
         self.send_header("Connection", "close")
@@ -407,32 +407,41 @@ class RequiredToolProxyHandler(BaseHTTPRequestHandler):
         self.close_connection = True
 
 
-def parse_arguments() -> argparse.Namespace:
-    parser = argparse.ArgumentParser(description="Loopback required-tool proxy for OpenCode/Ollama")
-    parser.add_argument("--listen-host", default="127.0.0.1")
-    parser.add_argument("--listen-port", type=int, default=11435)
-    parser.add_argument("--upstream", default="http://127.0.0.1:11434")
-    parser.add_argument("--expected-tool", required=True)
-    parser.add_argument("--audit-file")
-    return parser.parse_args()
-
-
-def main() -> None:
-    args = parse_arguments()
-    audit_file = Path(args.audit_file).resolve() if args.audit_file else None
-    server = RequiredToolProxyServer(
-        (args.listen_host, args.listen_port),
-        upstream_base_url=args.upstream,
-        expected_tool=args.expected_tool,
-        audit_file=audit_file,
+def parser() -> argparse.ArgumentParser:
+    item = argparse.ArgumentParser(
+        description="Fail-closed loopback bridge for one native Ollama tool call and terminal result"
     )
+    item.add_argument("--listen-host", default="127.0.0.1")
+    item.add_argument("--listen-port", type=int, default=11435)
+    item.add_argument("--upstream", default="http://127.0.0.1:11434")
+    item.add_argument("--expected-tool", required=True)
+    item.add_argument("--audit-file", type=Path)
+    return item
+
+
+def main() -> int:
+    args = parser().parse_args()
     try:
+        if not 1 <= args.listen_port <= 65535:
+            raise ValueError("listen port must be from 1 through 65535")
+        server = RequiredToolProxyServer(
+            (args.listen_host, args.listen_port),
+            upstream_base_url=args.upstream,
+            expected_tool=args.expected_tool,
+            audit_file=args.audit_file,
+        )
+        print(
+            f"required-tool proxy listening on {args.listen_host}:{server.server_port}; "
+            "upstream=ollama-native-chat/loopback; response=canonical-sse; post-tool=single-stop; "
+            f"generation=deterministic/{TOOL_GENERATION_MAX_TOKENS}; payload logging=disabled",
+            flush=True,
+        )
         server.serve_forever(poll_interval=0.25)
-    except KeyboardInterrupt:
-        pass
-    finally:
-        server.server_close()
+        return 0
+    except (OSError, ValueError) as error:
+        print(f"required-tool proxy failed: {error}", file=sys.stderr)
+        return 2
 
 
 if __name__ == "__main__":
-    main()
+    raise SystemExit(main())
