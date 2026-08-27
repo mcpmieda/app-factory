@@ -25,6 +25,14 @@ from engine.ollama_tool_proxy import (  # noqa: E402
 
 MAX_REQUEST_BYTES = 2 * 1024 * 1024
 SENSITIVE_HEADERS = frozenset({"authorization", "proxy-authorization", "x-api-key"})
+REJECT_REASONS = frozenset({
+    "method",
+    "path",
+    "sensitive_header",
+    "content_type",
+    "content_length",
+    "tool_contract",
+})
 
 
 @dataclass
@@ -36,6 +44,7 @@ class ProxyAudit:
     forwarded: int = 0
     upstream_errors: int = 0
     last_status: int | None = None
+    last_reject_reason: str | None = None
     _lock: threading.Lock = field(default_factory=threading.Lock, repr=False)
 
     def snapshot(self) -> dict[str, Any]:
@@ -49,13 +58,14 @@ class ProxyAudit:
                 "forwarded": self.forwarded,
                 "upstream_errors": self.upstream_errors,
                 "last_status": self.last_status,
+                "last_reject_reason": self.last_reject_reason,
             }
 
-    def mutate(self, **increments: int) -> None:
+    def mutate(self, **updates: Any) -> None:
         with self._lock:
-            for name, value in increments.items():
-                if name == "last_status":
-                    self.last_status = value
+            for name, value in updates.items():
+                if name in {"last_status", "last_reject_reason"}:
+                    setattr(self, name, value)
                 else:
                     setattr(self, name, getattr(self, name) + value)
 
@@ -104,8 +114,14 @@ class RequiredToolProxyHandler(BaseHTTPRequestHandler):
     def log_message(self, format: str, *args: object) -> None:  # noqa: A002
         return
 
-    def _reject(self, status: int = 400) -> None:
-        self.server.audit.mutate(rejected=1, last_status=status)
+    def _reject(self, status: int, reason: str) -> None:
+        if reason not in REJECT_REASONS:
+            reason = "tool_contract"
+        self.server.audit.mutate(
+            rejected=1,
+            last_status=status,
+            last_reject_reason=reason,
+        )
         write_audit(self.server.audit_file, self.server.audit)
         body = b'{"error":"required-tool proxy rejected request"}\n'
         self.send_response(status)
@@ -117,25 +133,25 @@ class RequiredToolProxyHandler(BaseHTTPRequestHandler):
         self.close_connection = True
 
     def do_GET(self) -> None:  # noqa: N802
-        self._reject(405)
+        self._reject(405, "method")
 
     def do_POST(self) -> None:  # noqa: N802
         if self.path != "/v1/chat/completions":
-            self._reject(404)
+            self._reject(404, "path")
             return
         if any(name.lower() in SENSITIVE_HEADERS for name in self.headers.keys()):
-            self._reject(400)
+            self._reject(400, "sensitive_header")
             return
         if self.headers.get_content_type() != "application/json":
-            self._reject(415)
+            self._reject(415, "content_type")
             return
         try:
             length = int(self.headers.get("Content-Length", "0"))
         except ValueError:
-            self._reject(400)
+            self._reject(400, "content_length")
             return
         if length <= 0 or length > MAX_REQUEST_BYTES:
-            self._reject(413)
+            self._reject(413, "content_length")
             return
         try:
             payload = json.loads(self.rfile.read(length))
@@ -146,11 +162,13 @@ class RequiredToolProxyHandler(BaseHTTPRequestHandler):
                 payload, expected_tool=self.server.expected_tool
             )
         except (UnicodeDecodeError, json.JSONDecodeError, ValueError):
-            self._reject(400)
+            self._reject(400, "tool_contract")
             return
 
         self.server.audit.mutate(
-            accepted=1, rewritten=1 if original_choice != "required" else 0
+            accepted=1,
+            rewritten=1 if original_choice != "required" else 0,
+            last_reject_reason=None,
         )
         write_audit(self.server.audit_file, self.server.audit)
         request = urllib.request.Request(
