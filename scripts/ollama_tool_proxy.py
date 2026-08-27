@@ -2,13 +2,13 @@
 from __future__ import annotations
 
 import argparse
+import http.client
 import json
 import os
 import sys
 import tempfile
 import threading
-import urllib.error
-import urllib.request
+import urllib.parse
 from dataclasses import dataclass, field
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
@@ -177,6 +177,12 @@ class RequiredToolProxyServer(ThreadingHTTPServer):
             raise ValueError("tool proxy must bind to loopback")
         self.upstream_base_url = validate_loopback_base_url(upstream_base_url)
         self.upstream_native_chat_url = native_chat_url(self.upstream_base_url)
+        parsed_upstream = urllib.parse.urlparse(self.upstream_native_chat_url)
+        if parsed_upstream.hostname not in {"127.0.0.1", "localhost", "::1"}:
+            raise ValueError("validated tool proxy upstream stopped being loopback")
+        self.upstream_host = parsed_upstream.hostname
+        self.upstream_port = parsed_upstream.port or 80
+        self.upstream_path = parsed_upstream.path
         self.expected_tool = expected_tool
         if not expected_tool or any(char.isspace() for char in expected_tool):
             raise ValueError("expected tool name is invalid")
@@ -305,24 +311,33 @@ class RequiredToolProxyHandler(BaseHTTPRequestHandler):
             last_response_contract_stage=None,
         )
         write_audit(self.server.audit_file, self.server.audit)
-        request = urllib.request.Request(
-            self.server.upstream_native_chat_url,
-            data=json.dumps(native_request, separators=(",", ":")).encode("utf-8"),
-            method="POST",
-            headers={"Content-Type": "application/json", "Accept": "application/json"},
+        body = json.dumps(native_request, separators=(",", ":")).encode("utf-8")
+        connection = http.client.HTTPConnection(
+            self.server.upstream_host,
+            self.server.upstream_port,
+            timeout=900,
         )
         try:
-            response = urllib.request.urlopen(request, timeout=900)
-        except urllib.error.HTTPError as error:
-            self.server.audit.mutate(
-                upstream_errors=1,
-                last_status=error.code,
-                last_response_contract_stage=None,
+            connection.request(
+                "POST",
+                self.server.upstream_path,
+                body=body,
+                headers={"Content-Type": "application/json", "Accept": "application/json"},
             )
-            write_audit(self.server.audit_file, self.server.audit)
-            self._send_upstream_error(error.code)
-            return
-        except (urllib.error.URLError, TimeoutError, OSError):
+            response = connection.getresponse()
+            status = int(response.status)
+            if status < 200 or status >= 300:
+                self.server.audit.mutate(
+                    upstream_errors=1,
+                    last_status=status,
+                    last_response_contract_stage=None,
+                )
+                write_audit(self.server.audit_file, self.server.audit)
+                self._send_upstream_error(status)
+                return
+            self.server.audit.mutate(forwarded=1, last_status=status)
+            raw_response = response.read(MAX_RESPONSE_BYTES + 1)
+        except (http.client.HTTPException, TimeoutError, OSError):
             self.server.audit.mutate(
                 upstream_errors=1,
                 last_status=502,
@@ -331,11 +346,9 @@ class RequiredToolProxyHandler(BaseHTTPRequestHandler):
             write_audit(self.server.audit_file, self.server.audit)
             self._send_upstream_error(502)
             return
+        finally:
+            connection.close()
 
-        with response:
-            status = int(response.status)
-            self.server.audit.mutate(forwarded=1, last_status=status)
-            raw_response = response.read(MAX_RESPONSE_BYTES + 1)
         if len(raw_response) > MAX_RESPONSE_BYTES:
             self.server.audit.mutate(
                 upstream_errors=1,
@@ -385,7 +398,7 @@ class RequiredToolProxyHandler(BaseHTTPRequestHandler):
 
     def _send_upstream_error(self, status: int) -> None:
         body = b'{"error":"local Ollama upstream failed"}\n'
-        self.send_response(status)
+        self.send_response(502)
         self.send_header("Content-Type", "application/json")
         self.send_header("Content-Length", str(len(body)))
         self.send_header("Connection", "close")
@@ -394,41 +407,32 @@ class RequiredToolProxyHandler(BaseHTTPRequestHandler):
         self.close_connection = True
 
 
-def parser() -> argparse.ArgumentParser:
-    item = argparse.ArgumentParser(
-        description="Fail-closed loopback bridge for one native Ollama tool call and terminal result"
+def parse_arguments() -> argparse.Namespace:
+    parser = argparse.ArgumentParser(description="Loopback required-tool proxy for OpenCode/Ollama")
+    parser.add_argument("--listen-host", default="127.0.0.1")
+    parser.add_argument("--listen-port", type=int, default=11435)
+    parser.add_argument("--upstream", default="http://127.0.0.1:11434")
+    parser.add_argument("--expected-tool", required=True)
+    parser.add_argument("--audit-file")
+    return parser.parse_args()
+
+
+def main() -> None:
+    args = parse_arguments()
+    audit_file = Path(args.audit_file).resolve() if args.audit_file else None
+    server = RequiredToolProxyServer(
+        (args.listen_host, args.listen_port),
+        upstream_base_url=args.upstream,
+        expected_tool=args.expected_tool,
+        audit_file=audit_file,
     )
-    item.add_argument("--listen-host", default="127.0.0.1")
-    item.add_argument("--listen-port", type=int, default=11435)
-    item.add_argument("--upstream", default="http://127.0.0.1:11434")
-    item.add_argument("--expected-tool", required=True)
-    item.add_argument("--audit-file", type=Path)
-    return item
-
-
-def main() -> int:
-    args = parser().parse_args()
     try:
-        if not 1 <= args.listen_port <= 65535:
-            raise ValueError("listen port must be from 1 through 65535")
-        server = RequiredToolProxyServer(
-            (args.listen_host, args.listen_port),
-            upstream_base_url=args.upstream,
-            expected_tool=args.expected_tool,
-            audit_file=args.audit_file,
-        )
-        print(
-            f"required-tool proxy listening on {args.listen_host}:{server.server_port}; "
-            "upstream=ollama-native-chat/loopback; response=canonical-sse; post-tool=single-stop; "
-            f"generation=deterministic/{TOOL_GENERATION_MAX_TOKENS}; payload logging=disabled",
-            flush=True,
-        )
         server.serve_forever(poll_interval=0.25)
-        return 0
-    except (OSError, ValueError) as error:
-        print(f"required-tool proxy failed: {error}", file=sys.stderr)
-        return 2
+    except KeyboardInterrupt:
+        pass
+    finally:
+        server.server_close()
 
 
 if __name__ == "__main__":
-    raise SystemExit(main())
+    main()
