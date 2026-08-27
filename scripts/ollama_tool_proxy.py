@@ -19,11 +19,13 @@ if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
 from engine.ollama_tool_proxy import (  # noqa: E402
+    canonical_single_tool_sse,
     rewrite_single_tool_request,
     validate_loopback_base_url,
 )
 
 MAX_REQUEST_BYTES = 2 * 1024 * 1024
+MAX_RESPONSE_BYTES = 2 * 1024 * 1024
 SENSITIVE_HEADERS = frozenset({"authorization", "proxy-authorization", "x-api-key"})
 TOOL_CONTRACT_REASON_BY_MESSAGE = {
     "chat request must be a JSON object": "tool_payload",
@@ -40,6 +42,9 @@ REJECT_REASONS = frozenset({
     "content_type",
     "content_length",
     "json_payload",
+    "stream_mode",
+    "response_size",
+    "response_contract",
     *TOOL_CONTRACT_REASON_BY_MESSAGE.values(),
     "tool_contract",
 })
@@ -55,6 +60,8 @@ class ProxyAudit:
     upstream_errors: int = 0
     tools_received: int = 0
     tools_discarded: int = 0
+    upstream_tool_calls: int = 0
+    responses_normalized: int = 0
     last_status: int | None = None
     last_reject_reason: str | None = None
     _lock: threading.Lock = field(default_factory=threading.Lock, repr=False)
@@ -71,6 +78,8 @@ class ProxyAudit:
                 "upstream_errors": self.upstream_errors,
                 "tools_received": self.tools_received,
                 "tools_discarded": self.tools_discarded,
+                "upstream_tool_calls": self.upstream_tool_calls,
+                "responses_normalized": self.responses_normalized,
                 "last_status": self.last_status,
                 "last_reject_reason": self.last_reject_reason,
             }
@@ -173,10 +182,12 @@ class RequiredToolProxyHandler(BaseHTTPRequestHandler):
         except (UnicodeDecodeError, json.JSONDecodeError):
             self._reject(400, "json_payload")
             return
-        original_choice = (
-            payload.get("tool_choice", "auto") if isinstance(payload, dict) else None
-        )
-        tools = payload.get("tools") if isinstance(payload, dict) else None
+        if not isinstance(payload, dict) or payload.get("stream") is not True:
+            self._reject(400, "stream_mode")
+            return
+
+        original_choice = payload.get("tool_choice", "auto")
+        tools = payload.get("tools")
         received_tool_count = len(tools) if isinstance(tools, list) else 0
         try:
             rewritten = rewrite_single_tool_request(
@@ -190,9 +201,11 @@ class RequiredToolProxyHandler(BaseHTTPRequestHandler):
             return
 
         retained_tool_count = len(rewritten.get("tools", []))
+        rewritten["stream"] = False
+        rewritten.pop("stream_options", None)
         self.server.audit.mutate(
             accepted=1,
-            rewritten=1 if original_choice != "required" or received_tool_count != 1 else 0,
+            rewritten=1,
             tools_received=received_tool_count,
             tools_discarded=max(received_tool_count - retained_tool_count, 0),
             last_reject_reason=None,
@@ -202,10 +215,7 @@ class RequiredToolProxyHandler(BaseHTTPRequestHandler):
             f"{self.server.upstream_base_url}/chat/completions",
             data=json.dumps(rewritten, separators=(",", ":")).encode("utf-8"),
             method="POST",
-            headers={
-                "Content-Type": "application/json",
-                "Accept": self.headers.get("Accept", "application/json"),
-            },
+            headers={"Content-Type": "application/json", "Accept": "application/json"},
         )
         try:
             response = urllib.request.urlopen(request, timeout=900)
@@ -223,21 +233,47 @@ class RequiredToolProxyHandler(BaseHTTPRequestHandler):
         with response:
             status = int(response.status)
             self.server.audit.mutate(forwarded=1, last_status=status)
-            write_audit(self.server.audit_file, self.server.audit)
-            self.send_response(status)
-            self.send_header(
-                "Content-Type", response.headers.get("Content-Type", "application/json")
+            raw_response = response.read(MAX_RESPONSE_BYTES + 1)
+        if len(raw_response) > MAX_RESPONSE_BYTES:
+            self.server.audit.mutate(
+                upstream_errors=1,
+                last_status=502,
+                last_reject_reason="response_size",
             )
-            self.send_header("Cache-Control", "no-store")
-            self.send_header("Connection", "close")
-            self.end_headers()
-            while True:
-                chunk = response.read(64 * 1024)
-                if not chunk:
-                    break
-                self.wfile.write(chunk)
-                self.wfile.flush()
-            self.close_connection = True
+            write_audit(self.server.audit_file, self.server.audit)
+            self._send_upstream_error(502)
+            return
+        try:
+            completion = json.loads(raw_response)
+            event_stream = canonical_single_tool_sse(
+                completion, expected_tool=self.server.expected_tool
+            )
+        except (UnicodeDecodeError, json.JSONDecodeError, ValueError):
+            self.server.audit.mutate(
+                upstream_errors=1,
+                last_status=502,
+                last_reject_reason="response_contract",
+            )
+            write_audit(self.server.audit_file, self.server.audit)
+            self._send_upstream_error(502)
+            return
+
+        self.server.audit.mutate(
+            upstream_tool_calls=1,
+            responses_normalized=1,
+            last_status=200,
+            last_reject_reason=None,
+        )
+        write_audit(self.server.audit_file, self.server.audit)
+        self.send_response(200)
+        self.send_header("Content-Type", "text/event-stream; charset=utf-8")
+        self.send_header("Cache-Control", "no-store")
+        self.send_header("Content-Length", str(len(event_stream)))
+        self.send_header("Connection", "close")
+        self.end_headers()
+        self.wfile.write(event_stream)
+        self.wfile.flush()
+        self.close_connection = True
 
     def _send_upstream_error(self, status: int) -> None:
         body = b'{"error":"local Ollama upstream failed"}\n'
@@ -252,7 +288,7 @@ class RequiredToolProxyHandler(BaseHTTPRequestHandler):
 
 def parser() -> argparse.ArgumentParser:
     item = argparse.ArgumentParser(
-        description="Fail-closed loopback proxy that filters to one expected OpenAI function tool"
+        description="Fail-closed loopback proxy for one canonical required tool call"
     )
     item.add_argument("--listen-host", default="127.0.0.1")
     item.add_argument("--listen-port", type=int, default=11435)
@@ -275,7 +311,7 @@ def main() -> int:
         )
         print(
             f"required-tool proxy listening on {args.listen_host}:{server.server_port}; "
-            "upstream=loopback; payload logging=disabled",
+            "upstream=loopback; response=canonical-sse; payload logging=disabled",
             flush=True,
         )
         server.serve_forever(poll_interval=0.25)
