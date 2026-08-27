@@ -10,15 +10,15 @@ permissions:
   contents: write
 
 concurrency:
-  group: ${{ (github.event_name == 'workflow_dispatch' || (github.event_name == 'issue_comment' && github.event.issue.number == 71 && github.event.comment.body == '/run-opencode-v2')) && 'live-opencode-ollama-provider-pilot' || format('live-opencode-ollama-noop-{0}', github.run_id) }}
-  cancel-in-progress: ${{ github.event_name == 'workflow_dispatch' || (github.event_name == 'issue_comment' && github.event.issue.number == 71 && github.event.comment.body == '/run-opencode-v2') }}
+  group: ${{ (github.event_name == 'workflow_dispatch' || (github.event_name == 'issue_comment' && github.event.issue.number == 76 && github.event.comment.body == '/run-opencode-v3')) && 'live-opencode-ollama-provider-pilot' || format('live-opencode-ollama-noop-{0}', github.run_id) }}
+  cancel-in-progress: ${{ github.event_name == 'workflow_dispatch' || (github.event_name == 'issue_comment' && github.event.issue.number == 76 && github.event.comment.body == '/run-opencode-v3') }}
 
 jobs:
   live-pilot:
     if: >-
       github.actor == github.repository_owner &&
       ((github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/main') ||
-       (github.event_name == 'issue_comment' && github.event.issue.number == 71 && github.event.comment.body == '/run-opencode-v2'))
+       (github.event_name == 'issue_comment' && github.event.issue.number == 76 && github.event.comment.body == '/run-opencode-v3'))
     runs-on: ubuntu-24.04
     timeout-minutes: 45
     env:
@@ -26,7 +26,7 @@ jobs:
       OLLAMA_ARCHIVE_SHA256: 88e0d36bd90121595e5516c84f6ab61b546368fbd2d825b4aae70999c949649d
       OPENCODE_VERSION: v1.18.23
       OPENCODE_ARCHIVE_SHA256: ab7015cd8113e011a461f30a0c2b77d8299a144ff688cb62e93e8802835d7288
-      OPENCODE_OLLAMA_MODEL: llama3-groq-tool-use:8b
+      OPENCODE_OLLAMA_MODEL: qwen3:4b
     steps:
       - name: Checkout trusted Factory main
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -60,9 +60,9 @@ jobs:
       - name: Start loopback Ollama and pull the fixed tool-use model
         shell: bash
         env:
-          # The selected tool-use model has an 8K native context window. Keep the
-          # full window available so OpenCode's guarded tool schema and request fit.
-          OLLAMA_CONTEXT_LENGTH: "8192"
+          # Keep a bounded 16K window for the guarded OpenCode request. Qwen3:4b
+          # is published by Ollama with substantially more native context capacity.
+          OLLAMA_CONTEXT_LENGTH: "16384"
         run: |
           set -euo pipefail
           nohup ollama serve > "${RUNNER_TEMP}/ollama.log" 2>&1 &
