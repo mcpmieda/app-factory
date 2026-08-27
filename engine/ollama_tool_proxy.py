@@ -28,6 +28,12 @@ def validate_loopback_base_url(value: str) -> str:
     return raw
 
 
+def native_chat_url(value: str) -> str:
+    raw = validate_loopback_base_url(value)
+    parsed = urllib.parse.urlparse(raw)
+    return urllib.parse.urlunparse(parsed._replace(path="/api/chat"))
+
+
 def rewrite_single_tool_request(
     payload: Mapping[str, Any], *, expected_tool: str
 ) -> dict[str, Any]:
@@ -59,13 +65,7 @@ def rewrite_single_tool_request(
 
     rewritten = dict(payload)
     rewritten["tools"] = [dict(expected_matches[0])]
-    # Ollama's OpenAI-compatible endpoint does not guarantee enforcement of
-    # tool_choice. Keep it as a compatibility hint, but completion is accepted only
-    # after a real structured tool call passes canonical_single_tool_sse().
     rewritten["tool_choice"] = "required"
-    # FunctionGemma can otherwise wander for thousands of tokens on a malformed
-    # tool turn. Make local inference reproducible and tightly bounded without ever
-    # fabricating a tool call or its arguments.
     rewritten["temperature"] = TOOL_GENERATION_TEMPERATURE
     rewritten["seed"] = TOOL_GENERATION_SEED
     rewritten["max_tokens"] = TOOL_GENERATION_MAX_TOKENS
@@ -73,15 +73,96 @@ def rewrite_single_tool_request(
     return rewritten
 
 
+def native_single_tool_request(
+    payload: Mapping[str, Any], *, expected_tool: str
+) -> dict[str, Any]:
+    """Translate one validated OpenAI-compatible request to Ollama native chat.
+
+    Only protocol shape and deterministic generation options change. Messages and the
+    retained tool schema come from the real OpenCode request; no task content or tool
+    arguments are invented by the shim.
+    """
+    filtered = rewrite_single_tool_request(payload, expected_tool=expected_tool)
+    model = filtered.get("model")
+    if not isinstance(model, str) or not model.strip():
+        raise ValueError("native chat request requires a model")
+
+    source_messages = filtered.get("messages")
+    if not isinstance(source_messages, list) or not source_messages:
+        raise ValueError("native chat request requires messages")
+    native_messages: list[dict[str, str]] = []
+    for message in source_messages:
+        if not isinstance(message, Mapping):
+            raise ValueError("native chat request messages must be objects")
+        role = message.get("role")
+        content = message.get("content")
+        if role not in {"system", "user", "assistant"}:
+            raise ValueError("native chat request contains an unsupported message role")
+        if not isinstance(content, str):
+            raise ValueError("native chat request message content must be text")
+        native_messages.append({"role": role, "content": content})
+
+    return {
+        "model": model,
+        "messages": native_messages,
+        "tools": filtered["tools"],
+        "stream": False,
+        "options": {
+            "temperature": TOOL_GENERATION_TEMPERATURE,
+            "seed": TOOL_GENERATION_SEED,
+            "num_predict": TOOL_GENERATION_MAX_TOKENS,
+        },
+    }
+
+
+def _tool_sse(
+    *,
+    model: str,
+    completion_id: str,
+    call_id: str,
+    expected_tool: str,
+    argument_text: str,
+    usage: Mapping[str, Any] | None = None,
+    created: int | None = None,
+) -> bytes:
+    chunk: dict[str, Any] = {
+        "id": completion_id,
+        "object": "chat.completion.chunk",
+        "model": model,
+        "choices": [
+            {
+                "index": 0,
+                "delta": {
+                    "role": "assistant",
+                    "content": "",
+                    "tool_calls": [
+                        {
+                            "index": 0,
+                            "id": call_id,
+                            "type": "function",
+                            "function": {
+                                "name": expected_tool,
+                                "arguments": argument_text,
+                            },
+                        }
+                    ],
+                },
+                "finish_reason": "tool_calls",
+            }
+        ],
+    }
+    if created is not None:
+        chunk["created"] = created
+    if usage:
+        chunk["usage"] = dict(usage)
+    event = json.dumps(chunk, ensure_ascii=False, separators=(",", ":"))
+    return f"data: {event}\n\ndata: [DONE]\n\n".encode("utf-8")
+
+
 def canonical_single_tool_sse(
     payload: Mapping[str, Any], *, expected_tool: str
 ) -> bytes:
-    """Validate one complete Ollama/OpenAI tool call and emit one canonical SSE event.
-
-    The function changes only transport shape. It never invents a tool name, tool-call
-    id, or arguments. Object-valued arguments are serialized losslessly as JSON for
-    the OpenAI-compatible streaming schema expected by the client.
-    """
+    """Validate one complete OpenAI-shaped tool call and emit canonical SSE."""
     if not isinstance(payload, Mapping):
         raise ValueError("completion response must be a JSON object")
     completion_id = payload.get("id")
@@ -128,50 +209,73 @@ def canonical_single_tool_sse(
     else:
         raise ValueError("completion response tool arguments must be an object or JSON string")
 
-    chunk: dict[str, Any] = {
-        "id": completion_id,
-        "object": "chat.completion.chunk",
-        "model": model,
-        "choices": [
-            {
-                "index": 0,
-                "delta": {
-                    "role": "assistant",
-                    "content": "",
-                    "tool_calls": [
-                        {
-                            "index": 0,
-                            "id": call_id,
-                            "type": "function",
-                            "function": {
-                                "name": expected_tool,
-                                "arguments": argument_text,
-                            },
-                        }
-                    ],
-                },
-                "finish_reason": "tool_calls",
-            }
-        ],
-    }
     created = payload.get("created")
-    if isinstance(created, int) and not isinstance(created, bool):
-        chunk["created"] = created
+    safe_created = created if isinstance(created, int) and not isinstance(created, bool) else None
     usage = payload.get("usage")
-    if isinstance(usage, Mapping):
-        chunk["usage"] = dict(usage)
+    safe_usage = usage if isinstance(usage, Mapping) else None
+    return _tool_sse(
+        model=model,
+        completion_id=completion_id,
+        call_id=call_id,
+        expected_tool=expected_tool,
+        argument_text=argument_text,
+        usage=safe_usage,
+        created=safe_created,
+    )
 
-    event = json.dumps(chunk, ensure_ascii=False, separators=(",", ":"))
-    return f"data: {event}\n\ndata: [DONE]\n\n".encode("utf-8")
+
+def canonical_native_tool_sse(
+    payload: Mapping[str, Any], *, expected_tool: str
+) -> bytes:
+    """Validate one real native Ollama tool call and translate only transport metadata."""
+    if not isinstance(payload, Mapping):
+        raise ValueError("native response must be a JSON object")
+    model = payload.get("model")
+    if not isinstance(model, str) or not model.strip():
+        raise ValueError("native response requires a model")
+    if payload.get("done") is not True:
+        raise ValueError("native response must be complete")
+    message = payload.get("message")
+    if not isinstance(message, Mapping):
+        raise ValueError("native response requires an assistant message")
+    if message.get("role") != "assistant":
+        raise ValueError("native response message role must be assistant")
+    tool_calls = message.get("tool_calls")
+    if not isinstance(tool_calls, list) or len(tool_calls) != 1:
+        raise ValueError("native response requires exactly one tool call")
+    tool_call = tool_calls[0]
+    if not isinstance(tool_call, Mapping):
+        raise ValueError("native response tool call must be an object")
+    function = tool_call.get("function")
+    if not isinstance(function, Mapping) or function.get("name") != expected_tool:
+        raise ValueError("native response returned an unexpected function tool")
+    arguments = function.get("arguments")
+    if not isinstance(arguments, Mapping):
+        raise ValueError("native response tool arguments must be an object")
+    argument_text = json.dumps(arguments, ensure_ascii=False, separators=(",", ":"))
+
+    prompt_tokens = payload.get("prompt_eval_count")
+    completion_tokens = payload.get("eval_count")
+    usage: dict[str, int] = {}
+    if isinstance(prompt_tokens, int) and not isinstance(prompt_tokens, bool):
+        usage["prompt_tokens"] = prompt_tokens
+    if isinstance(completion_tokens, int) and not isinstance(completion_tokens, bool):
+        usage["completion_tokens"] = completion_tokens
+    if "prompt_tokens" in usage and "completion_tokens" in usage:
+        usage["total_tokens"] = usage["prompt_tokens"] + usage["completion_tokens"]
+
+    return _tool_sse(
+        model=model,
+        completion_id="chatcmpl-factory-native-tool",
+        call_id="call_factory_native_tool_0",
+        expected_tool=expected_tool,
+        argument_text=argument_text,
+        usage=usage or None,
+    )
 
 
 def canonical_stop_sse(model: str) -> bytes:
-    """Return a content-free terminal SSE after a verified tool result.
-
-    This acknowledgement carries no task content and no tool call. It exists only to
-    terminate the OpenCode agent loop after the proxy has already verified one real
-    expected tool call and observed the client's corresponding tool-result turn.
-    """
+    """Return a content-free terminal SSE after a verified tool result."""
     clean_model = str(model or "").strip()
     if not clean_model:
         raise ValueError("post-tool stop requires a model")
