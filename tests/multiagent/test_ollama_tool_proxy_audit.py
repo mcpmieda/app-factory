@@ -2,7 +2,11 @@ from __future__ import annotations
 
 import unittest
 
-from scripts.ollama_tool_proxy import ProxyAudit, REJECT_REASONS
+from scripts.ollama_tool_proxy import (
+    ProxyAudit,
+    REJECT_REASONS,
+    TOOL_CONTRACT_REASON_BY_MESSAGE,
+)
 
 
 class OllamaToolProxyAuditTests(unittest.TestCase):
@@ -15,14 +19,32 @@ class OllamaToolProxyAuditTests(unittest.TestCase):
                 "sensitive_header",
                 "content_type",
                 "content_length",
+                "json_payload",
+                "tool_payload",
+                "tool_messages",
+                "tool_count",
+                "tool_type",
+                "tool_name",
+                "tool_choice",
                 "tool_contract",
             },
         )
+        self.assertEqual(
+            set(TOOL_CONTRACT_REASON_BY_MESSAGE.values()),
+            {
+                "tool_payload",
+                "tool_messages",
+                "tool_count",
+                "tool_type",
+                "tool_name",
+                "tool_choice",
+            },
+        )
         audit = ProxyAudit(expected_tool="write")
-        audit.mutate(rejected=1, last_status=400, last_reject_reason="tool_contract")
+        audit.mutate(rejected=1, last_status=400, last_reject_reason="tool_count")
         snapshot = audit.snapshot()
 
-        self.assertEqual(snapshot["last_reject_reason"], "tool_contract")
+        self.assertEqual(snapshot["last_reject_reason"], "tool_count")
         self.assertEqual(snapshot["rejected"], 1)
         self.assertNotIn("prompt", snapshot)
         self.assertNotIn("headers", snapshot)
