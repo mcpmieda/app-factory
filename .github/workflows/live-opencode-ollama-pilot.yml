@@ -10,15 +10,15 @@ permissions:
   contents: write
 
 concurrency:
-  group: ${{ (github.event_name == 'workflow_dispatch' || (github.event_name == 'issue_comment' && github.event.issue.number == 91 && github.event.comment.body == '/run-opencode-v8')) && 'live-opencode-ollama-provider-pilot' || format('live-opencode-ollama-noop-{0}', github.run_id) }}
-  cancel-in-progress: ${{ github.event_name == 'workflow_dispatch' || (github.event_name == 'issue_comment' && github.event.issue.number == 91 && github.event.comment.body == '/run-opencode-v8') }}
+  group: ${{ (github.event_name == 'workflow_dispatch' || (github.event_name == 'issue_comment' && github.event.issue.number == 93 && github.event.comment.body == '/run-opencode-v9')) && 'live-opencode-ollama-provider-pilot' || format('live-opencode-ollama-noop-{0}', github.run_id) }}
+  cancel-in-progress: ${{ github.event_name == 'workflow_dispatch' || (github.event_name == 'issue_comment' && github.event.issue.number == 93 && github.event.comment.body == '/run-opencode-v9') }}
 
 jobs:
   live-pilot:
     if: >-
       github.actor == github.repository_owner &&
       ((github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/main') ||
-       (github.event_name == 'issue_comment' && github.event.issue.number == 91 && github.event.comment.body == '/run-opencode-v8'))
+       (github.event_name == 'issue_comment' && github.event.issue.number == 93 && github.event.comment.body == '/run-opencode-v9'))
     runs-on: ubuntu-24.04
     timeout-minutes: 30
     env:
@@ -54,7 +54,7 @@ jobs:
           echo "${tools_dir}/opencode" >> "${GITHUB_PATH}"
           echo "LD_LIBRARY_PATH=${tools_dir}/ollama/lib" >> "${GITHUB_ENV}"
 
-      - name: Start loopback Ollama and canonical tool-call proxy
+      - name: Start loopback Ollama and single-write terminal proxy
         shell: bash
         env:
           OLLAMA_CONTEXT_LENGTH: "8192"
@@ -83,7 +83,7 @@ jobs:
               except OSError:
                   time.sleep(1)
           else:
-              raise SystemExit("canonical tool proxy did not bind to loopback")
+              raise SystemExit("single-write terminal proxy did not bind to loopback")
           PY
           ollama list
           opencode --version
@@ -170,16 +170,18 @@ jobs:
               raise SystemExit("provider evidence content mismatch")
           audit = json.loads(Path(os.environ["RUNNER_TEMP"], "tool-proxy-audit.json").read_text())
           if (
-              audit["accepted"] < 1
-              or audit["forwarded"] < 1
+              audit["accepted"] != 1
+              or audit["forwarded"] != 1
               or audit["rejected"] != 0
               or audit["tools_received"] < 1
               or audit["upstream_tool_calls"] != 1
               or audit["responses_normalized"] != 1
+              or audit["post_tool_requests"] != 1
+              or audit["post_tool_completions"] != 1
               or audit["last_status"] != 200
               or audit["last_reject_reason"] is not None
           ):
-              raise SystemExit(f"unexpected canonical tool proxy audit counters: {audit}")
+              raise SystemExit(f"unexpected single-write terminal proxy audit counters: {audit}")
           PY
 
       - name: Confirm remote SHA and run exact-SHA Factory CI
