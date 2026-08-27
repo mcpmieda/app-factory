@@ -4,6 +4,7 @@ from __future__ import annotations
 import argparse
 import json
 import os
+import re
 import sys
 from pathlib import Path
 
@@ -19,6 +20,16 @@ from engine.provider_runtime import (  # noqa: E402
 )
 from engine.providers import AntigravityAdapter, OpenCodeOllamaAdapter  # noqa: E402
 
+DEFAULT_OPENCODE_AGENT = "factory-worker"
+AGENT_NAME_PATTERN = re.compile(r"^[A-Za-z0-9._/-]+$")
+DEFAULT_OPENCODE_AGENT_PROMPT = """You are a bounded App Factory worker.
+Follow the user task literally and make only the requested scoped change.
+Use only tools currently exposed by the runtime. Do not inspect unrelated files.
+Do not plan aloud. If a file change is requested, call the appropriate file tool immediately.
+Never use shell or Git unless that capability is explicitly exposed.
+Stop as soon as the requested scoped change succeeds.
+"""
+
 
 def emit(value: object) -> None:
     print(json.dumps(value, indent=2, ensure_ascii=False, sort_keys=True))
@@ -29,6 +40,44 @@ def load_request(path: Path) -> ProviderTaskRequest:
     if not isinstance(raw, dict):
         raise ValueError("provider request must be a JSON object")
     return ProviderTaskRequest.from_mapping(raw)
+
+
+def _prepare_default_opencode_agent(profile: Path, requested_agent: str | None) -> str:
+    """Create the trusted minimal OpenCode agent inside the isolated profile.
+
+    Explicit agent IDs remain supported for trusted operator use. Automatic workers
+    use a fixed profile-local agent so they do not inherit OpenCode's broad built-in
+    coding-agent system prompt. Permissions and visible tools remain controlled by
+    the adapter's injected runtime config; this file adds no authority.
+    """
+    if requested_agent:
+        raw_agent = requested_agent
+        agent = raw_agent.strip()
+        parts = agent.split("/")
+        if (
+            raw_agent != agent
+            or not AGENT_NAME_PATTERN.fullmatch(agent)
+            or agent.startswith(("/", "-"))
+            or agent.endswith(("/", "."))
+            or "//" in agent
+            or any(part in {"", ".", ".."} for part in parts)
+        ):
+            raise ValueError("invalid OpenCode agent identifier")
+        return agent
+
+    profile = profile.expanduser().resolve()
+    agent_dir = profile / "factory-config" / "agents"
+    agent_dir.mkdir(parents=True, exist_ok=True)
+    agent_file = agent_dir / f"{DEFAULT_OPENCODE_AGENT}.md"
+    agent_file.write_text(
+        "---\n"
+        "description: Bounded App Factory automatic worker\n"
+        "mode: primary\n"
+        "---\n"
+        f"{DEFAULT_OPENCODE_AGENT_PROMPT}",
+        encoding="utf-8",
+    )
+    return DEFAULT_OPENCODE_AGENT
 
 
 def parser() -> argparse.ArgumentParser:
@@ -95,11 +144,17 @@ def build_adapter(args: argparse.Namespace):
         if os.environ.get("OPENCODE_PROFILE_HOME")
         else None
     )
+    requested_agent = args.agent or os.environ.get("OPENCODE_AGENT") or None
+    agent = (
+        _prepare_default_opencode_agent(profile, requested_agent)
+        if profile is not None
+        else requested_agent
+    )
     return OpenCodeOllamaAdapter(
         model=args.model or os.environ.get("OPENCODE_OLLAMA_MODEL", ""),
         binary=args.binary or os.environ.get("OPENCODE_BIN", "opencode"),
         ollama_binary=args.ollama_binary or os.environ.get("OLLAMA_BIN", "ollama"),
-        agent=args.agent or os.environ.get("OPENCODE_AGENT") or None,
+        agent=agent,
         ollama_base_url=(
             args.ollama_base_url
             or os.environ.get("OLLAMA_BASE_URL", "http://localhost:11434/v1")
