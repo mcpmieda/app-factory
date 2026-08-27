@@ -155,8 +155,8 @@ class ProviderAdapterTests(unittest.TestCase):
             ).opencode_config(request)
         self.assertFalse(config["tools"]["bash"])
         self.assertTrue(config["tools"]["write"])
-        self.assertTrue(config["tools"]["edit"])
-        self.assertTrue(config["tools"]["read"])
+        self.assertFalse(config["tools"]["edit"])
+        self.assertFalse(config["tools"]["read"])
         self.assertFalse(config["tools"]["todowrite"])
         self.assertFalse(config["tools"]["lsp"])
 
