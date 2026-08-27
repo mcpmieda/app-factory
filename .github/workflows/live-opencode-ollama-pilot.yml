@@ -104,6 +104,12 @@ jobs:
           from pathlib import Path
 
           target = os.environ["PILOT_FILE"]
+          expected = (
+              "# OpenCode Ollama live provider evidence\n"
+              "Provider: opencode_ollama\n"
+              "Result: durable worker write succeeded\n"
+              "Production activation: not performed\n"
+          )
           request = {
               "run_id": f"opencode-ollama-live-{os.environ['GITHUB_RUN_ID']}",
               "task_id": "document-live-provider-evidence",
@@ -114,13 +120,10 @@ jobs:
               "working_branch": os.environ["PILOT_BRANCH"],
               "paths": [target],
               "instruction": (
-                  f"Use the file edit/write tool now. Create exactly {target}. "
-                  "The file must contain exactly these lines: "
-                  "# OpenCode Ollama live provider evidence; "
-                  "Provider: opencode_ollama; "
-                  "Result: durable worker write succeeded; "
-                  "Production activation: not performed. "
-                  "Do not edit any other file, do not run shell commands, and do not only explain what you would do."
+                  f"Use the file edit/write tool now. Create exactly {target}.\n"
+                  "Write this exact content, including the line breaks and final newline:\n"
+                  f"{expected}"
+                  "Do not edit any other file. Do not run shell commands. Do not only explain what you would do."
               ),
               "allowed_commands": [],
               "timeout_seconds": 1500,
@@ -128,6 +131,10 @@ jobs:
           }
           Path(os.environ["RUNNER_TEMP"], "provider-task.json").write_text(
               json.dumps(request, ensure_ascii=False, indent=2) + "\n",
+              encoding="utf-8",
+          )
+          Path(os.environ["RUNNER_TEMP"], "expected-content.txt").write_text(
+              expected,
               encoding="utf-8",
           )
           PY
@@ -158,6 +165,22 @@ jobs:
             > "${RUNNER_TEMP}/provider-result.json"
           cat "${RUNNER_TEMP}/provider-health.json"
           cat "${RUNNER_TEMP}/provider-result.json"
+
+      - name: Validate exact provider-authored evidence
+        shell: bash
+        env:
+          PILOT_FILE: ${{ steps.request.outputs.file }}
+        run: |
+          set -euo pipefail
+          python - <<'PY'
+          import os
+          from pathlib import Path
+
+          actual = Path(os.environ["PILOT_FILE"]).read_text(encoding="utf-8")
+          expected = Path(os.environ["RUNNER_TEMP"], "expected-content.txt").read_text(encoding="utf-8")
+          if actual != expected:
+              raise SystemExit("Provider evidence content did not match the immutable pilot contract.")
+          PY
 
       - name: Confirm remote SHA and run exact-SHA Factory CI
         shell: bash
