@@ -51,8 +51,17 @@ def _prepare_default_opencode_agent(profile: Path, requested_agent: str | None) 
     the adapter's injected runtime config; this file adds no authority.
     """
     if requested_agent:
-        agent = requested_agent.strip()
-        if not AGENT_NAME_PATTERN.fullmatch(agent) or agent.startswith(("/", "-")):
+        raw_agent = requested_agent
+        agent = raw_agent.strip()
+        parts = agent.split("/")
+        if (
+            raw_agent != agent
+            or not AGENT_NAME_PATTERN.fullmatch(agent)
+            or agent.startswith(("/", "-"))
+            or agent.endswith(("/", "."))
+            or "//" in agent
+            or any(part in {"", ".", ".."} for part in parts)
+        ):
             raise ValueError("invalid OpenCode agent identifier")
         return agent
 
