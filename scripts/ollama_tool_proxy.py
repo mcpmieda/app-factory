@@ -28,9 +28,9 @@ SENSITIVE_HEADERS = frozenset({"authorization", "proxy-authorization", "x-api-ke
 TOOL_CONTRACT_REASON_BY_MESSAGE = {
     "chat request must be a JSON object": "tool_payload",
     "chat request requires messages": "tool_messages",
-    "required-tool proxy accepts exactly one tool": "tool_count",
-    "required-tool proxy accepts one function tool": "tool_type",
-    "required-tool proxy received an unexpected function tool": "tool_name",
+    "required-tool proxy requires a non-empty tool list": "tool_count",
+    "required-tool proxy accepts only function tools": "tool_type",
+    "required-tool proxy requires exactly one expected function tool": "tool_name",
     "required-tool proxy rejects conflicting tool_choice": "tool_choice",
 }
 REJECT_REASONS = frozenset({
@@ -53,6 +53,8 @@ class ProxyAudit:
     rewritten: int = 0
     forwarded: int = 0
     upstream_errors: int = 0
+    tools_received: int = 0
+    tools_discarded: int = 0
     last_status: int | None = None
     last_reject_reason: str | None = None
     _lock: threading.Lock = field(default_factory=threading.Lock, repr=False)
@@ -67,6 +69,8 @@ class ProxyAudit:
                 "rewritten": self.rewritten,
                 "forwarded": self.forwarded,
                 "upstream_errors": self.upstream_errors,
+                "tools_received": self.tools_received,
+                "tools_discarded": self.tools_discarded,
                 "last_status": self.last_status,
                 "last_reject_reason": self.last_reject_reason,
             }
@@ -172,6 +176,8 @@ class RequiredToolProxyHandler(BaseHTTPRequestHandler):
         original_choice = (
             payload.get("tool_choice", "auto") if isinstance(payload, dict) else None
         )
+        tools = payload.get("tools") if isinstance(payload, dict) else None
+        received_tool_count = len(tools) if isinstance(tools, list) else 0
         try:
             rewritten = rewrite_single_tool_request(
                 payload, expected_tool=self.server.expected_tool
@@ -183,9 +189,12 @@ class RequiredToolProxyHandler(BaseHTTPRequestHandler):
             )
             return
 
+        retained_tool_count = len(rewritten.get("tools", []))
         self.server.audit.mutate(
             accepted=1,
-            rewritten=1 if original_choice != "required" else 0,
+            rewritten=1 if original_choice != "required" or received_tool_count != 1 else 0,
+            tools_received=received_tool_count,
+            tools_discarded=max(received_tool_count - retained_tool_count, 0),
             last_reject_reason=None,
         )
         write_audit(self.server.audit_file, self.server.audit)
@@ -243,7 +252,7 @@ class RequiredToolProxyHandler(BaseHTTPRequestHandler):
 
 def parser() -> argparse.ArgumentParser:
     item = argparse.ArgumentParser(
-        description="Fail-closed loopback proxy that requires one OpenAI function tool"
+        description="Fail-closed loopback proxy that filters to one expected OpenAI function tool"
     )
     item.add_argument("--listen-host", default="127.0.0.1")
     item.add_argument("--listen-port", type=int, default=11435)
