@@ -21,7 +21,7 @@ jobs:
       OLLAMA_ARCHIVE_SHA256: 88e0d36bd90121595e5516c84f6ab61b546368fbd2d825b4aae70999c949649d
       OPENCODE_VERSION: v1.18.23
       OPENCODE_ARCHIVE_SHA256: ab7015cd8113e011a461f30a0c2b77d8299a144ff688cb62e93e8802835d7288
-      OPENCODE_OLLAMA_MODEL: qwen2.5-coder:7b
+      OPENCODE_OLLAMA_MODEL: llama3-groq-tool-use:8b
     steps:
       - name: Checkout trusted Factory main
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -52,13 +52,12 @@ jobs:
           echo "${tools_dir}/opencode" >> "${GITHUB_PATH}"
           echo "LD_LIBRARY_PATH=${tools_dir}/ollama/lib" >> "${GITHUB_ENV}"
 
-      - name: Start loopback Ollama and pull the fixed small model
+      - name: Start loopback Ollama and pull the fixed tool-use model
         shell: bash
         env:
-          # OpenCode's guarded tool schema plus the task prompt exceeds Ollama's
-          # 4K default. Keep enough local context so the task instruction is not
-          # truncated before the model can act on it.
-          OLLAMA_CONTEXT_LENGTH: "16384"
+          # The selected tool-use model has an 8K native context window. Keep the
+          # full window available so OpenCode's guarded tool schema and request fit.
+          OLLAMA_CONTEXT_LENGTH: "8192"
         run: |
           set -euo pipefail
           nohup ollama serve > "${RUNNER_TEMP}/ollama.log" 2>&1 &
@@ -110,13 +109,16 @@ jobs:
               "working_branch": os.environ["PILOT_BRANCH"],
               "paths": [target],
               "instruction": (
-                  f"Create exactly the Markdown file {target}. "
-                  "Its heading must be '# OpenCode Ollama live provider evidence'. "
-                  "State that the file was authored by the real OpenCode/Ollama provider in an isolated ephemeral profile. "
-                  "Do not edit any other file and do not run shell commands."
+                  f"Use the file edit/write tool now. Create exactly {target}. "
+                  "The file must contain exactly these lines: "
+                  "# OpenCode Ollama live provider evidence; "
+                  "Provider: opencode_ollama; "
+                  "Result: durable worker write succeeded; "
+                  "Production activation: not performed. "
+                  "Do not edit any other file, do not run shell commands, and do not only explain what you would do."
               ),
               "allowed_commands": [],
-              "timeout_seconds": 1200,
+              "timeout_seconds": 1500,
               "remote": "origin",
           }
           Path(os.environ["RUNNER_TEMP"], "provider-task.json").write_text(
