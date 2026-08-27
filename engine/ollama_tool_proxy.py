@@ -32,17 +32,27 @@ def rewrite_single_tool_request(
     if not isinstance(messages, list) or not messages:
         raise ValueError("chat request requires messages")
     tools = payload.get("tools")
-    if not isinstance(tools, list) or len(tools) != 1:
-        raise ValueError("required-tool proxy accepts exactly one tool")
-    tool = tools[0]
-    if not isinstance(tool, Mapping) or tool.get("type") != "function":
-        raise ValueError("required-tool proxy accepts one function tool")
-    function = tool.get("function")
-    if not isinstance(function, Mapping) or function.get("name") != expected_tool:
-        raise ValueError("required-tool proxy received an unexpected function tool")
+    if not isinstance(tools, list) or not tools:
+        raise ValueError("required-tool proxy requires a non-empty tool list")
+
+    expected_matches: list[Mapping[str, Any]] = []
+    for tool in tools:
+        if not isinstance(tool, Mapping) or tool.get("type") != "function":
+            raise ValueError("required-tool proxy accepts only function tools")
+        function = tool.get("function")
+        if not isinstance(function, Mapping):
+            raise ValueError("required-tool proxy accepts only function tools")
+        if function.get("name") == expected_tool:
+            expected_matches.append(tool)
+
+    if len(expected_matches) != 1:
+        raise ValueError("required-tool proxy requires exactly one expected function tool")
+
     choice = payload.get("tool_choice", "auto")
     if choice not in {"auto", "required"}:
         raise ValueError("required-tool proxy rejects conflicting tool_choice")
+
     rewritten = dict(payload)
+    rewritten["tools"] = [dict(expected_matches[0])]
     rewritten["tool_choice"] = "required"
     return rewritten

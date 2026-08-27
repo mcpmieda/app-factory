@@ -50,15 +50,24 @@ class OllamaToolProxyAuditTests(unittest.TestCase):
         self.assertNotIn("headers", snapshot)
         self.assertNotIn("arguments", snapshot)
 
-    def test_acceptance_can_clear_only_the_last_reason(self) -> None:
+    def test_acceptance_tracks_only_tool_counts_and_can_clear_last_reason(self) -> None:
         audit = ProxyAudit(expected_tool="write", rejected=1, last_reject_reason="path")
-        audit.mutate(accepted=1, rewritten=1, last_reject_reason=None)
+        audit.mutate(
+            accepted=1,
+            rewritten=1,
+            tools_received=7,
+            tools_discarded=6,
+            last_reject_reason=None,
+        )
         snapshot = audit.snapshot()
 
         self.assertEqual(snapshot["accepted"], 1)
         self.assertEqual(snapshot["rewritten"], 1)
         self.assertEqual(snapshot["rejected"], 1)
+        self.assertEqual(snapshot["tools_received"], 7)
+        self.assertEqual(snapshot["tools_discarded"], 6)
         self.assertIsNone(snapshot["last_reject_reason"])
+        self.assertNotIn("tool_names", snapshot)
 
 
 if __name__ == "__main__":

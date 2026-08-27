@@ -10,15 +10,15 @@ permissions:
   contents: write
 
 concurrency:
-  group: ${{ (github.event_name == 'workflow_dispatch' || (github.event_name == 'issue_comment' && github.event.issue.number == 84 && github.event.comment.body == '/run-opencode-v6')) && 'live-opencode-ollama-provider-pilot' || format('live-opencode-ollama-noop-{0}', github.run_id) }}
-  cancel-in-progress: ${{ github.event_name == 'workflow_dispatch' || (github.event_name == 'issue_comment' && github.event.issue.number == 84 && github.event.comment.body == '/run-opencode-v6') }}
+  group: ${{ (github.event_name == 'workflow_dispatch' || (github.event_name == 'issue_comment' && github.event.issue.number == 88 && github.event.comment.body == '/run-opencode-v7')) && 'live-opencode-ollama-provider-pilot' || format('live-opencode-ollama-noop-{0}', github.run_id) }}
+  cancel-in-progress: ${{ github.event_name == 'workflow_dispatch' || (github.event_name == 'issue_comment' && github.event.issue.number == 88 && github.event.comment.body == '/run-opencode-v7') }}
 
 jobs:
   live-pilot:
     if: >-
       github.actor == github.repository_owner &&
       ((github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/main') ||
-       (github.event_name == 'issue_comment' && github.event.issue.number == 84 && github.event.comment.body == '/run-opencode-v6'))
+       (github.event_name == 'issue_comment' && github.event.issue.number == 88 && github.event.comment.body == '/run-opencode-v7'))
     runs-on: ubuntu-24.04
     timeout-minutes: 30
     env:
@@ -54,7 +54,7 @@ jobs:
           echo "${tools_dir}/opencode" >> "${GITHUB_PATH}"
           echo "LD_LIBRARY_PATH=${tools_dir}/ollama/lib" >> "${GITHUB_ENV}"
 
-      - name: Start loopback Ollama and required-tool proxy
+      - name: Start loopback Ollama and filtered required-tool proxy
         shell: bash
         env:
           OLLAMA_CONTEXT_LENGTH: "8192"
@@ -166,9 +166,17 @@ jobs:
           from pathlib import Path
           actual = Path(os.environ["PILOT_FILE"]).read_text(encoding="utf-8")
           expected = Path(os.environ["RUNNER_TEMP"], "expected-content.txt").read_text(encoding="utf-8")
-          if actual != expected: raise SystemExit("provider evidence content mismatch")
+          if actual != expected:
+              raise SystemExit("provider evidence content mismatch")
           audit = json.loads(Path(os.environ["RUNNER_TEMP"], "tool-proxy-audit.json").read_text())
-          if audit["accepted"] < 1 or audit["rewritten"] < 1 or audit["forwarded"] < 1 or audit["rejected"] != 0:
+          if (
+              audit["accepted"] < 1
+              or audit["rewritten"] < 1
+              or audit["forwarded"] < 1
+              or audit["rejected"] != 0
+              or audit["tools_received"] < 2
+              or audit["tools_discarded"] < 1
+          ):
               raise SystemExit(f"unexpected tool proxy audit counters: {audit}")
           PY
 
