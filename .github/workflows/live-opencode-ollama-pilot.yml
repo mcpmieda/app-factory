@@ -10,15 +10,15 @@ permissions:
   contents: write
 
 concurrency:
-  group: ${{ (github.event_name == 'workflow_dispatch' || (github.event_name == 'issue_comment' && github.event.issue.number == 104 && github.event.comment.body == '/run-opencode-v14')) && 'live-opencode-ollama-provider-pilot' || format('live-opencode-ollama-noop-{0}', github.run_id) }}
-  cancel-in-progress: ${{ github.event_name == 'workflow_dispatch' || (github.event_name == 'issue_comment' && github.event.issue.number == 104 && github.event.comment.body == '/run-opencode-v14') }}
+  group: ${{ (github.event_name == 'workflow_dispatch' || (github.event_name == 'issue_comment' && github.event.issue.number == 106 && github.event.comment.body == '/run-opencode-v15')) && 'live-opencode-ollama-provider-pilot' || format('live-opencode-ollama-noop-{0}', github.run_id) }}
+  cancel-in-progress: ${{ github.event_name == 'workflow_dispatch' || (github.event_name == 'issue_comment' && github.event.issue.number == 106 && github.event.comment.body == '/run-opencode-v15') }}
 
 jobs:
   live-pilot:
     if: >-
       github.actor == github.repository_owner &&
       ((github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/main') ||
-       (github.event_name == 'issue_comment' && github.event.issue.number == 104 && github.event.comment.body == '/run-opencode-v14'))
+       (github.event_name == 'issue_comment' && github.event.issue.number == 106 && github.event.comment.body == '/run-opencode-v15'))
     runs-on: ubuntu-24.04
     timeout-minutes: 30
     env:
@@ -26,7 +26,7 @@ jobs:
       OLLAMA_ARCHIVE_SHA256: 88e0d36bd90121595e5516c84f6ab61b546368fbd2d825b4aae70999c949649d
       OPENCODE_VERSION: v1.18.23
       OPENCODE_ARCHIVE_SHA256: ab7015cd8113e011a461f30a0c2b77d8299a144ff688cb62e93e8802835d7288
-      OPENCODE_OLLAMA_MODEL: qwen3:1.7b
+      OPENCODE_OLLAMA_MODEL: qwen3:0.6b
     steps:
       - name: Checkout trusted Factory main
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -127,11 +127,11 @@ jobs:
               "working_branch": os.environ["PILOT_BRANCH"],
               "paths": [target],
               "instruction": (
-                  "Use the write tool exactly once and do not explain before or after it. "
-                  "The write tool arguments must equal this JSON object exactly: "
-                  f"{exact_arguments} "
+                  "Use the write tool exactly once. Do not explain before or after the tool call. "
+                  "Do not edit any other file and do not run shell commands. "
                   "Do not add, remove, normalize, paraphrase or append any character to the content argument. "
-                  "Do not edit any other file and do not run shell commands."
+                  "The write tool arguments must equal this JSON object exactly:"
+                  f"{exact_arguments}"
               ),
               "allowed_commands": [],
               "timeout_seconds": 600,
