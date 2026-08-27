@@ -149,3 +149,29 @@ def canonical_single_tool_sse(
 
     event = json.dumps(chunk, ensure_ascii=False, separators=(",", ":"))
     return f"data: {event}\n\ndata: [DONE]\n\n".encode("utf-8")
+
+
+def canonical_stop_sse(model: str) -> bytes:
+    """Return a content-free terminal SSE after a verified tool result.
+
+    This acknowledgement carries no task content and no tool call. It exists only to
+    terminate the OpenCode agent loop after the proxy has already verified one real
+    expected tool call and observed the client's corresponding tool-result turn.
+    """
+    clean_model = str(model or "").strip()
+    if not clean_model:
+        raise ValueError("post-tool stop requires a model")
+    chunk = {
+        "id": "chatcmpl-factory-tool-complete",
+        "object": "chat.completion.chunk",
+        "model": clean_model,
+        "choices": [
+            {
+                "index": 0,
+                "delta": {"role": "assistant", "content": ""},
+                "finish_reason": "stop",
+            }
+        ],
+    }
+    event = json.dumps(chunk, ensure_ascii=False, separators=(",", ":"))
+    return f"data: {event}\n\ndata: [DONE]\n\n".encode("utf-8")
