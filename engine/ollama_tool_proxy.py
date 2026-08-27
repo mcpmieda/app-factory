@@ -87,9 +87,7 @@ def native_single_tool_request(
     if not isinstance(model, str) or not model.strip():
         raise ValueError("native chat request requires a model")
 
-    source_messages = filtered.get("messages")
-    if not isinstance(source_messages, list) or not source_messages:
-        raise ValueError("native chat request requires messages")
+    source_messages = filtered["messages"]
     native_messages: list[dict[str, str]] = []
     for message in source_messages:
         if not isinstance(message, Mapping):
