@@ -10,15 +10,15 @@ permissions:
   contents: write
 
 concurrency:
-  group: ${{ (github.event_name == 'workflow_dispatch' || (github.event_name == 'issue_comment' && github.event.issue.number == 96 && github.event.comment.body == '/run-opencode-v10')) && 'live-opencode-ollama-provider-pilot' || format('live-opencode-ollama-noop-{0}', github.run_id) }}
-  cancel-in-progress: ${{ github.event_name == 'workflow_dispatch' || (github.event_name == 'issue_comment' && github.event.issue.number == 96 && github.event.comment.body == '/run-opencode-v10') }}
+  group: ${{ (github.event_name == 'workflow_dispatch' || (github.event_name == 'issue_comment' && github.event.issue.number == 98 && github.event.comment.body == '/run-opencode-v11')) && 'live-opencode-ollama-provider-pilot' || format('live-opencode-ollama-noop-{0}', github.run_id) }}
+  cancel-in-progress: ${{ github.event_name == 'workflow_dispatch' || (github.event_name == 'issue_comment' && github.event.issue.number == 98 && github.event.comment.body == '/run-opencode-v11') }}
 
 jobs:
   live-pilot:
     if: >-
       github.actor == github.repository_owner &&
       ((github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/main') ||
-       (github.event_name == 'issue_comment' && github.event.issue.number == 96 && github.event.comment.body == '/run-opencode-v10'))
+       (github.event_name == 'issue_comment' && github.event.issue.number == 98 && github.event.comment.body == '/run-opencode-v11'))
     runs-on: ubuntu-24.04
     timeout-minutes: 30
     env:
@@ -54,7 +54,7 @@ jobs:
           echo "${tools_dir}/opencode" >> "${GITHUB_PATH}"
           echo "LD_LIBRARY_PATH=${tools_dir}/ollama/lib" >> "${GITHUB_ENV}"
 
-      - name: Start loopback Ollama and deterministic single-write proxy
+      - name: Start loopback Ollama and native single-write bridge
         shell: bash
         env:
           OLLAMA_CONTEXT_LENGTH: "8192"
@@ -70,7 +70,7 @@ jobs:
           nohup python scripts/ollama_tool_proxy.py \
             --listen-host 127.0.0.1 \
             --listen-port 11435 \
-            --upstream http://127.0.0.1:11434/v1 \
+            --upstream http://127.0.0.1:11434 \
             --expected-tool write \
             --audit-file "${RUNNER_TEMP}/tool-proxy-audit.json" \
             > "${RUNNER_TEMP}/tool-proxy.log" 2>&1 &
@@ -83,7 +83,7 @@ jobs:
               except OSError:
                   time.sleep(1)
           else:
-              raise SystemExit("deterministic single-write proxy did not bind to loopback")
+              raise SystemExit("native single-write bridge did not bind to loopback")
           PY
           ollama list
           opencode --version
@@ -170,7 +170,8 @@ jobs:
               raise SystemExit("provider evidence content mismatch")
           audit = json.loads(Path(os.environ["RUNNER_TEMP"], "tool-proxy-audit.json").read_text())
           if (
-              audit["schema_version"] != 2
+              audit["schema_version"] != 3
+              or audit["upstream_protocol"] != "ollama_native_chat"
               or audit["generation_temperature"] != 0
               or audit["generation_seed"] != 0
               or audit["generation_max_tokens"] != 512
@@ -186,7 +187,7 @@ jobs:
               or audit["last_reject_reason"] is not None
               or audit["last_response_contract_stage"] is not None
           ):
-              raise SystemExit(f"unexpected deterministic single-write proxy audit counters: {audit}")
+              raise SystemExit(f"unexpected native single-write bridge audit counters: {audit}")
           PY
 
       - name: Confirm remote SHA and run exact-SHA Factory CI

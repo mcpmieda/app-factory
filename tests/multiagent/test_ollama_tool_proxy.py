@@ -7,8 +7,11 @@ from engine.ollama_tool_proxy import (
     TOOL_GENERATION_MAX_TOKENS,
     TOOL_GENERATION_SEED,
     TOOL_GENERATION_TEMPERATURE,
+    canonical_native_tool_sse,
     canonical_single_tool_sse,
     canonical_stop_sse,
+    native_chat_url,
+    native_single_tool_request,
     rewrite_single_tool_request,
     validate_loopback_base_url,
 )
@@ -25,7 +28,14 @@ class OllamaToolProxyTests(unittest.TestCase):
                     "function": {
                         "name": "write",
                         "description": "Write a file",
-                        "parameters": {"type": "object"},
+                        "parameters": {
+                            "type": "object",
+                            "properties": {
+                                "filePath": {"type": "string"},
+                                "content": {"type": "string"},
+                            },
+                            "required": ["filePath", "content"],
+                        },
                     },
                 }
             ],
@@ -62,6 +72,33 @@ class OllamaToolProxyTests(unittest.TestCase):
                 }
             ],
             "usage": {"prompt_tokens": 100, "completion_tokens": 20, "total_tokens": 120},
+        }
+
+    def native_completion_payload(self, *, arguments=None):
+        if arguments is None:
+            arguments = {
+                "filePath": "pilots/live/result.md",
+                "content": "ok\n",
+            }
+        return {
+            "model": "functiongemma:270m",
+            "created_at": "2026-08-27T22:00:00Z",
+            "message": {
+                "role": "assistant",
+                "content": "plain text must never be authoritative",
+                "tool_calls": [
+                    {
+                        "function": {
+                            "name": "write",
+                            "arguments": arguments,
+                        }
+                    }
+                ],
+            },
+            "done": True,
+            "done_reason": "stop",
+            "prompt_eval_count": 100,
+            "eval_count": 20,
         }
 
     def test_filters_extra_function_tools_and_forces_expected_tool_required(self) -> None:
@@ -163,6 +200,142 @@ class OllamaToolProxyTests(unittest.TestCase):
         for payload in cases:
             with self.subTest(payload=payload), self.assertRaises(ValueError):
                 rewrite_single_tool_request(payload, expected_tool="write")
+
+    def test_native_chat_url_is_derived_only_from_valid_loopback_base(self) -> None:
+        self.assertEqual(
+            native_chat_url("http://127.0.0.1:11434"),
+            "http://127.0.0.1:11434/api/chat",
+        )
+        self.assertEqual(
+            native_chat_url("http://localhost:11434/v1/"),
+            "http://localhost:11434/api/chat",
+        )
+        with self.assertRaises(ValueError):
+            native_chat_url("https://ollama.example.com/v1")
+
+    def test_native_request_preserves_real_messages_and_only_expected_tool(self) -> None:
+        payload = self.base_payload()
+        payload["messages"] = [
+            {"role": "system", "content": "system guidance"},
+            {"role": "user", "content": "create the file"},
+            {"role": "assistant", "content": ""},
+        ]
+        payload["tools"].append(
+            {
+                "type": "function",
+                "function": {
+                    "name": "read",
+                    "description": "Read a file",
+                    "parameters": {"type": "object"},
+                },
+            }
+        )
+
+        native = native_single_tool_request(payload, expected_tool="write")
+
+        self.assertEqual(native["model"], "functiongemma:270m")
+        self.assertEqual(native["messages"], payload["messages"])
+        self.assertEqual(native["tools"], [payload["tools"][0]])
+        self.assertFalse(native["stream"])
+        self.assertEqual(
+            native["options"],
+            {"temperature": 0, "seed": 0, "num_predict": 512},
+        )
+        self.assertNotIn("tool_choice", native)
+        self.assertNotIn("max_tokens", native)
+        self.assertEqual(payload["tool_choice"], "auto")
+
+    def test_native_request_rejects_invalid_model_or_message_shape(self) -> None:
+        missing_model = self.base_payload()
+        missing_model["model"] = ""
+        invalid_object = self.base_payload()
+        invalid_object["messages"] = ["not-an-object"]
+        invalid_role = self.base_payload()
+        invalid_role["messages"] = [{"role": "tool", "content": "result"}]
+        invalid_content = self.base_payload()
+        invalid_content["messages"] = [{"role": "user", "content": ["not", "text"]}]
+
+        for payload in (missing_model, invalid_object, invalid_role, invalid_content):
+            with self.subTest(payload=payload), self.assertRaises(ValueError):
+                native_single_tool_request(payload, expected_tool="write")
+
+    def test_canonical_native_tool_sse_uses_structured_call_not_text_or_done_reason(self) -> None:
+        payload = self.native_completion_payload()
+
+        wire = canonical_native_tool_sse(payload, expected_tool="write").decode("utf-8")
+        first_event = next(
+            line.removeprefix("data: ")
+            for line in wire.splitlines()
+            if line.startswith("data: ")
+        )
+        chunk = json.loads(first_event)
+        choice = chunk["choices"][0]
+        call = choice["delta"]["tool_calls"][0]
+
+        self.assertEqual(choice["finish_reason"], "tool_calls")
+        self.assertEqual(call["id"], "call_factory_native_tool_0")
+        self.assertEqual(call["function"]["name"], "write")
+        self.assertEqual(
+            json.loads(call["function"]["arguments"]),
+            payload["message"]["tool_calls"][0]["function"]["arguments"],
+        )
+        self.assertEqual(chunk["usage"], {
+            "prompt_tokens": 100,
+            "completion_tokens": 20,
+            "total_tokens": 120,
+        })
+        self.assertNotIn(payload["message"]["content"], wire)
+        self.assertEqual(payload["done_reason"], "stop")
+
+    def test_canonical_native_tool_sse_allows_missing_token_counters(self) -> None:
+        payload = self.native_completion_payload()
+        payload.pop("prompt_eval_count")
+        payload.pop("eval_count")
+
+        wire = canonical_native_tool_sse(payload, expected_tool="write").decode("utf-8")
+        first_event = next(
+            line.removeprefix("data: ")
+            for line in wire.splitlines()
+            if line.startswith("data: ")
+        )
+        self.assertNotIn("usage", json.loads(first_event))
+
+    def test_canonical_native_tool_sse_rejects_text_only_or_invalid_structured_calls(self) -> None:
+        cases = []
+        cases.append([])
+        missing_model = self.native_completion_payload()
+        missing_model["model"] = ""
+        cases.append(missing_model)
+        incomplete = self.native_completion_payload()
+        incomplete["done"] = False
+        cases.append(incomplete)
+        no_message = self.native_completion_payload()
+        no_message["message"] = None
+        cases.append(no_message)
+        wrong_role = self.native_completion_payload()
+        wrong_role["message"]["role"] = "user"
+        cases.append(wrong_role)
+        text_only = self.native_completion_payload()
+        text_only["message"].pop("tool_calls")
+        cases.append(text_only)
+        multiple = self.native_completion_payload()
+        multiple["message"]["tool_calls"] *= 2
+        cases.append(multiple)
+        bad_call = self.native_completion_payload()
+        bad_call["message"]["tool_calls"] = ["not-an-object"]
+        cases.append(bad_call)
+        wrong_tool = self.native_completion_payload()
+        wrong_tool["message"]["tool_calls"][0]["function"]["name"] = "bash"
+        cases.append(wrong_tool)
+        no_function = self.native_completion_payload()
+        no_function["message"]["tool_calls"][0]["function"] = None
+        cases.append(no_function)
+        string_args = self.native_completion_payload(arguments='{"filePath":"x"}')
+        cases.append(string_args)
+
+        for payload in cases:
+            with self.subTest(payload=payload), self.assertRaises(ValueError):
+                canonical_native_tool_sse(payload, expected_tool="write")
 
     def test_canonical_sse_preserves_one_complete_tool_call(self) -> None:
         original_arguments = '{"filePath":"pilots/live/result.md","content":"ok\\n"}'
