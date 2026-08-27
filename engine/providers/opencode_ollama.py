@@ -258,7 +258,7 @@ class OpenCodeOllamaAdapter:
             },
             "glob": "allow",
             "grep": "allow",
-            "lsp": "allow",
+            "lsp": "deny",
             "edit": edit_rules,
             "bash": bash_rules,
             "external_directory": "deny",
@@ -268,6 +268,29 @@ class OpenCodeOllamaAdapter:
             "skill": "deny",
             "question": "deny",
             "doom_loop": "deny",
+        }
+
+    def tool_config(self, request: ProviderTaskRequest) -> dict[str, bool]:
+        """Hide unavailable tools so local models do not pay for denied schemas.
+
+        Permission remains the authoritative security boundary. This visibility layer is
+        deliberately stricter and removes tools that automatic workers can never use.
+        """
+        return {
+            "bash": bool(request.normalized_commands),
+            "edit": True,
+            "write": True,
+            "read": True,
+            "grep": True,
+            "glob": True,
+            "patch": True,
+            "lsp": False,
+            "skill": False,
+            "todowrite": False,
+            "webfetch": False,
+            "websearch": False,
+            "question": False,
+            "task": False,
         }
 
     def _base_config(self, *, permission: Any) -> dict[str, Any]:
@@ -294,7 +317,12 @@ class OpenCodeOllamaAdapter:
         }
 
     def opencode_config(self, request: ProviderTaskRequest) -> dict[str, Any]:
-        return self._base_config(permission=self.permission_config(request))
+        config = self._base_config(permission=self.permission_config(request))
+        # OpenCode still supports its tool-visibility map. Keep permission rules as
+        # the security boundary and use this map only to avoid advertising denied
+        # tool schemas to bounded local models.
+        config["tools"] = self.tool_config(request)
+        return config
 
     @staticmethod
     def _disable_environment() -> dict[str, str]:
