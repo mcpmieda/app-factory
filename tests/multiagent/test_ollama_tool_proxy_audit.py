@@ -5,7 +5,10 @@ import unittest
 from scripts.ollama_tool_proxy import (
     ProxyAudit,
     REJECT_REASONS,
+    RESPONSE_CONTRACT_STAGE_BY_MESSAGE,
+    RESPONSE_CONTRACT_STAGES,
     TOOL_CONTRACT_REASON_BY_MESSAGE,
+    safe_response_contract_stage,
 )
 
 
@@ -48,7 +51,12 @@ class OllamaToolProxyAuditTests(unittest.TestCase):
         audit.mutate(rejected=1, last_status=400, last_reject_reason="tool_count")
         snapshot = audit.snapshot()
 
+        self.assertEqual(snapshot["schema_version"], 2)
         self.assertEqual(snapshot["last_reject_reason"], "tool_count")
+        self.assertIsNone(snapshot["last_response_contract_stage"])
+        self.assertEqual(snapshot["generation_temperature"], 0)
+        self.assertEqual(snapshot["generation_seed"], 0)
+        self.assertEqual(snapshot["generation_max_tokens"], 512)
         self.assertEqual(snapshot["rejected"], 1)
         self.assertEqual(snapshot["upstream_tool_calls"], 0)
         self.assertEqual(snapshot["responses_normalized"], 0)
@@ -59,6 +67,43 @@ class OllamaToolProxyAuditTests(unittest.TestCase):
         self.assertNotIn("arguments", snapshot)
         self.assertNotIn("response", snapshot)
         self.assertNotIn("tool_result", snapshot)
+
+    def test_response_contract_stage_is_bounded_and_sanitized(self) -> None:
+        expected = {
+            "payload",
+            "completion_id",
+            "model",
+            "choice_count",
+            "finish_reason",
+            "assistant_message",
+            "tool_call_count",
+            "tool_type",
+            "tool_call_id",
+            "tool_name",
+            "arguments",
+        }
+        self.assertEqual(set(RESPONSE_CONTRACT_STAGE_BY_MESSAGE.values()), expected)
+        self.assertTrue(expected.issubset(RESPONSE_CONTRACT_STAGES))
+        self.assertIn("encoding", RESPONSE_CONTRACT_STAGES)
+        self.assertIn("json", RESPONSE_CONTRACT_STAGES)
+        self.assertIn("unknown", RESPONSE_CONTRACT_STAGES)
+
+        for message, stage in RESPONSE_CONTRACT_STAGE_BY_MESSAGE.items():
+            with self.subTest(stage=stage):
+                self.assertEqual(safe_response_contract_stage(ValueError(message)), stage)
+
+        secretish = "completion leaked content SECRET-123"
+        self.assertEqual(safe_response_contract_stage(ValueError(secretish)), "unknown")
+        audit = ProxyAudit(expected_tool="write")
+        audit.mutate(
+            upstream_errors=1,
+            last_status=502,
+            last_reject_reason="response_contract",
+            last_response_contract_stage="finish_reason",
+        )
+        snapshot = audit.snapshot()
+        self.assertEqual(snapshot["last_response_contract_stage"], "finish_reason")
+        self.assertNotIn(secretish, str(snapshot))
 
     def test_acceptance_tracks_one_tool_then_one_terminal_post_tool_turn(self) -> None:
         audit = ProxyAudit(expected_tool="write")
@@ -72,12 +117,14 @@ class OllamaToolProxyAuditTests(unittest.TestCase):
             responses_normalized=1,
             last_status=200,
             last_reject_reason=None,
+            last_response_contract_stage=None,
         )
         audit.mutate(
             post_tool_requests=1,
             post_tool_completions=1,
             last_status=200,
             last_reject_reason=None,
+            last_response_contract_stage=None,
         )
         snapshot = audit.snapshot()
 
@@ -93,6 +140,7 @@ class OllamaToolProxyAuditTests(unittest.TestCase):
         self.assertEqual(snapshot["post_tool_completions"], 1)
         self.assertEqual(snapshot["last_status"], 200)
         self.assertIsNone(snapshot["last_reject_reason"])
+        self.assertIsNone(snapshot["last_response_contract_stage"])
         self.assertNotIn("tool_names", snapshot)
 
 
