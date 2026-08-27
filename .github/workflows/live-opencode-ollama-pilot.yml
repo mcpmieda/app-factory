@@ -10,15 +10,15 @@ permissions:
   contents: write
 
 concurrency:
-  group: ${{ (github.event_name == 'workflow_dispatch' || (github.event_name == 'issue_comment' && github.event.issue.number == 106 && github.event.comment.body == '/run-opencode-v15')) && 'live-opencode-ollama-provider-pilot' || format('live-opencode-ollama-noop-{0}', github.run_id) }}
-  cancel-in-progress: ${{ github.event_name == 'workflow_dispatch' || (github.event_name == 'issue_comment' && github.event.issue.number == 106 && github.event.comment.body == '/run-opencode-v15') }}
+  group: ${{ (github.event_name == 'workflow_dispatch' || (github.event_name == 'issue_comment' && github.event.issue.number == 110 && github.event.comment.body == '/run-opencode-v16')) && 'live-opencode-ollama-provider-pilot' || format('live-opencode-ollama-noop-{0}', github.run_id) }}
+  cancel-in-progress: ${{ github.event_name == 'workflow_dispatch' || (github.event_name == 'issue_comment' && github.event.issue.number == 110 && github.event.comment.body == '/run-opencode-v16') }}
 
 jobs:
   live-pilot:
     if: >-
       github.actor == github.repository_owner &&
       ((github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/main') ||
-       (github.event_name == 'issue_comment' && github.event.issue.number == 106 && github.event.comment.body == '/run-opencode-v15'))
+       (github.event_name == 'issue_comment' && github.event.issue.number == 110 && github.event.comment.body == '/run-opencode-v16'))
     runs-on: ubuntu-24.04
     timeout-minutes: 30
     env:
@@ -110,7 +110,7 @@ jobs:
               "# OpenCode Ollama live provider evidence\n"
               "Provider: opencode_ollama\n"
               "Result: durable worker write succeeded\n"
-              "Production activation: not performed\n"
+              "Production activation: not performed"
           )
           exact_arguments = json.dumps(
               {"filePath": target, "content": expected},
@@ -127,11 +127,11 @@ jobs:
               "working_branch": os.environ["PILOT_BRANCH"],
               "paths": [target],
               "instruction": (
-                  "Use the write tool exactly once. Do not explain before or after the tool call. "
-                  "Do not edit any other file and do not run shell commands. "
+                  "Use the write tool exactly once and do not explain before or after it. "
+                  "The write tool arguments must equal this JSON object exactly: "
+                  f"{exact_arguments} "
                   "Do not add, remove, normalize, paraphrase or append any character to the content argument. "
-                  "The write tool arguments must equal this JSON object exactly:"
-                  f"{exact_arguments}"
+                  "Do not edit any other file and do not run shell commands."
               ),
               "allowed_commands": [],
               "timeout_seconds": 600,
@@ -170,10 +170,10 @@ jobs:
           python - <<'PY'
           import json, os
           from pathlib import Path
-          actual = Path(os.environ["PILOT_FILE"]).read_text(encoding="utf-8")
-          expected = Path(os.environ["RUNNER_TEMP"], "expected-content.txt").read_text(encoding="utf-8")
+          actual = Path(os.environ["PILOT_FILE"]).read_bytes()
+          expected = Path(os.environ["RUNNER_TEMP"], "expected-content.txt").read_bytes()
           if actual != expected:
-              raise SystemExit("provider evidence content mismatch")
+              raise SystemExit("provider evidence byte mismatch")
           audit = json.loads(Path(os.environ["RUNNER_TEMP"], "tool-proxy-audit.json").read_text())
           if (
               audit["schema_version"] != 3
