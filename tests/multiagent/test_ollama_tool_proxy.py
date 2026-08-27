@@ -24,12 +24,38 @@ class OllamaToolProxyTests(unittest.TestCase):
             "stream": True,
         }
 
-    def test_rewrites_only_auto_or_missing_choice_to_required(self) -> None:
+    def test_filters_extra_function_tools_and_forces_expected_tool_required(self) -> None:
         payload = self.base_payload()
+        payload["tools"].extend(
+            [
+                {
+                    "type": "function",
+                    "function": {
+                        "name": "read",
+                        "description": "Read a file",
+                        "parameters": {"type": "object"},
+                    },
+                },
+                {
+                    "type": "function",
+                    "function": {
+                        "name": "bash",
+                        "description": "Run a command",
+                        "parameters": {"type": "object"},
+                    },
+                },
+            ]
+        )
+
         rewritten = rewrite_single_tool_request(payload, expected_tool="write")
+
         self.assertEqual(rewritten["tool_choice"], "required")
+        self.assertEqual(len(rewritten["tools"]), 1)
+        self.assertEqual(rewritten["tools"][0]["function"]["name"], "write")
+        self.assertEqual(len(payload["tools"]), 3)
         self.assertEqual(payload["tool_choice"], "auto")
 
+    def test_rewrites_missing_or_required_choice_without_expanding_authority(self) -> None:
         missing = self.base_payload()
         missing.pop("tool_choice")
         self.assertEqual(
@@ -44,23 +70,23 @@ class OllamaToolProxyTests(unittest.TestCase):
             "required",
         )
 
-    def test_rejects_zero_multiple_wrong_or_conflicting_tools(self) -> None:
-        cases = [[]]
+    def test_rejects_missing_duplicate_non_function_or_conflicting_expected_tool(self) -> None:
+        cases = []
         zero = self.base_payload()
         zero["tools"] = []
         cases.append(zero)
-        multiple = self.base_payload()
-        multiple["tools"] = multiple["tools"] * 2
-        cases.append(multiple)
+        missing_expected = self.base_payload()
+        missing_expected["tools"][0]["function"]["name"] = "read"
+        cases.append(missing_expected)
+        duplicate_expected = self.base_payload()
+        duplicate_expected["tools"] = duplicate_expected["tools"] * 2
+        cases.append(duplicate_expected)
         wrong_type = self.base_payload()
-        wrong_type["tools"] = [{"type": "web_search"}]
+        wrong_type["tools"].append({"type": "web_search"})
         cases.append(wrong_type)
         missing_function = self.base_payload()
-        missing_function["tools"] = [{"type": "function", "function": None}]
+        missing_function["tools"].append({"type": "function", "function": None})
         cases.append(missing_function)
-        wrong_name = self.base_payload()
-        wrong_name["tools"][0]["function"]["name"] = "bash"
-        cases.append(wrong_name)
         conflicting = self.base_payload()
         conflicting["tool_choice"] = "none"
         cases.append(conflicting)
