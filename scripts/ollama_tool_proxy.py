@@ -25,12 +25,22 @@ from engine.ollama_tool_proxy import (  # noqa: E402
 
 MAX_REQUEST_BYTES = 2 * 1024 * 1024
 SENSITIVE_HEADERS = frozenset({"authorization", "proxy-authorization", "x-api-key"})
+TOOL_CONTRACT_REASON_BY_MESSAGE = {
+    "chat request must be a JSON object": "tool_payload",
+    "chat request requires messages": "tool_messages",
+    "required-tool proxy accepts exactly one tool": "tool_count",
+    "required-tool proxy accepts one function tool": "tool_type",
+    "required-tool proxy received an unexpected function tool": "tool_name",
+    "required-tool proxy rejects conflicting tool_choice": "tool_choice",
+}
 REJECT_REASONS = frozenset({
     "method",
     "path",
     "sensitive_header",
     "content_type",
     "content_length",
+    "json_payload",
+    *TOOL_CONTRACT_REASON_BY_MESSAGE.values(),
     "tool_contract",
 })
 
@@ -153,16 +163,24 @@ class RequiredToolProxyHandler(BaseHTTPRequestHandler):
         if length <= 0 or length > MAX_REQUEST_BYTES:
             self._reject(413, "content_length")
             return
+        raw = self.rfile.read(length)
         try:
-            payload = json.loads(self.rfile.read(length))
-            original_choice = (
-                payload.get("tool_choice", "auto") if isinstance(payload, dict) else None
-            )
+            payload = json.loads(raw)
+        except (UnicodeDecodeError, json.JSONDecodeError):
+            self._reject(400, "json_payload")
+            return
+        original_choice = (
+            payload.get("tool_choice", "auto") if isinstance(payload, dict) else None
+        )
+        try:
             rewritten = rewrite_single_tool_request(
                 payload, expected_tool=self.server.expected_tool
             )
-        except (UnicodeDecodeError, json.JSONDecodeError, ValueError):
-            self._reject(400, "tool_contract")
+        except ValueError as error:
+            self._reject(
+                400,
+                TOOL_CONTRACT_REASON_BY_MESSAGE.get(str(error), "tool_contract"),
+            )
             return
 
         self.server.audit.mutate(
