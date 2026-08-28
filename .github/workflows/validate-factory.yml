@@ -22,3 +22,17 @@ jobs:
         run: python scripts/validate_skills.py
       - name: Validate Codex Plugin package
         run: python scripts/validate_plugin.py
+      - name: Validate PowerShell bootstrap syntax
+        shell: pwsh
+        run: |
+          $tokens = $null
+          $errors = $null
+          [System.Management.Automation.Language.Parser]::ParseFile(
+            (Resolve-Path 'scripts/bootstrap-antigravity-runner.ps1'),
+            [ref] $tokens,
+            [ref] $errors
+          ) | Out-Null
+          if ($errors.Count -gt 0) {
+            $errors | ForEach-Object { Write-Error $_.Message }
+            exit 1
+          }
