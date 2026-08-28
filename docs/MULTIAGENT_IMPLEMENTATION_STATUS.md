@@ -4,19 +4,23 @@ Atualizado em 27 de agosto de 2026.
 
 ## Classificação atual
 
-A App Factory possui:
+A App Factory multiagente já possui prova operacional real para os blocos centrais:
 
 - fundação provider-neutral;
 - Jules API-first comprovado em execução real;
-- OpenCode/Ollama comprovado em execução real, com `write`, commit, push, SHA remoto e CI exato;
+- OpenCode/Ollama comprovado e homologado em execução real;
+- Factory Run mista Jules + OpenCode/Ollama comprovada de ponta a ponta;
+- paralelismo real com `max_parallel=2` e task dependente liberada somente depois dos dois merges;
+- protocolo durável baseado em GitHub;
+- takeover entre executores comprovado depois da expiração de lease;
+- branches/PRs isolados, CI por SHA exato e final PR draft/humano;
+- GitHub Actions comprovadamente capaz de criar worker PRs e o PR final draft no repositório consumidor;
+- Semgrep real integrado e fail-closed;
+- CodeRabbit manual acionável, sujeito a rate limit externo;
 - runtime Antigravity implementado/testado, ainda sem piloto live por depender de runner/profile externo;
-- protocolo de executor durável baseado em GitHub;
-- takeover entre executores comprovado em execução real depois da expiração de lease;
-- contrato de Merge Train por SHA exato;
-- Semgrep real em fase de integração e CodeRabbit manual comprovadamente acionável;
-- Sonar ainda não conectado como evidência real.
+- Sonar preparado no Merge Train, mas ainda dependente de configuração real do serviço.
 
-A Factory multi-provider ainda não deve ser declarada 100% pronta. O que falta está concentrado na homologação Antigravity, no fechamento do Merge Train real e em um piloto final usando mais de um provider.
+A visão automática normal já funciona com Jules + OpenCode/Ollama. A declaração de “100% pronta” continua condicionada ao fechamento do Merge Train real com Sonar e à homologação live do Antigravity.
 
 ## Comprovado em execução real
 
@@ -37,7 +41,7 @@ No `mcpmieda/ecossistema-escola`, a Factory Run `jules-api-pilot-002` comprovou:
 - CI final completo;
 - PR final draft e humano.
 
-O PR consolidado `#93` foi posteriormente mesclado por decisão humana e o pipeline normal do repositório ficou verde. Isso não amplia a autoridade automática da Factory sobre `main`.
+O PR consolidado `#93` foi posteriormente mesclado por decisão humana. Isso não amplia a autoridade automática da Factory sobre `main`.
 
 ### Takeover entre executores
 
@@ -53,26 +57,87 @@ A issue `#72` (`durable-takeover-proof-001`) comprovou com dois runners GitHub-h
 - autorização de B contra Lease B;
 - estado durável vindo de GitHub, não de cache, stdout ou sessão local.
 
-### OpenCode/Ollama
+### OpenCode/Ollama standalone
 
-A homologação live v16, issue `#110`, concluiu com sucesso no run `33125439929`.
+A homologação live v16, issue `#110` do `app-factory`, concluiu com sucesso no run `33125439929`.
 
 Evidência principal:
 
-- trusted `main` SHA de origem: `4ba942bd80ad2adfa866573da886456d32f6bcce`;
 - provider real: OpenCode `1.18.23` + Ollama `0.33.1` + `qwen3:0.6b`;
 - inference real via Ollama native `POST /api/chat`;
 - exatamente um `write` estruturado aceito e encaminhado;
-- audit do bridge: `accepted=1`, `forwarded=1`, `upstream_tool_calls=1`, `responses_normalized=1`, `post_tool_requests=1`, `post_tool_completions=1`, `rejected=0`, `upstream_errors=0`;
-- arquivo do provider validado byte a byte contra fixture imutável definida antes da execução;
-- exatamente um path alterado: `pilots/live/opencode-ollama/run-33125439929-1.md`;
-- branch publicada: `factory/opencode-ollama-live-33125439929-1`;
-- commit/SHA remoto exato: `766b14a8e4a133a431902fdc355125648adb837a`;
+- audit do bridge sem rejeições/upstream errors;
+- arquivo validado byte a byte contra fixture imutável definida antes da execução;
+- exatamente um path alterado;
+- commit/push controlado e SHA remoto confirmado;
 - CI por `workflow_dispatch` no SHA exato: run `33125552090` — `success`;
-- artifact sanitizado: `opencode-ollama-live-pilot-33125439929-1`, digest `sha256:4acd3c21ada29c45673023abe286cd10a480f16c66428ef6c67e53362371ee46`;
-- nenhum merge no target, ativação de produção, ampliação de permissão ou execução Codex ocorreu.
+- nenhum merge no target, ativação de produção, ampliação de permissão ou execução Codex.
 
-As versões anteriores v13–v15 permanecem como evidência do repair loop fail-closed. V13 já havia provado `write + commit + push`, mas divergira somente no newline terminal do fixture; v14 não produziu tool call; v15 produziu uma moldura literal no conteúdo. Nenhuma dessas tentativas foi reclassificada retroativamente como sucesso.
+As versões v13–v15 permanecem como evidência do repair loop fail-closed e nunca foram reclassificadas retroativamente como sucesso.
+
+### Factory Run real Jules + OpenCode/Ollama
+
+A homologação final multi-provider foi executada no `mcpmieda/ecossistema-escola` pela parent issue `#112`, run id `multi-provider-hosted-pilot-002`.
+
+Topologia real:
+
+```text
+#113 OpenCode/Ollama ─┐
+                     ├─> #115 Jules verifier
+#114 Jules API-first ─┘
+```
+
+Contrato:
+
+- `max_parallel=2`;
+- OpenCode e Jules independentes liberados simultaneamente;
+- task `verify` bloqueada até os dois resultados estarem materialmente integrados;
+- integração isolada `factory/multi-provider-hosted-pilot-002`;
+- target `main` fora da autoridade automática;
+- produção, Banco de Notas e Codex fora do escopo.
+
+Evidência OpenCode `#113`:
+
+- executor GitHub-hosted;
+- probe real saudável;
+- branch durável sibling sem colisão de namespace;
+- lease bot-authored;
+- provider result `success`;
+- commit/push `25adb91a9bfa86c3f60002e78e12976c22f7412e`;
+- exatamente um path alterado;
+- exact-SHA CI `33133753826` — `success`;
+- worker PR `#116` squash-merged somente na integration branch.
+
+Evidência Jules `#114`:
+
+- sessão Jules REST real;
+- worker PR `#117` passou CI obrigatório;
+- squash merge somente na mesma integration branch.
+
+Evidência dependente `#115`:
+
+- permaneceu `waiting` até #113 e #114 estarem integradas;
+- sessão Jules criada somente após a liberação das dependências;
+- worker PR `#119` passou CI obrigatório;
+- merge SHA da integration branch `1de720f36729b0c36b3f459242a6312286d6a92e`.
+
+Fechamento da run:
+
+- job multi-provider `33133633332` concluiu `success`;
+- integration CI final `33134149253` concluiu `success`;
+- o bot criou o PR final `#120`, `factory/multi-provider-hosted-pilot-002 -> main`;
+- PR `#120` permanece **DRAFT**, rotulado `factory:final`;
+- o corpo registra explicitamente que é o human gate e que a Factory não fará o merge no target.
+
+Isto encerra a antiga pendência “provar uma Factory Run com mais de um provider automático”.
+
+## Repair loop do hosted OpenCode no Ecossistema
+
+A prova mista também encontrou e corrigiu, sem relaxar guardrails:
+
+1. **Schema do health probe** — o provider real reportava `provider`, enquanto o executor lia somente `provider_id`. PR `#109` normalizou a fronteira confiável mantendo provider/status estritos.
+2. **Namespace de Git refs** — `factory/<run>` não pode coexistir com `factory/<run>/<task>`. PR `#110` adotou workers sibling `factory/<run>-<task>` com regressão.
+3. **Fixture Markdown da v1** — o provider escreveu o conteúdo pedido, mas Prettier rejeitou apenas newline terminal ausente. O resultado não foi adulterado nem reclassificado; a v2 definiu previamente um fixture `.txt`, fora do domínio do formatter, e passou todos os gates.
 
 ## Implementado no Core
 
@@ -87,142 +152,102 @@ As versões anteriores v13–v15 permanecem como evidência do repair loop fail-
 - human gates;
 - CLI de template, validação, registry e plano.
 
-### Provider Runtime
+### Provider Runtime / Durable Agent
 
-- request frozen/validado;
+- request e manifesto frozen/validados;
+- fingerprint portátil;
 - health `healthy/degraded/unavailable/unknown`;
-- seleção com fallback por health;
-- ambiente sanitizado;
-- profiles dedicados;
-- saída machine-readable e prompt redigido;
-- escopos protegidos fail-closed;
-- Git config/hooks/remote/refs protegidos;
-- histórico linear;
-- commit controlado;
-- push somente da worker branch;
+- ambiente sanitizado e profiles dedicados;
+- lease vinculada a run/task/issue/provider/executor/branches/hashes;
+- confiança somente em lease bot-authored válida;
+- expiração/takeover fail-closed;
+- heartbeat sem renovação implícita;
+- resultado terminal vinculado à lease;
+- provider sem autoridade para merge no target;
+- escopo protegido e Git mutável fail-closed;
+- commit/push apenas de worker branch;
 - confirmação remota do SHA;
 - telemetria sanitizada.
 
-### Durable Provider Agent
+### Antigravity
 
-- fingerprint portátil do request, independente do diretório local;
-- fingerprint do manifesto imutável;
-- lease vinculada a run/task/issue/provider/executor/branches/hashes;
-- confiança somente em lease cuja autoria real é verificada como `github-actions[bot]`;
-- expiração e takeover fail-closed;
-- heartbeat sanitizado sem renovação implícita;
-- resultado terminal vinculado à lease;
-- sucesso somente após commit, push e confirmação do SHA remoto;
-- validação de escopo novamente no resultado;
-- seleção de exatamente uma lease ativa compatível;
-- CLI para fingerprint, validação, heartbeat e execução publicada;
-- resultados locais tratados somente como candidatos até validação pelo Control Plane.
+O adapter está implementado/testado com CLI headless, profile isolado obrigatório e sem bypass de permissões.
 
-Detalhes: `core/DURABLE_PROVIDER_AGENT.md`.
+O piloto live continua materializado na issue `#65`, mas depende de:
 
-### Antigravity adapter
+- runner efêmero/fresh Linux x64 dedicado;
+- labels `self-hosted`, `Linux`, `X64`, `factory-antigravity`, `ephemeral`;
+- `agy`, Git e Python instalados;
+- `ANTIGRAVITY_PROFILE_HOME` autenticado e dedicado, fora de qualquer worktree;
+- destruição/reprovisionamento do runner depois da prova.
 
-- CLI headless real com JSON;
-- model/effort/agent opcionais;
-- profile isolado obrigatório;
-- probe de binary/auth/model;
-- nenhuma flag de bypass de permissões.
+A ausência desses pré-requisitos deve continuar falhando fechado.
 
-O piloto live está materializado na issue `#65`, mas permanece bloqueado até existir runner efêmero self-hosted e profile Antigravity autenticado dedicado. A ausência desses pré-requisitos deve continuar falhando fechado, sem fallback silencioso.
+## Merge Train
 
-### OpenCode/Ollama adapter
-
-- CLI `opencode run` não interativa;
-- apenas Ollama loopback;
-- modelo explícito;
-- profile isolado obrigatório;
-- permission config por path/comando;
-- web/external directory/subagents/skills negados;
-- Git mutável negado;
-- repo-provided OpenCode config recusada;
-- plugins/configs externas desabilitados;
-- bridge native single-write bounded, com auditoria sanitizada;
-- homologação live v16 concluída.
-
-### Merge Train
-
-Contrato Core vigente:
+Contrato lógico vigente:
 
 - worker PR limitado à integration branch;
 - CI exato por SHA/evento;
 - escopo obrigatório;
-- CodeRabbit, Semgrep e Sonar requeridos no mesmo SHA;
+- Semgrep, Sonar e CodeRabbit no mesmo SHA;
 - revisão bloqueadora impede merge;
+- evidência stale é inválida;
 - PR final draft;
 - target auto-merge sempre proibido.
 
-Estado operacional em 27/08/2026:
+Estado real:
 
-- Semgrep: workflow/check real criado e executado; primeiro scan encontrou findings reais e o repair loop corrigiu as causas sem suppressions. Integração final ainda deve ficar verde e ser propagada ao repositório consumidor;
-- CodeRabbit: comando manual `@coderabbitai full review` foi aceito e iniciou revisão real; está sendo testado também o disparo por `github-actions[bot]`;
-- Sonar: ainda sem check real conectado;
-- o Control Plane consumidor ainda precisa exigir os reviewers reais antes do squash na integration branch; hoje o gate operacional comprovado é o CI exato.
+- **Semgrep**: real, integrado, já encontrou findings reais e comprovou repair loop;
+- **CodeRabbit**: comando manual funciona, mas o serviço pode responder `rate limited`; isso deve falhar fechado;
+- **Sonar**: workflow fail-closed preparado, ainda precisa das credenciais/configuração reais do serviço;
+- **Control Plane consumidor**: hardening do gate confiável está sendo fechado no PR `mcpmieda/ecossistema-escola#118`, após o CodeRabbit ter corretamente rejeitado o desenho anterior em que o worker executava o código de sua própria aprovação.
 
-## Validação automatizada
+O desenho seguro do PR `#118` move a autoridade para código de `main`, usa reviewer evidence bot-authored por SHA e trata o worker como dado não confiável.
 
-A suíte multiagent cobre, entre outros:
+## Dependências externas restantes
 
-- limite 1–3;
-- zero-first e fallback remoto;
-- Codex manual-only;
-- escopos protegidos;
-- comandos perigosos;
-- redaction;
-- profiles isolados;
-- configuração OpenCode bounded;
-- health probes;
-- execução Git local end-to-end;
-- commit e push da worker branch;
-- confirmação do SHA remoto;
-- recusa de arquivo fora do escopo;
-- recusa de modificação em Git config, hooks, remote e refs;
-- fingerprints canônicos;
-- leases confiáveis, expiradas e conflitantes;
-- takeover depois da expiração;
-- heartbeat e resultado sanitizados;
-- recusa de identidade/hash/SHA divergente;
-- CLI durável machine-readable;
-- Merge Train por SHA/reviews;
-- final gate draft/humano.
+### Antigravity
 
-O workflow `Validate Multiagent Execution` executa compile, regressões estruturais, Execution Fabric e o gate multiagent.
+Runner/profile descritos na issue `#65`. Credenciais nunca devem ir para issue, workflow input ou chat.
+
+### Sonar
+
+O repositório consumidor precisa de configuração real de SonarQube Cloud:
+
+- repository variable `SONAR_PROJECT_KEY`;
+- repository variable `SONAR_ORGANIZATION`;
+- repository secret `SONAR_TOKEN`.
+
+O gate deve falhar, e não pular Sonar, enquanto esses valores não existirem.
+
+### CodeRabbit
+
+O mecanismo manual foi comprovado, mas disponibilidade/rate limit é controlada pelo serviço externo. O gate não deve fabricar sucesso quando o reviewer estiver indisponível.
+
+## Dependências que NÃO são mais bloqueadores
+
+A antiga documentação dizia que GitHub Actions não podia criar/aprovar PRs. Essa afirmação não é mais válida para a criação de PRs:
+
+- hosted OpenCode criou worker PR `#116`;
+- Jules criou worker PRs `#117` e `#119`;
+- o bot criou o PR final draft `#120`.
+
+Portanto, criação autônoma de PR está comprovadamente habilitada. O **merge final em `main` continua humano por design**, não por limitação administrativa.
 
 ## Ainda não homologado live
 
-1. Antigravity executando uma task real em profile/host isolado.
-2. Sonar conectado como check real do Merge Train.
-3. Merge Train operacional do Control Plane exigindo todos os reviewers previstos no contrato.
-4. Piloto live de integração multi-provider, usando mais de um provider na mesma Factory Run.
-5. Escalonamento excepcional Codex auditado, se algum dia necessário; continua manual e não é requisito para o caminho automático normal.
+1. Antigravity executando uma task real no runner/profile isolado exigido.
+2. Sonar fornecendo evidence real no Merge Train.
+3. Merge Train completo Semgrep + Sonar + CodeRabbit passando em um worker real depois do hardening confiável do Control Plane.
 
-## Dependências externas conhecidas
-
-No `ecossistema-escola`, a documentação vigente registra que GitHub Actions não pode criar/aprovar PRs. Enquanto a configuração administrativa não for alterada, criação autônoma de worker/final PR pode falhar fechada; o merge final continuará humano mesmo depois da habilitação.
-
-Antigravity depende de um runner efêmero e profile autenticado dedicados, descritos na issue `#65`. Credenciais desse profile nunca devem ir para issue, workflow input ou chat.
-
-Sonar ainda precisa de conexão/configuração real antes de poder fornecer evidência de reviewer no Merge Train.
-
-## Próxima ordem de trabalho
-
-1. concluir e integrar Semgrep real no Core e no `ecossistema-escola`;
-2. provar se CodeRabbit aceita solicitação feita pelo `github-actions[bot]` e automatizar o disparo quando possível;
-3. implementar no Control Plane a cobrança dos reviewers por SHA exato;
-4. conectar Sonar;
-5. homologar Antigravity no runner/profile externo exigido;
-6. executar uma Factory Run multi-provider final;
-7. manter Codex somente para exceção premium/manual.
+O piloto multi-provider já não pertence a esta lista: está concluído.
 
 ## Regra de declaração
 
 - **Implementado**: código e testes existem.
 - **Comprovado**: passou em execução real com evidência durável.
 - **Homologado**: passou no contrato live definido, com CI e guardrails preservados.
-- **Pronto**: todos os providers/gates necessários estão homologados e as dependências administrativas foram resolvidas.
+- **Pronto**: todos os providers/gates considerados obrigatórios para a visão completa estão homologados e dependências externas resolvidas.
 
-Hoje, Jules API-first e OpenCode/Ollama estão comprovados em execução real; takeover entre executores está comprovado; o runtime multi-provider e o protocolo durável estão integrados. A Factory inteira ainda não está pronta por causa de Antigravity, Sonar, enforcement operacional completo do Merge Train e do piloto multi-provider final.
+Hoje a Factory é operacional com **Jules + OpenCode/Ollama**, inclusive em uma mesma run durável com paralelismo, dependências, recovery, CI por SHA exato e PR final humano. O que impede a declaração de 100% da visão ampliada está concentrado em **Antigravity live + Sonar real + fechamento do Merge Train completo**.
