@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import argparse
+import hashlib
 import json
 import os
 import re
@@ -14,16 +15,19 @@ if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
 from engine.provider_runtime import (  # noqa: E402
+    ProviderInvocation,
     ProviderTaskRequest,
     SubprocessRunner,
     execute_provider_task,
     redact_text,
+    utc_now,
 )
 from engine.providers import AntigravityAdapter, OpenCodeOllamaAdapter  # noqa: E402
 
 DEFAULT_OPENCODE_AGENT = "factory-worker"
 AGENT_NAME_PATTERN = re.compile(r"^[A-Za-z0-9._/-]+$")
 TOOL_NAME_PATTERN = re.compile(r"^[a-z][a-z0-9_]*$")
+MAX_STAGED_FILE_BYTES = 64 * 1024
 DEFAULT_OPENCODE_AGENT_PROMPT = """You are a bounded App Factory worker.
 Follow the user task literally and make only the requested scoped change.
 Use only tools currently exposed by the runtime. Do not inspect unrelated files.
@@ -105,6 +109,114 @@ def _prepare_default_opencode_agent(
     return DEFAULT_OPENCODE_AGENT
 
 
+def _outside_worktree(path: Path, worktree: Path, *, label: str) -> Path:
+    resolved = path.expanduser().resolve()
+    try:
+        resolved.relative_to(worktree.resolve())
+    except ValueError:
+        return resolved
+    raise ValueError(f"{label} must be outside the provider worktree")
+
+
+def _assert_safe_staged_files(request: ProviderTaskRequest, changed_paths: tuple[str, ...]) -> None:
+    root = request.worktree.resolve()
+    for relative in changed_paths:
+        source = root / relative
+        if source.is_symlink():
+            raise ValueError(f"staged provider output must be a regular file: {relative}")
+        candidate = source.resolve()
+        try:
+            candidate.relative_to(root)
+        except ValueError as error:
+            raise ValueError(f"staged path escaped provider worktree: {relative}") from error
+        if not candidate.is_file():
+            raise ValueError(f"staged provider output must be a regular file: {relative}")
+        size = candidate.stat().st_size
+        if size <= 0 or size > MAX_STAGED_FILE_BYTES:
+            raise ValueError(
+                f"staged provider output must be 1..{MAX_STAGED_FILE_BYTES} bytes: {relative}"
+            )
+        try:
+            text = candidate.read_text(encoding="utf-8")
+        except UnicodeDecodeError as error:
+            raise ValueError(f"staged provider output must be UTF-8 text: {relative}") from error
+        if "\x00" in text:
+            raise ValueError(f"staged provider output contains NUL bytes: {relative}")
+        if redact_text(text, limit=len(text) + 1) != text:
+            raise ValueError(f"staged provider output matches a credential pattern: {relative}")
+
+
+def _sha256_file(path: Path) -> str:
+    digest = hashlib.sha256()
+    with path.open("rb") as stream:
+        for chunk in iter(lambda: stream.read(1024 * 1024), b""):
+            digest.update(chunk)
+    return digest.hexdigest()
+
+
+def _stage_provider_result(
+    *,
+    request: ProviderTaskRequest,
+    result: object,
+    runner: SubprocessRunner,
+    bundle_path: Path,
+    record_path: Path,
+) -> dict[str, object]:
+    output = getattr(result, "output", None)
+    evidence = getattr(result, "evidence", None)
+    if output is None or output.status != "success" or evidence is None:
+        detail = getattr(output, "error", None) if output is not None else None
+        raise RuntimeError(detail or "provider did not produce a validated staged commit")
+    if evidence.pushed:
+        raise ValueError("stage-only execution must not publish the worker branch")
+    if not evidence.start_sha or not evidence.commit_sha or not evidence.changed_paths:
+        raise ValueError("stage-only execution did not produce complete local evidence")
+
+    _assert_safe_staged_files(request, tuple(evidence.changed_paths))
+    bundle = _outside_worktree(bundle_path, request.worktree, label="provider bundle")
+    record = _outside_worktree(record_path, request.worktree, label="stage record")
+    if bundle.exists() or record.exists():
+        raise ValueError("stage outputs must not overwrite existing files")
+    bundle.parent.mkdir(parents=True, exist_ok=True)
+    record.parent.mkdir(parents=True, exist_ok=True)
+
+    bundled = runner.run(
+        ProviderInvocation(
+            provider_id="git-runtime",
+            argv=("git", "bundle", "create", str(bundle), request.working_branch),
+            cwd=request.worktree,
+            timeout_seconds=300,
+        )
+    )
+    if bundled.returncode != 0 or not bundle.is_file() or bundle.stat().st_size <= 0:
+        raise RuntimeError(redact_text(bundled.stderr or bundled.stdout or "git bundle failed"))
+
+    payload: dict[str, object] = {
+        "schema_version": 1,
+        "provider": output.provider_id,
+        "run_id": request.run_id,
+        "task_id": request.task_id,
+        "repository": request.repository,
+        "integration_branch": request.integration_branch,
+        "target_branch": request.target_branch,
+        "working_branch": request.working_branch,
+        "declared_paths": list(request.normalized_paths),
+        "start_sha": evidence.start_sha,
+        "commit_sha": evidence.commit_sha,
+        "changed_paths": list(evidence.changed_paths),
+        "bundle_sha256": _sha256_file(bundle),
+        "staged_at": utc_now(),
+        "github_run_id": str(os.environ.get("GITHUB_RUN_ID") or ""),
+        "github_run_attempt": str(os.environ.get("GITHUB_RUN_ATTEMPT") or ""),
+        "github_sha": str(os.environ.get("GITHUB_SHA") or ""),
+    }
+    record.write_text(
+        json.dumps(payload, indent=2, ensure_ascii=False, sort_keys=True) + "\n",
+        encoding="utf-8",
+    )
+    return payload
+
+
 def parser() -> argparse.ArgumentParser:
     root = argparse.ArgumentParser(
         description="Safe App Factory local/headless provider worker runtime"
@@ -116,13 +228,14 @@ def parser() -> argparse.ArgumentParser:
     )
     validate.add_argument("spec", type=Path)
 
-    for command in ("probe", "command", "run"):
+    for command in ("probe", "command", "run", "stage"):
         item = sub.add_parser(
             command,
             help={
                 "probe": "Probe provider health without running a task",
                 "command": "Show the redacted fixed-argv invocation for a task",
                 "run": "Execute, validate, commit, and publish a worker branch",
+                "stage": "Execute, validate, commit, and export a credential-free Git bundle",
             }[command],
         )
         item.add_argument(
@@ -139,13 +252,26 @@ def parser() -> argparse.ArgumentParser:
             type=Path,
             help="Dedicated provider profile directory; never use the normal user profile",
         )
-        if command in {"command", "run"}:
+        if command in {"command", "run", "stage"}:
             item.add_argument("spec", type=Path)
         if command == "run":
             item.add_argument(
                 "--publish",
                 action="store_true",
                 help="Required: push the validated worker branch so completion is durable in GitHub",
+            )
+        if command == "stage":
+            item.add_argument(
+                "--bundle",
+                type=Path,
+                required=True,
+                help="Output Git bundle path outside the provider worktree",
+            )
+            item.add_argument(
+                "--record",
+                type=Path,
+                required=True,
+                help="Output sanitized stage-record JSON path outside the provider worktree",
             )
     return root
 
@@ -228,6 +354,17 @@ def main() -> int:
                 "request": request.to_dict(),
                 "invocation": adapter.build_invocation(request).to_dict(),
             })
+            return 0
+        if args.command == "stage":
+            result = execute_provider_task(adapter, request, runner=runner, publish=False)
+            payload = _stage_provider_result(
+                request=request,
+                result=result,
+                runner=runner,
+                bundle_path=args.bundle,
+                record_path=args.record,
+            )
+            emit({"staged": True, "record": payload})
             return 0
         if args.command == "run":
             if not args.publish:
