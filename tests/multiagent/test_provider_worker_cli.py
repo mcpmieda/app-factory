@@ -39,6 +39,10 @@ class ProviderWorkerCliTests(unittest.TestCase):
 
     @staticmethod
     def init_repo(worktree: Path, branch: str) -> None:
+        remote = worktree.parent / "remote.git"
+        subprocess.run(
+            ["git", "init", "--bare", str(remote)], check=True, capture_output=True
+        )
         worktree.mkdir()
         subprocess.run(
             ["git", "init", "-b", branch], cwd=worktree, check=True, capture_output=True
@@ -52,7 +56,7 @@ class ProviderWorkerCliTests(unittest.TestCase):
             check=True,
         )
         subprocess.run(
-            ["git", "remote", "add", "origin", "https://github.com/owner/repo.git"],
+            ["git", "remote", "add", "origin", str(remote)],
             cwd=worktree,
             check=True,
         )
@@ -191,7 +195,7 @@ class ProviderWorkerCliTests(unittest.TestCase):
             remote = subprocess.run(
                 ["git", "ls-remote", "--heads", "origin", branch],
                 cwd=worktree,
-                check=False,
+                check=True,
                 capture_output=True,
                 text=True,
             )
