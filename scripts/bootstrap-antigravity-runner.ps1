@@ -281,11 +281,15 @@ $runnerName = "factory-antigravity-$([Environment]::MachineName.ToLowerInvariant
 $runnerProcess = $null
 $removeToken = $null
 $savedSensitiveEnvironment = @{}
+$savedRunnerEnvironment = @{}
 $savedGhConfigDir = $env:GH_CONFIG_DIR
 
 foreach ($name in $sensitiveEnvironmentNames) {
     $savedSensitiveEnvironment[$name] = [Environment]::GetEnvironmentVariable($name, 'Process')
     [Environment]::SetEnvironmentVariable($name, $null, 'Process')
+}
+foreach ($name in $profileEnvironmentNames) {
+    $savedRunnerEnvironment[$name] = [Environment]::GetEnvironmentVariable($name, 'Process')
 }
 
 try {
@@ -366,17 +370,19 @@ try {
         throw 'Falha ao tornar scripts oficiais do runner executáveis.'
     }
 
+    $configArguments = @(
+        '--unattended',
+        '--ephemeral',
+        '--disableupdate',
+        '--url', "https://github.com/$Repository",
+        '--token', $registrationToken,
+        '--name', $runnerName,
+        '--labels', 'factory-antigravity,ephemeral',
+        '--work', '_work'
+    )
     Push-Location $sessionRoot
     try {
-        & $configScript \
-            --unattended \
-            --ephemeral \
-            --disableupdate \
-            --url "https://github.com/$Repository" \
-            --token $registrationToken \
-            --name $runnerName \
-            --labels 'factory-antigravity,ephemeral' \
-            --work '_work'
+        & $configScript @configArguments
         if ($LASTEXITCODE -ne 0) {
             throw 'config.sh falhou ao registrar o runner efêmero.'
         }
@@ -384,6 +390,7 @@ try {
     finally {
         Pop-Location
         $registrationToken = $null
+        $configArguments = $null
     }
 
     $registered = $null
@@ -438,8 +445,22 @@ try {
 
     $env:HOME = $runnerHome
     $env:USERPROFILE = $runnerHome
+    $env:APPDATA = Join-Path $runnerHome 'AppData/Roaming'
+    $env:LOCALAPPDATA = Join-Path $runnerHome 'AppData/Local'
     $env:XDG_CONFIG_HOME = Join-Path $runnerHome 'xdg/config'
-    New-Item -ItemType Directory -Force -Path $env:XDG_CONFIG_HOME | Out-Null
+    $env:XDG_DATA_HOME = Join-Path $runnerHome 'xdg/data'
+    $env:XDG_CACHE_HOME = Join-Path $runnerHome 'xdg/cache'
+    $env:XDG_STATE_HOME = Join-Path $runnerHome 'xdg/state'
+    foreach ($path in @(
+            $env:APPDATA,
+            $env:LOCALAPPDATA,
+            $env:XDG_CONFIG_HOME,
+            $env:XDG_DATA_HOME,
+            $env:XDG_CACHE_HOME,
+            $env:XDG_STATE_HOME
+        )) {
+        New-Item -ItemType Directory -Force -Path $path | Out-Null
+    }
 
     Write-Host "Iniciando runner efêmero '$runnerName' sem credencial GitHub de bootstrap..."
     $runnerProcess = Start-Process -FilePath $runScript -WorkingDirectory $sessionRoot -PassThru -NoNewWindow
@@ -506,6 +527,9 @@ finally {
 
     foreach ($name in $sensitiveEnvironmentNames) {
         [Environment]::SetEnvironmentVariable($name, $savedSensitiveEnvironment[$name], 'Process')
+    }
+    foreach ($name in $profileEnvironmentNames) {
+        [Environment]::SetEnvironmentVariable($name, $savedRunnerEnvironment[$name], 'Process')
     }
 
     if (Test-Path -LiteralPath $sessionRoot) {
