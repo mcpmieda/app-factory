@@ -117,10 +117,10 @@ jobs:
 
       - name: Probe Antigravity with isolated cached authentication
         shell: bash
-        working-directory: ${{ env.FACTORY_PROVIDER_WORKTREE }}
         run: |
           set -euo pipefail
-          python3 "${GITHUB_WORKSPACE}/scripts/provider_worker.py" probe \
+          cd "${FACTORY_PROVIDER_WORKTREE}"
+          python3 scripts/provider_worker.py probe \
             --provider antigravity \
             --binary agy \
             --profile-home "${FACTORY_ANTIGRAVITY_PROFILE}" \
@@ -129,12 +129,12 @@ jobs:
 
       - name: Execute and stage validated provider commit
         shell: bash
-        working-directory: ${{ env.FACTORY_PROVIDER_WORKTREE }}
         run: |
           set -euo pipefail
+          cd "${FACTORY_PROVIDER_WORKTREE}"
           stage_dir="${RUNNER_TEMP}/antigravity-stage"
           mkdir -p "${stage_dir}"
-          python3 "${GITHUB_WORKSPACE}/scripts/provider_worker.py" stage \
+          python3 scripts/provider_worker.py stage \
             --provider antigravity \
             --binary agy \
             --profile-home "${FACTORY_ANTIGRAVITY_PROFILE}" \
@@ -244,7 +244,8 @@ jobs:
               if record.get(key) != value:
                   raise SystemExit(f"stage record contract mismatch: {key}")
           for key in ("start_sha", "commit_sha", "bundle_sha256"):
-              if not re.fullmatch(r"[0-9a-f]{40}" if key != "bundle_sha256" else r"[0-9a-f]{64}", str(record.get(key) or "")):
+              pattern = r"[0-9a-f]{64}" if key == "bundle_sha256" else r"[0-9a-f]{40}"
+              if not re.fullmatch(pattern, str(record.get(key) or "")):
                   raise SystemExit(f"invalid stage record {key}")
           if record["start_sha"] != os.environ["GITHUB_SHA"]:
               raise SystemExit("staged base SHA differs from trusted workflow SHA")
