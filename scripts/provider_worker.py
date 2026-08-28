@@ -121,12 +121,15 @@ def _outside_worktree(path: Path, worktree: Path, *, label: str) -> Path:
 def _assert_safe_staged_files(request: ProviderTaskRequest, changed_paths: tuple[str, ...]) -> None:
     root = request.worktree.resolve()
     for relative in changed_paths:
-        candidate = (root / relative).resolve()
+        source = root / relative
+        if source.is_symlink():
+            raise ValueError(f"staged provider output must be a regular file: {relative}")
+        candidate = source.resolve()
         try:
             candidate.relative_to(root)
         except ValueError as error:
             raise ValueError(f"staged path escaped provider worktree: {relative}") from error
-        if candidate.is_symlink() or not candidate.is_file():
+        if not candidate.is_file():
             raise ValueError(f"staged provider output must be a regular file: {relative}")
         size = candidate.stat().st_size
         if size <= 0 or size > MAX_STAGED_FILE_BYTES:
