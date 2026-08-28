@@ -1,0 +1,407 @@
+name: Live Antigravity staged provider pilot
+
+on:
+  issue_comment:
+    types: [created]
+
+permissions: {}
+
+concurrency:
+  group: antigravity-live-pilot-002
+  cancel-in-progress: false
+
+jobs:
+  provider-stage:
+    name: Stage Antigravity result without publication credentials
+    if: >-
+      github.actor == github.repository_owner &&
+      github.event.issue.number == 115 &&
+      github.event.comment.body == '/run-antigravity-v2'
+    runs-on: [self-hosted, Linux, X64, factory-antigravity, ephemeral]
+    timeout-minutes: 45
+    permissions: {}
+    outputs:
+      artifact_digest: ${{ steps.upload.outputs.artifact-digest }}
+    env:
+      PILOT_RUN_ID: antigravity-live-pilot-002
+      PILOT_TASK_ID: antigravity-worker
+      PILOT_TARGET_BRANCH: main
+      PILOT_INTEGRATION_BRANCH: factory/antigravity-live-pilot-002
+      PILOT_WORKER_BRANCH: factory/antigravity-live-pilot-002-antigravity-worker
+      PILOT_FILE: docs/provider-pilots/antigravity-live-pilot-002/RESULT.txt
+      ANTIGRAVITY_PROFILE_HOME: ${{ vars.ANTIGRAVITY_PROFILE_HOME }}
+    steps:
+      - name: Prepare public checkout with no GitHub credential
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "${GITHUB_REF}" = "refs/heads/main"
+          worktree="${RUNNER_TEMP}/provider-worktree"
+          git_home="${RUNNER_TEMP}/credential-free-git-home"
+          mkdir -p "${worktree}" "${git_home}"
+          export HOME="${git_home}"
+          export GIT_CONFIG_NOSYSTEM=1
+          export GIT_TERMINAL_PROMPT=0
+          git init "${worktree}"
+          git -C "${worktree}" remote add origin "https://github.com/${GITHUB_REPOSITORY}.git"
+          git -C "${worktree}" -c credential.helper= fetch --depth=1 origin "${GITHUB_SHA}"
+          git -C "${worktree}" checkout -b "${PILOT_WORKER_BRANCH}" FETCH_HEAD
+          git -C "${worktree}" config user.name "github-actions[bot]"
+          git -C "${worktree}" config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          test "$(git -C "${worktree}" rev-parse HEAD)" = "${GITHUB_SHA}"
+          if git -C "${worktree}" config --local --get-regexp '^(credential\.|http\..*\.extraheader)' >/dev/null 2>&1; then
+            echo 'credential-bearing Git configuration is forbidden in provider stage' >&2
+            exit 1
+          fi
+          echo "FACTORY_PROVIDER_WORKTREE=${worktree}" >> "${GITHUB_ENV}"
+
+      - name: Verify ephemeral executor and isolated Antigravity profile
+        shell: bash
+        run: |
+          set -euo pipefail
+          command -v agy >/dev/null
+          command -v git >/dev/null
+          command -v python3 >/dev/null
+          test -n "${ANTIGRAVITY_PROFILE_HOME}"
+          profile=$(realpath -e "${ANTIGRAVITY_PROFILE_HOME}")
+          worktree=$(realpath -e "${FACTORY_PROVIDER_WORKTREE}")
+          case "${profile}/" in
+            "${worktree}/"*) echo 'Antigravity profile must be outside worktree' >&2; exit 1 ;;
+          esac
+          for forbidden in .git-credentials .netrc .config/gh/hosts.yml; do
+            test ! -e "${profile}/${forbidden}" || {
+              echo "unrelated publication credential is forbidden in Antigravity profile: ${forbidden}" >&2
+              exit 1
+            }
+          done
+          if env | grep -Eq '^(GITHUB_TOKEN|GH_TOKEN|FACTORY_GITHUB_TOKEN)='; then
+            echo 'GitHub publication token unexpectedly present in provider job environment' >&2
+            exit 1
+          fi
+          echo "FACTORY_ANTIGRAVITY_PROFILE=${profile}" >> "${GITHUB_ENV}"
+
+      - name: Build immutable provider request
+        shell: bash
+        run: |
+          set -euo pipefail
+          export PILOT_RUN_ID PILOT_TASK_ID PILOT_TARGET_BRANCH PILOT_INTEGRATION_BRANCH PILOT_WORKER_BRANCH PILOT_FILE
+          python3 - <<'PY'
+          import json
+          import os
+          from pathlib import Path
+
+          request = {
+              "run_id": os.environ["PILOT_RUN_ID"],
+              "task_id": os.environ["PILOT_TASK_ID"],
+              "repository": os.environ["GITHUB_REPOSITORY"],
+              "worktree": os.environ["FACTORY_PROVIDER_WORKTREE"],
+              "integration_branch": os.environ["PILOT_INTEGRATION_BRANCH"],
+              "target_branch": os.environ["PILOT_TARGET_BRANCH"],
+              "working_branch": os.environ["PILOT_WORKER_BRANCH"],
+              "paths": [os.environ["PILOT_FILE"]],
+              "instruction": (
+                  "Create only the declared RESULT.txt file with a concise statement that the "
+                  "Antigravity live provider execution completed successfully. Do not edit any "
+                  "other path. Do not use Git, do not push, do not modify repository metadata, "
+                  "and do not include credentials, tokens, secrets, passwords or authorization data."
+              ),
+              "allowed_commands": [],
+              "timeout_seconds": 1800,
+              "remote": "origin",
+          }
+          Path(os.environ["RUNNER_TEMP"], "provider-task.json").write_text(
+              json.dumps(request, indent=2, sort_keys=True) + "\n",
+              encoding="utf-8",
+          )
+          PY
+
+      - name: Probe Antigravity with isolated cached authentication
+        shell: bash
+        working-directory: ${{ env.FACTORY_PROVIDER_WORKTREE }}
+        run: |
+          set -euo pipefail
+          python3 "${GITHUB_WORKSPACE}/scripts/provider_worker.py" probe \
+            --provider antigravity \
+            --binary agy \
+            --profile-home "${FACTORY_ANTIGRAVITY_PROFILE}" \
+            > "${RUNNER_TEMP}/provider-health.json"
+          cat "${RUNNER_TEMP}/provider-health.json"
+
+      - name: Execute and stage validated provider commit
+        shell: bash
+        working-directory: ${{ env.FACTORY_PROVIDER_WORKTREE }}
+        run: |
+          set -euo pipefail
+          stage_dir="${RUNNER_TEMP}/antigravity-stage"
+          mkdir -p "${stage_dir}"
+          python3 "${GITHUB_WORKSPACE}/scripts/provider_worker.py" stage \
+            --provider antigravity \
+            --binary agy \
+            --profile-home "${FACTORY_ANTIGRAVITY_PROFILE}" \
+            --effort medium \
+            --bundle "${stage_dir}/provider.bundle" \
+            --record "${stage_dir}/stage-record.json" \
+            "${RUNNER_TEMP}/provider-task.json" \
+            > "${RUNNER_TEMP}/stage-summary.json"
+          cat "${RUNNER_TEMP}/stage-summary.json"
+          if pgrep -x agy >/dev/null 2>&1; then
+            echo 'Antigravity process still alive after stage completion; publication is forbidden' >&2
+            exit 1
+          fi
+          mapfile -t files < <(find "${stage_dir}" -maxdepth 1 -type f -printf '%f\n' | sort)
+          test "${#files[@]}" -eq 2
+          test "${files[0]}" = "provider.bundle"
+          test "${files[1]}" = "stage-record.json"
+
+      - name: Upload only sanitized staged publication artifact
+        id: upload
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: antigravity-stage-${{ github.run_id }}-${{ github.run_attempt }}
+          path: ${{ runner.temp }}/antigravity-stage
+          if-no-files-found: error
+          retention-days: 7
+          compression-level: 0
+
+  trusted-publisher:
+    name: Validate staged bundle and publish through trusted GitHub job
+    needs: provider-stage
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    permissions:
+      actions: write
+      contents: write
+      issues: write
+      pull-requests: write
+    env:
+      GH_TOKEN: ${{ github.token }}
+      PILOT_RUN_ID: antigravity-live-pilot-002
+      PILOT_TASK_ID: antigravity-worker
+      PILOT_TARGET_BRANCH: main
+      PILOT_INTEGRATION_BRANCH: factory/antigravity-live-pilot-002
+      PILOT_WORKER_BRANCH: factory/antigravity-live-pilot-002-antigravity-worker
+      PILOT_FILE: docs/provider-pilots/antigravity-live-pilot-002/RESULT.txt
+      EXPECTED_ARTIFACT_DIGEST: ${{ needs.provider-stage.outputs.artifact_digest }}
+      ARTIFACT_NAME: antigravity-stage-${{ github.run_id }}-${{ github.run_attempt }}
+    steps:
+      - name: Checkout exact trusted pilot authority
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ github.sha }}
+          fetch-depth: 0
+
+      - name: Download staged provider artifact
+        uses: actions/download-artifact@37930b1c2abaa49bbe596cd826c3c89aef350131 # v7.0.0
+        with:
+          name: ${{ env.ARTIFACT_NAME }}
+          path: ${{ runner.temp }}/antigravity-stage
+
+      - name: Verify artifact service digest and exact file surface
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -n "${EXPECTED_ARTIFACT_DIGEST}"
+          service_digest=$(gh api "repos/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}/artifacts" \
+            --jq ".artifacts[] | select(.name == \"${ARTIFACT_NAME}\") | .digest" | head -n 1)
+          test -n "${service_digest}"
+          test "${service_digest}" = "${EXPECTED_ARTIFACT_DIGEST}"
+          stage_dir="${RUNNER_TEMP}/antigravity-stage"
+          mapfile -t files < <(find "${stage_dir}" -maxdepth 1 -type f -printf '%f\n' | sort)
+          test "${#files[@]}" -eq 2
+          test "${files[0]}" = "provider.bundle"
+          test "${files[1]}" = "stage-record.json"
+
+      - name: Validate immutable stage record
+        shell: bash
+        run: |
+          set -euo pipefail
+          export PILOT_RUN_ID PILOT_TASK_ID PILOT_TARGET_BRANCH PILOT_INTEGRATION_BRANCH PILOT_WORKER_BRANCH PILOT_FILE
+          python3 - <<'PY'
+          import hashlib
+          import json
+          import os
+          import re
+          from pathlib import Path
+
+          root = Path(os.environ["RUNNER_TEMP"], "antigravity-stage")
+          record = json.loads((root / "stage-record.json").read_text(encoding="utf-8"))
+          exact = {
+              "schema_version": 1,
+              "provider": "antigravity",
+              "run_id": os.environ["PILOT_RUN_ID"],
+              "task_id": os.environ["PILOT_TASK_ID"],
+              "repository": os.environ["GITHUB_REPOSITORY"],
+              "integration_branch": os.environ["PILOT_INTEGRATION_BRANCH"],
+              "target_branch": os.environ["PILOT_TARGET_BRANCH"],
+              "working_branch": os.environ["PILOT_WORKER_BRANCH"],
+              "declared_paths": [os.environ["PILOT_FILE"]],
+              "changed_paths": [os.environ["PILOT_FILE"]],
+              "github_run_id": os.environ["GITHUB_RUN_ID"],
+              "github_run_attempt": os.environ["GITHUB_RUN_ATTEMPT"],
+              "github_sha": os.environ["GITHUB_SHA"],
+          }
+          for key, value in exact.items():
+              if record.get(key) != value:
+                  raise SystemExit(f"stage record contract mismatch: {key}")
+          for key in ("start_sha", "commit_sha", "bundle_sha256"):
+              if not re.fullmatch(r"[0-9a-f]{40}" if key != "bundle_sha256" else r"[0-9a-f]{64}", str(record.get(key) or "")):
+                  raise SystemExit(f"invalid stage record {key}")
+          if record["start_sha"] != os.environ["GITHUB_SHA"]:
+              raise SystemExit("staged base SHA differs from trusted workflow SHA")
+          digest = hashlib.sha256((root / "provider.bundle").read_bytes()).hexdigest()
+          if digest != record["bundle_sha256"]:
+              raise SystemExit("provider bundle digest mismatch")
+          forbidden = {"instruction", "response", "session_id", "profile_home", "provider_output"}
+          if forbidden.intersection(record):
+              raise SystemExit("stage record contains forbidden raw provider material")
+          PY
+
+      - name: Verify bundle history, scope and credential hygiene
+        id: bundle
+        shell: bash
+        run: |
+          set -euo pipefail
+          stage_dir="${RUNNER_TEMP}/antigravity-stage"
+          record="${stage_dir}/stage-record.json"
+          staged_sha=$(python3 -c 'import json,sys; print(json.load(open(sys.argv[1]))["commit_sha"])' "${record}")
+          start_sha=$(python3 -c 'import json,sys; print(json.load(open(sys.argv[1]))["start_sha"])' "${record}")
+          git bundle verify "${stage_dir}/provider.bundle"
+          git fetch "${stage_dir}/provider.bundle" \
+            "refs/heads/${PILOT_WORKER_BRANCH}:refs/remotes/staged/worker"
+          test "$(git rev-parse refs/remotes/staged/worker)" = "${staged_sha}"
+          test "$(git rev-parse HEAD)" = "${start_sha}"
+          git merge-base --is-ancestor "${start_sha}" "${staged_sha}"
+          test "$(git rev-list --count "${start_sha}..${staged_sha}")" -eq 1
+          test -z "$(git rev-list --merges "${start_sha}..${staged_sha}")"
+          mapfile -t changed < <(git diff --name-only "${start_sha}" "${staged_sha}")
+          test "${#changed[@]}" -eq 1
+          test "${changed[0]}" = "${PILOT_FILE}"
+          mode=$(git ls-tree "${staged_sha}" -- "${PILOT_FILE}" | awk '{print $1}')
+          test "${mode}" = "100644"
+          size=$(git cat-file -s "${staged_sha}:${PILOT_FILE}")
+          test "${size}" -gt 0
+          test "${size}" -le 65536
+          git show "${staged_sha}:${PILOT_FILE}" > "${RUNNER_TEMP}/validated-result.txt"
+          python3 - <<'PY'
+          import os
+          from pathlib import Path
+          from engine.provider_runtime import redact_text
+
+          path = Path(os.environ["RUNNER_TEMP"], "validated-result.txt")
+          raw = path.read_bytes()
+          if b"\x00" in raw:
+              raise SystemExit("provider result contains NUL bytes")
+          text = raw.decode("utf-8")
+          if redact_text(text, limit=len(text) + 1) != text:
+              raise SystemExit("provider result matches credential pattern")
+          PY
+          echo "staged_sha=${staged_sha}" >> "${GITHUB_OUTPUT}"
+          echo "start_sha=${start_sha}" >> "${GITHUB_OUTPUT}"
+
+      - name: Create isolated refs only after bundle validation
+        shell: bash
+        env:
+          STAGED_SHA: ${{ steps.bundle.outputs.staged_sha }}
+          START_SHA: ${{ steps.bundle.outputs.start_sha }}
+        run: |
+          set -euo pipefail
+          if git ls-remote --exit-code origin "refs/heads/${PILOT_INTEGRATION_BRANCH}" >/dev/null 2>&1; then
+            echo 'pilot integration branch already exists; refusing replay' >&2
+            exit 1
+          fi
+          if git ls-remote --exit-code origin "refs/heads/${PILOT_WORKER_BRANCH}" >/dev/null 2>&1; then
+            echo 'pilot worker branch already exists; refusing replay' >&2
+            exit 1
+          fi
+          git push origin \
+            "${START_SHA}:refs/heads/${PILOT_INTEGRATION_BRANCH}" \
+            "${STAGED_SHA}:refs/heads/${PILOT_WORKER_BRANCH}"
+          test "$(git ls-remote origin "refs/heads/${PILOT_WORKER_BRANCH}" | awk '{print $1}')" = "${STAGED_SHA}"
+          test "$(git ls-remote origin "refs/heads/${PILOT_INTEGRATION_BRANCH}" | awk '{print $1}')" = "${START_SHA}"
+
+      - name: Create worker PR and run exact-SHA CI
+        id: worker
+        shell: bash
+        env:
+          STAGED_SHA: ${{ steps.bundle.outputs.staged_sha }}
+        run: |
+          set -euo pipefail
+          worker_url=$(gh pr create \
+            --base "${PILOT_INTEGRATION_BRANCH}" \
+            --head "${PILOT_WORKER_BRANCH}" \
+            --title "[Factory:${PILOT_RUN_ID}] Antigravity staged worker" \
+            --body "Credential-separated Antigravity live pilot. Provider stage had no GitHub publication credential. Target merge and production remain forbidden.")
+          worker_pr=$(gh pr view "${worker_url}" --json number --jq '.number')
+          gh workflow run validate-multiagent-execution.yml --ref "${PILOT_WORKER_BRANCH}"
+          ci_run=""
+          for attempt in $(seq 1 60); do
+            ci_run=$(gh run list \
+              --workflow validate-multiagent-execution.yml \
+              --branch "${PILOT_WORKER_BRANCH}" \
+              --event workflow_dispatch \
+              --limit 20 \
+              --json databaseId,headSha \
+              --jq ".[] | select(.headSha == \"${STAGED_SHA}\") | .databaseId" | head -n 1)
+            if [ -n "${ci_run}" ]; then break; fi
+            sleep 2
+          done
+          test -n "${ci_run}"
+          gh run watch "${ci_run}" --exit-status
+          test "$(gh pr view "${worker_pr}" --json headRefOid --jq '.headRefOid')" = "${STAGED_SHA}"
+          echo "worker_pr=${worker_pr}" >> "${GITHUB_OUTPUT}"
+          echo "worker_ci=${ci_run}" >> "${GITHUB_OUTPUT}"
+
+      - name: Merge worker only into isolated integration branch
+        id: integrate
+        shell: bash
+        env:
+          WORKER_PR: ${{ steps.worker.outputs.worker_pr }}
+        run: |
+          set -euo pipefail
+          test "$(gh pr view "${WORKER_PR}" --json baseRefName --jq '.baseRefName')" = "${PILOT_INTEGRATION_BRANCH}"
+          gh pr merge "${WORKER_PR}" --squash --delete-branch=false
+          integration_sha=$(git ls-remote origin "refs/heads/${PILOT_INTEGRATION_BRANCH}" | awk '{print $1}')
+          test -n "${integration_sha}"
+          echo "integration_sha=${integration_sha}" >> "${GITHUB_OUTPUT}"
+
+      - name: Run exact-SHA integration CI
+        id: integration-ci
+        shell: bash
+        env:
+          INTEGRATION_SHA: ${{ steps.integrate.outputs.integration_sha }}
+        run: |
+          set -euo pipefail
+          gh workflow run validate-multiagent-execution.yml --ref "${PILOT_INTEGRATION_BRANCH}"
+          ci_run=""
+          for attempt in $(seq 1 60); do
+            ci_run=$(gh run list \
+              --workflow validate-multiagent-execution.yml \
+              --branch "${PILOT_INTEGRATION_BRANCH}" \
+              --event workflow_dispatch \
+              --limit 20 \
+              --json databaseId,headSha \
+              --jq ".[] | select(.headSha == \"${INTEGRATION_SHA}\") | .databaseId" | head -n 1)
+            if [ -n "${ci_run}" ]; then break; fi
+            sleep 2
+          done
+          test -n "${ci_run}"
+          gh run watch "${ci_run}" --exit-status
+          echo "integration_ci=${ci_run}" >> "${GITHUB_OUTPUT}"
+
+      - name: Create final draft human gate and persist evidence
+        shell: bash
+        env:
+          STAGED_SHA: ${{ steps.bundle.outputs.staged_sha }}
+          WORKER_PR: ${{ steps.worker.outputs.worker_pr }}
+          WORKER_CI: ${{ steps.worker.outputs.worker_ci }}
+          INTEGRATION_SHA: ${{ steps.integrate.outputs.integration_sha }}
+          INTEGRATION_CI: ${{ steps.integration-ci.outputs.integration_ci }}
+        run: |
+          set -euo pipefail
+          final_url=$(gh pr create \
+            --draft \
+            --base "${PILOT_TARGET_BRANCH}" \
+            --head "${PILOT_INTEGRATION_BRANCH}" \
+            --title "[Factory:${PILOT_RUN_ID}] consolidated Antigravity result" \
+            --body "Antigravity credential-separated live proof. Worker PR #${WORKER_PR}; staged SHA ${STAGED_SHA}; worker CI ${WORKER_CI}; integration SHA ${INTEGRATION_SHA}; integration CI ${INTEGRATION_CI}. Final target merge remains human-only. Production, Banco de Notas sync and Codex were not activated.")
+          gh issue comment 115 --body "Antigravity v2 live pilot completed through credential-separated publication. Worker PR #${WORKER_PR}; worker CI ${WORKER_CI}; integration CI ${INTEGRATION_CI}; final draft PR ${final_url}. No target merge or production activation was performed."
