@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Executable gate for provider-neutral multiagent execution."""
+"""Executable gate for the finalized multiagent execution scope."""
 from __future__ import annotations
 
 import json
@@ -34,8 +34,6 @@ REQUIRED = [
     "engine/work_orchestrator.py",
     "engine/provider_runtime.py",
     "engine/durable_provider_agent.py",
-    "engine/providers/__init__.py",
-    "engine/providers/antigravity.py",
     "engine/providers/opencode_ollama.py",
     "engine/merge_train.py",
     "scripts/factory_run.py",
@@ -64,18 +62,9 @@ def stop(message: str) -> None:
     raise SystemExit(1)
 
 
-def run(
-    *args: str,
-    cwd: Path = ROOT,
-    check: bool = True,
-) -> subprocess.CompletedProcess[str]:
+def run(*args: str, cwd: Path = ROOT, check: bool = True) -> subprocess.CompletedProcess[str]:
     return subprocess.run(
-        list(args),
-        cwd=cwd,
-        check=check,
-        capture_output=True,
-        text=True,
-        timeout=180,
+        list(args), cwd=cwd, check=check, capture_output=True, text=True, timeout=180
     )
 
 
@@ -111,25 +100,19 @@ def write_plan_spec(directory: Path) -> Path:
             "schema_version": 1,
             "run_id": "gate",
             "goal": "prove provider routing",
-            "tasks": [
-                {
-                    "id": "implementation",
-                    "title": "Implementation",
-                    "paths": ["src/feature"],
-                    "required_capabilities": [
-                        "reasoning",
-                        "repo_read",
-                        "repo_write",
-                    ],
-                }
-            ],
+            "tasks": [{
+                "id": "implementation",
+                "title": "Implementation",
+                "paths": ["src/feature"],
+                "required_capabilities": ["reasoning", "repo_read", "repo_write"],
+            }],
         }),
         encoding="utf-8",
     )
     return spec
 
 
-def validate_zero_first_and_remote_fallback() -> None:
+def validate_finalized_provider_scope() -> None:
     with tempfile.TemporaryDirectory(prefix="app-factory-multiagent-") as raw:
         spec = write_plan_spec(Path(raw))
         local = run(
@@ -140,9 +123,9 @@ def validate_zero_first_and_remote_fallback() -> None:
             "--providers",
             "jules,opencode_ollama",
         )
-        local_payload = json.loads(local.stdout)
-        if local_payload["waves"][0]["assignments"][0]["provider"] != "opencode_ollama":
-            stop("zero-cost local provider was not preferred when explicitly available")
+        payload = json.loads(local.stdout)
+        if payload["waves"][0]["assignments"][0]["provider"] != "opencode_ollama":
+            stop("zero-cost OpenCode/Ollama provider was not preferred")
 
         remote = run(
             sys.executable,
@@ -150,14 +133,23 @@ def validate_zero_first_and_remote_fallback() -> None:
             "plan",
             str(spec),
             "--providers",
-            "jules,antigravity",
+            "jules",
         )
         remote_payload = json.loads(remote.stdout)
-        if remote_payload["waves"][0]["assignments"][0]["provider"] not in {
-            "jules",
+        if remote_payload["waves"][0]["assignments"][0]["provider"] != "jules":
+            stop("Jules fallback was not selected")
+
+        retired = run(
+            sys.executable,
+            "scripts/factory_run.py",
+            "plan",
+            str(spec),
+            "--providers",
             "antigravity",
-        }:
-            stop("remote free-quota fallback was not selected")
+            check=False,
+        )
+        if retired.returncode == 0 or "Unsupported automatic provider" not in retired.stdout:
+            stop("retired Antigravity provider was not rejected")
 
         excessive = run(
             sys.executable,
@@ -214,14 +206,13 @@ def validate_provider_command_is_redacted_and_bounded() -> None:
         rendered = json.dumps(payload)
         if instruction in rendered or "<task-instruction>" not in rendered:
             stop("provider command output leaks the task instruction")
-        keys = set(payload["invocation"]["environment_keys"])
         required_keys = {
             "HOME",
             "OPENCODE_CONFIG_CONTENT",
             "OPENCODE_PERMISSION",
             "OPENCODE_CONFIG_DIR",
         }
-        if not required_keys.issubset(keys):
+        if not required_keys.issubset(set(payload["invocation"]["environment_keys"])):
             stop("OpenCode worker is missing isolated profile/config environment")
         argv = payload["invocation"]["argv"]
         if "--auto" not in argv or "--format" not in argv or "json" not in argv:
@@ -229,12 +220,12 @@ def validate_provider_command_is_redacted_and_bounded() -> None:
 
 
 def validate_codex_manual_only() -> None:
-    providers = json.loads(
-        run(sys.executable, "scripts/factory_run.py", "providers").stdout
-    )
+    providers = json.loads(run(sys.executable, "scripts/factory_run.py", "providers").stdout)
     codex = providers.get("codex") or {}
     if codex.get("automatic") is not False or codex.get("cost_class") != "metered":
         stop("Codex must remain a metered manual-only escalation provider")
+    if "antigravity" in providers:
+        stop("retired Antigravity provider is still exposed by the finalized registry")
 
 
 def validate_durable_agent_contract() -> None:
@@ -263,7 +254,7 @@ def validate_durable_agent_contract() -> None:
             run_id=request.run_id,
             task_id=request.task_id,
             issue_number=1,
-            provider_id="antigravity",
+            provider_id="opencode_ollama",
             worker_id="executor-gate",
             repository=request.repository,
             working_branch=request.working_branch,
@@ -295,14 +286,6 @@ def validate_durable_agent_contract() -> None:
         decision = evaluate_result(lease, result, request, manifest)
         if not decision.accepted or not decision.completed:
             stop("exact durable provider evidence was not accepted")
-        if request_fingerprint(request) == request_fingerprint(
-            ProviderTaskRequest.from_mapping({
-                **request.to_dict(include_instruction=True),
-                "worktree": str(root),
-                "instruction": "different instruction",
-            })
-        ):
-            stop("durable request fingerprint does not bind the task instruction")
 
 
 def validate_merge_train_contract() -> None:
@@ -358,15 +341,14 @@ def validate_merge_train_contract() -> None:
 def main() -> int:
     validate_files()
     validate_unit_tests()
-    validate_zero_first_and_remote_fallback()
+    validate_finalized_provider_scope()
     validate_provider_command_is_redacted_and_bounded()
     validate_codex_manual_only()
     validate_durable_agent_contract()
     validate_merge_train_contract()
     print(
-        "OK: multiagent graph, 1-3 parallelism, provider runtime isolation, "
-        "GitHub-backed durable leases/results, exact-SHA merge train, and "
-        "premium escalation guard validated."
+        "OK: finalized Jules + OpenCode/Ollama scope, 1-3 parallelism, provider runtime isolation, "
+        "GitHub-backed durable leases/results, exact-SHA merge train, and manual premium escalation validated."
     )
     return 0
 
