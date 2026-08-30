@@ -44,6 +44,10 @@ Mesmo em projeto opt-in, use **proporcionalidade**. A menor profundidade suficie
 
 Project Adoption, Semantic Assurance/Verification, Independent Verification, formal methods, scanners, recovery drills e outros módulos são recursos opcionais. Eles não devem ser encadeados automaticamente em toda tarefa.
 
+## Compatibilidade dos módulos opcionais
+
+O **Project Adoption Gate** continua disponível em `skills/project-adoption/SKILL.md` e `core/PROJECT_ADOPTION_GATE.md` para projetos que o escolherem explicitamente. Seus estados `pre-implementation` e `delivery` são recursos opt-in, não fases universais. Da mesma forma, a regra histórica sobre `React + CSS próprio` permanece apenas dentro desse módulo e não governa projetos que não o adotaram.
+
 ## Segurança que permanece obrigatória
 
 Simplificação de processo não autoriza:
