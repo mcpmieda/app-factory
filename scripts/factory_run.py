@@ -71,7 +71,7 @@ def parser() -> argparse.ArgumentParser:
         help="Reserved compatibility flag. Codex remains manual and is never selected automatically.",
     )
 
-    sub.add_parser("providers", help="Show the finalized automatic provider registry")
+    sub.add_parser("providers", help="Show the finalized provider registry")
     return root
 
 
@@ -93,7 +93,7 @@ def main() -> int:
                     "description": value.description,
                 }
                 for key, value in default_worker_providers().items()
-                if key in SUPPORTED_AUTOMATIC_PROVIDERS
+                if key in SUPPORTED_AUTOMATIC_PROVIDERS or key == "codex"
             })
             return 0
         if args.command == "validate":
