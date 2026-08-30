@@ -11,28 +11,13 @@ permissions:
 jobs:
   validate:
     runs-on: ubuntu-latest
+    timeout-minutes: 5
     steps:
       - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
       - uses: actions/setup-python@v5
         with:
           python-version: "3.12"
-      - name: Validate Factory structure
+      - name: Validate opt-in core structure
         run: python scripts/validate_factory.py
-      - name: Validate Agent Skills constraints
-        run: python scripts/validate_skills.py
-      - name: Validate Codex Plugin package
-        run: python scripts/validate_plugin.py
-      - name: Validate PowerShell bootstrap syntax
-        shell: pwsh
-        run: |
-          $tokens = $null
-          $errors = $null
-          [System.Management.Automation.Language.Parser]::ParseFile(
-            (Resolve-Path 'scripts/bootstrap-antigravity-runner.ps1'),
-            [ref] $tokens,
-            [ref] $errors
-          ) | Out-Null
-          if ($errors.Count -gt 0) {
-            $errors | ForEach-Object { Write-Error $_.Message }
-            exit 1
-          }
