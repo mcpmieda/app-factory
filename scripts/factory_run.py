@@ -18,17 +18,38 @@ from engine.work_orchestrator import (  # noqa: E402
     load_factory_run,
 )
 
+SUPPORTED_AUTOMATIC_PROVIDERS = frozenset({"jules", "opencode_ollama"})
+
 
 def emit(value: object) -> None:
     print(json.dumps(value, indent=2, ensure_ascii=False))
 
 
 def csv_values(raw: str) -> list[str]:
-    return [item.strip() for item in raw.split(",") if item.strip()]
+    values = [item.strip() for item in raw.split(",") if item.strip()]
+    unsupported = [item for item in values if item not in SUPPORTED_AUTOMATIC_PROVIDERS]
+    if unsupported:
+        raise ValueError(
+            "Unsupported automatic provider in finalized scope: " + ", ".join(unsupported)
+        )
+    return values
+
+
+def finalized_template() -> dict[str, object]:
+    template = factory_run_template()
+    for task in template.get("tasks", []):
+        if not isinstance(task, dict):
+            continue
+        preferred = task.get("preferred_providers")
+        if isinstance(preferred, list):
+            task["preferred_providers"] = [
+                item for item in preferred if item in SUPPORTED_AUTOMATIC_PROVIDERS
+            ]
+    return template
 
 
 def parser() -> argparse.ArgumentParser:
-    root = argparse.ArgumentParser(description="App Factory provider-neutral multiagent Factory Run planner")
+    root = argparse.ArgumentParser(description="App Factory finalized multiagent Factory Run planner")
     sub = root.add_subparsers(dest="command", required=True)
 
     sub.add_parser("template", help="Emit a portable Factory Run JSON template")
@@ -40,17 +61,17 @@ def parser() -> argparse.ArgumentParser:
     plan.add_argument("spec", type=Path)
     plan.add_argument(
         "--providers",
-        default="jules,antigravity",
-        help="Comma-separated providers currently available to this machine/control plane",
+        default="jules,opencode_ollama",
+        help="Comma-separated supported providers currently available to this control plane",
     )
     plan.add_argument("--max-parallel", type=int, default=MAX_AUTOMATIC_PARALLEL)
     plan.add_argument(
         "--allow-metered",
         action="store_true",
-        help="Allow metered providers if explicitly made automatic in a custom registry. Codex remains manual by default.",
+        help="Reserved compatibility flag. Codex remains manual and is never selected automatically.",
     )
 
-    sub.add_parser("providers", help="Show the built-in worker provider registry without credentials")
+    sub.add_parser("providers", help="Show the finalized automatic provider registry")
     return root
 
 
@@ -58,7 +79,7 @@ def main() -> int:
     args = parser().parse_args()
     try:
         if args.command == "template":
-            emit(factory_run_template())
+            emit(finalized_template())
             return 0
         if args.command == "providers":
             emit({
@@ -72,6 +93,7 @@ def main() -> int:
                     "description": value.description,
                 }
                 for key, value in default_worker_providers().items()
+                if key in SUPPORTED_AUTOMATIC_PROVIDERS
             })
             return 0
         if args.command == "validate":
