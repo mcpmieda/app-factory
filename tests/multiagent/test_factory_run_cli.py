@@ -27,6 +27,8 @@ class FactoryRunCliTests(unittest.TestCase):
         payload = json.loads(result.stdout)
         self.assertEqual(payload["schema_version"], 1)
         self.assertTrue(payload["tasks"])
+        rendered = json.dumps(payload)
+        self.assertNotIn("antigravity", rendered)
 
     def test_plan_routes_remote_workers(self) -> None:
         spec = {
@@ -51,11 +53,35 @@ class FactoryRunCliTests(unittest.TestCase):
         with tempfile.TemporaryDirectory(prefix="factory-run-") as raw:
             path = Path(raw) / "run.json"
             path.write_text(json.dumps(spec), encoding="utf-8")
-            result = self.run_cli("plan", str(path), "--providers", "jules,antigravity")
+            result = self.run_cli("plan", str(path), "--providers", "jules")
             payload = json.loads(result.stdout)
         self.assertEqual(len(payload["waves"]), 1)
         self.assertEqual(len(payload["waves"][0]["assignments"]), 2)
         self.assertFalse(payload["blocked"])
+
+    def test_retired_provider_is_rejected(self) -> None:
+        spec = {
+            "schema_version": 1,
+            "run_id": "retired-provider",
+            "goal": "guard finalized scope",
+            "tasks": [
+                {
+                    "id": "a",
+                    "title": "A",
+                    "paths": ["src/a"],
+                    "required_capabilities": ["reasoning"],
+                }
+            ],
+        }
+        with tempfile.TemporaryDirectory(prefix="factory-run-retired-") as raw:
+            path = Path(raw) / "run.json"
+            path.write_text(json.dumps(spec), encoding="utf-8")
+            result = self.run_cli(
+                "plan", str(path), "--providers", "antigravity", check=False
+            )
+            payload = json.loads(result.stdout)
+        self.assertEqual(result.returncode, 1)
+        self.assertIn("Unsupported automatic provider", payload["error"])
 
     def test_blocked_plan_returns_two(self) -> None:
         spec = {
